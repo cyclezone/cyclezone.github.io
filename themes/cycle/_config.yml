@@ -13,20 +13,20 @@ menu:
       - name: Tags
         url: /tags
         icon: fas fa-tags
-      - name: Zero
-        url: /zero
-        icon: fas fa-film
       - name: Zoo
         url: /zoo
         icon: fas fa-book
+      - name: Galleries
+        url: /galleries
+        icon: fas fa-image
   Categories:
     url: /categories
     icon: fas fa-bookmark
   Archives:
     url: /archives
     icon: fas fa-archive
-  About:
-    icon: fas fa-list
+  Contact:
+    icon: fas fa-comments
     children:
       - name: About
         url: /about
@@ -184,7 +184,7 @@ reward:
   enable: true
   title: 助力每一个梦想
   wechat: /medias/reward/wechat.png
-  alipay: /medias/reward/alipay.jpg
+  alipay: /medias/reward/alipay.png
 
 # Whether to activate the copyright information of the blog and author when copying the post content.
 # minCharNumber: Approve copyright information by copying at least how many characters.
@@ -305,12 +305,15 @@ postCalendar: true
 # Gitalk 评论模块的配置，默认为不激活
 gitalk:
   enable: true
-  owner:
-  repo:
+  owner:  cyclezone # GitHub repo owner
+  repo:  cyclezone.github.io # Repository name to store issues
   oauth:
-    clientId:
-    clientSecret:
-  admin:
+    clientId: b35db7ade70d7d3d5c0e # GitHub Application Client ID
+    clientSecret: 2f0ea4a4a3247e1fb04b4d194088c1a39ffd3c4f # GitHub Application Client Secret
+  admin: cyclezone # GitHub repo owner and collaborators, only these guys can initialize gitHub issues
+  proxy: https://netnr-proxy.cloudno.de/https://github.com/login/oauth/access_token
+
+
 
 # the Gitment config，default disabled
 # Gitment 评论模块的配置，默认为不激活
