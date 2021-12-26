@@ -1,5 +1,5 @@
 ---
-title: 关于赛科
+title: about cyclezone
 date: 2021-12-23 00:09:59
 type: about
 layout: about

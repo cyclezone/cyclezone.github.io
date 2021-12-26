@@ -1,7 +1,7 @@
 ---
 title: Build blog with hexo and github
 date: 2021-12-12 18:18:45
-author: cycle member
+author: cyclezone
 img: /medias/banner/3.jpeg
 top: true
 cover: true

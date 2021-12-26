@@ -1,7 +1,7 @@
 ---
 title: Hexo 常用命令
 date: 2021-12-10 19:25:00
-author: cycle member
+author: cyclezone
 img: /medias/banner/5.jpeg
 top: true
 cover: true

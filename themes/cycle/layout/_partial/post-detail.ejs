@@ -84,6 +84,10 @@
         <% } %>
 
         <div class="card-content article-card-content">
+            <div id="reprint-statement-info">
+                <%- partial('_partial/reprint-statement') %>
+            </div>
+            
             <div id="articleContent">
                 <%- page.content %>
                 <% if (theme.bbtime.enable && page.layout == 'bb') { %>

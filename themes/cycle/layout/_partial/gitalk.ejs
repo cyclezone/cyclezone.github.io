@@ -16,9 +16,13 @@
         clientSecret: '<%- theme.gitalk.oauth.clientSecret %>',
         repo: '<%- theme.gitalk.repo %>',
         owner: '<%- theme.gitalk.owner %>',
+     //   admin: ['<%- theme.gitalk.admin  %>'],
         admin: <%- JSON.stringify(theme.gitalk.admin) %>,
         id: '<%- date(page.date, 'YYYY-MM-DDTHH-mm-ss') %>',
-        distractionFreeMode: false  // Facebook-like distraction free mode
+     //   proxy: 'https://netnr-proxy.cloudno.de/https://github.com/login/oauth/access_token',
+        proxy: 'https://shielded-brushlands-08810.herokuapp.com/https://github.com/login/oauth/access_token',
+     //   proxy: 'https://static.appgao.cate.fun/login/oauth/access_token',
+        distractionFreeMode: true  // Facebook-like distraction free mode
     });
 
     gitalk.render('gitalk-container');
