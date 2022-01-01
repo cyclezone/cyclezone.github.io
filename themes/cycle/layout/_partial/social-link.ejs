@@ -5,20 +5,8 @@
 <% } %>
 
 <% if (theme.socialLink.email) { %>
-    <a href="mailto:<%= theme.socialLink.email %>" class="tooltipped" target="_blank" data-tooltip="邮件联系我" data-position="top" data-delay="50">
+    <a href="mailto:<%= theme.socialLink.email %>" class="tooltipped" target="_blank" data-tooltip="邮件联系我：<%= theme.socialLink.email %>" data-position="top" data-delay="50">
         <i class="fas fa-envelope-open"></i>
-    </a>
-<% } %>
-
-<% if (theme.socialLink.facebook) { %>
-    <a href="<%= theme.socialLink.facebook %>" class="tooltipped" target="_blank" data-tooltip="关注我的Facebook: <%= theme.socialLink.facebook %>" data-position="top" data-delay="50">
-        <i class="fab fa-facebook-f"></i>
-    </a>
-<% } %>
-
-<% if (theme.socialLink.twitter) { %>
-    <a href="<%= theme.socialLink.twitter %>" class="tooltipped" target="_blank" data-tooltip="关注我的Twitter: <%= theme.socialLink.twitter %>" data-position="top" data-delay="50">
-        <i class="fab fa-twitter"></i>
     </a>
 <% } %>
 
@@ -37,6 +25,18 @@
 <% if (theme.socialLink.zhihu) { %>
     <a href="<%= theme.socialLink.zhihu %>" class="tooltipped" target="_blank" data-tooltip="关注我的知乎: <%= theme.socialLink.zhihu %>" data-position="top" data-delay="50">
         <i class="fab fa-zhihu1">知</i>
+    </a>
+<% } %>
+
+<% if (theme.socialLink.facebook) { %>
+    <a href="<%= theme.socialLink.facebook %>" class="tooltipped" target="_blank" data-tooltip="关注我的Facebook: <%= theme.socialLink.facebook %>" data-position="top" data-delay="50">
+        <i class="fab fa-facebook-f"></i>
+    </a>
+<% } %>
+
+<% if (theme.socialLink.twitter) { %>
+    <a href="<%= theme.socialLink.twitter %>" class="tooltipped" target="_blank" data-tooltip="关注我的Twitter: <%= theme.socialLink.twitter %>" data-position="top" data-delay="50">
+        <i class="fab fa-twitter"></i>
     </a>
 <% } %>
 

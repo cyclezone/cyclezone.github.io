@@ -45,30 +45,30 @@ body {
 
 h1 {
     margin: 48px 0 22px -5px;
-    font-size: 2.0rem;
+    font-size: 1.8rem;
     font-weight: bold;
     line-height: 2.0rem;
 }
 
 h2 {
     margin: 42px 0 18px -5px;
-    font-size: 1.8rem;
+    font-size: 1.6rem;
     font-weight: bold;
     line-height: 1.8rem;
 }
 
 h3 {
     margin: 38px 0 15px -4px;
-    font-size: 1.6rem;
+    font-size: 1.45rem;
     font-weight: bold;
-    line-height: 1.6rem;
+    line-height: 1.45rem;
 }
 
 h4 {
     margin: 32px 0 12px -4px;
-    font-size: 1.4rem;
+    font-size: 1.3rem;
     font-weight: bold;
-    line-height: 1.4rem;
+    line-height: 1.3rem;
 }
 
 h5 {
@@ -104,6 +104,7 @@ blockquote {
 
 pre {
     padding: 2rem 1rem 1rem 1rem !important;
+    margin: 1rem 0 !important;
     border-radius: 0.35rem;
     tab-size: 4;
 }
@@ -244,11 +245,15 @@ mark {
 }
 
 .bg-color {
-    background-image: linear-gradient(to right, #232728 0%, #130c0e 100%);
+     background-image: linear-gradient(to right, #424242 0%, #130c0e 100%); 
+}
+
+.tag-color {
+    background-image: linear-gradient(to right, #d8e5f7 0%, #8fccfa 100%); 
 }
 
 .text-color {
-    color: #0f9d58 !important;
+    color: #0a57e6 !important;
 }
 
 .white-color {
@@ -293,7 +298,7 @@ header nav .brand-span {
 }
 
 header .brand-logo .logo-img {
-    height: 45px;
+    height: 40px;
     vertical-align: middle;
     padding-bottom: 6px;
 }
@@ -317,8 +322,7 @@ header .side-nav .mobile-head {
 
 header .side-nav .mobile-head img {
     margin-top: 30px;
-    width: 75px;
-    height: 75px;
+    height: 45px;
 }
 
 header .side-nav .mobile-head .logo-name {
@@ -546,7 +550,7 @@ header .go-back i {
 }
 
 .index-cover {
-    height: 100vh;
+    height: 80vh;
 }
 
 .post-cover {
@@ -577,7 +581,7 @@ header .go-back i {
 }
 
 .bg-cover .title {
-    font-size: 4rem;
+    font-size: 2.0rem;
     line-height: 1.2em;
     margin-bottom: 20px;
     position: relative;
@@ -585,14 +589,14 @@ header .go-back i {
 
 .bg-cover .description {
     font-weight: 300;
-    font-size: 1.25rem;
+    font-size: 1.05rem;
     line-height: 1.4em;
     color: #eee;
 }
 
 .bg-cover .post-title {
     margin: 0 auto;
-    font-size: 2.5rem;
+    font-size: 1.50rem;
     font-weight: 400;
 }
 
@@ -694,7 +698,7 @@ header .go-back i {
 }
 
 .carousel-post .title {
-    font-size: 2.6rem;
+    font-size: 1.8rem;
 }
 
 .dream {
@@ -945,7 +949,7 @@ article .article-tags .chip {
     font-weight: 400;
     height: 22px;
     line-height: 22px;
-    color: #fff;
+    color: rgb(37, 95, 255);
     border-radius: 10px;
 }
 
@@ -977,7 +981,7 @@ article .article-tags .chip {
 }
 
 .paging {
-    margin-bottom: 15px;
+    margin-bottom: 5px;
 }
 
 .paging .row {
@@ -986,13 +990,14 @@ article .article-tags .chip {
 }
 
 .paging .page-info {
-    font-size: 1.4rem;
+    font-size: 1.2rem;
     color: #888;
     padding-top: 1rem;
 }
 
 .paging i {
-    font-size: 2.5rem;
+    background: linear-gradient(to bottom right, rgb(130, 192, 243) 0%, rgb(72, 142, 247) 100%);
+    font-size: 2.25rem;
 }
 
 .paging .disabled {
@@ -1047,10 +1052,10 @@ article .article-tags .chip {
     font-weight: 400;
     height: 25px;
     line-height: 24px;
-    color: #fff;
+    color: rgb(75, 136, 250);
     border-radius: 15px;
     margin-right: 5px;
-    margin-bottom: 2px;
+    margin-bottom: 3px;
 }
 
 #artDetail .tag_share .article-tag .chip {
@@ -1061,7 +1066,7 @@ article .article-tags .chip {
     border-radius: 15px;
     margin-right: 5px;
     margin-bottom: 2px;
-    color: #42b983;
+    color: #1b72f5;
     background: #fff;
     border: 1px solid;
     transition: all 0.6s ease-in-out;
@@ -1069,17 +1074,17 @@ article .article-tags .chip {
 
 #artDetail .tag_share .article-tag .chip:hover {
     color: #fff;
-    background: #42b983;
+    background: #1b72f5;
 }
 
 #artDetail .post-cate {
     float: right;
-    color: #42b983;
+    color: #1b72f5;
 }
 
 #artDetail .post-cate a {
     padding-right: 5px;
-    color: #42b983;
+    color: #1b72f5;
     font-weight: 500;
 }
 
@@ -1098,7 +1103,7 @@ article .article-tags .chip {
 
 #artDetail .post-info .post-category:hover {
     font-weight: bold;
-    color: #42b983;
+    color: #1b72f5;
     text-decoration: underline;
 }
 
@@ -1161,7 +1166,7 @@ article .article-tags .chip {
 
 #artDetail .reprint a {
     font-size: 1.05rem;
-    color: #42b983;
+    color: #1b72f5;
     font-weight: 500;
 }
 
@@ -1177,7 +1182,7 @@ article .article-tags .chip {
 
 #articleContent a {
     padding: 0 2px;
-    color: #42b983;
+    color: #1b72f5;
     font-weight: 500;
     text-decoration: underline;
     word-wrap: break-word;
@@ -1690,7 +1695,7 @@ thead {
 .my-projects .title,
 .my-skills .title,
 .my-gallery .title {
-    font-size: 2rem;
+    font-size: 1.5rem;
     margin-bottom: 2.25rem;
 }
 

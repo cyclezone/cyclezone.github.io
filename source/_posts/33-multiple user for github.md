@@ -1,5 +1,5 @@
 ---
-title: 33. Permission to username-github.io.git denied to another username
+title: 33. Permission to github.io.git denied to another user
 author: cyclezone
 img: /medias/banner/3.jpeg
 top: false

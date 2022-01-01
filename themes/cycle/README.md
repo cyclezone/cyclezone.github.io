@@ -612,3 +612,19 @@ There are 24 featured pictures in `/source/medias/featureimages`, you can add or
 ## Changelog
 
 See [CHANGELOG.md](https://github.com/blinkfox/hexo-theme-matery/blob/master/README.md)
+
+
+<table align="center">
+    <tr>
+        <td align="center"><img width="200px" height="200px"
+                                src="https://cdn.jsdelivr.net/gh/mobaijun/blog_css_js/image/alipay.png"/>
+        </td>
+        <td align="center"><img width="200px" height="200px"
+                                src="https://cdn.jsdelivr.net/gh/mobaijun/blog_css_js/image/wechat.png"/>
+        </td>
+    </tr>
+    <tr>
+        <td align="center">支付宝</td>
+        <td align="center">微信支付</td>
+    </tr>
+</table>

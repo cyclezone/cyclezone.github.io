@@ -13,4 +13,3 @@ layout: "contact"
   Always believe that `some wounderful thing` will happen.
 
   if you have some idea or suggestion,please `contact` me;
-

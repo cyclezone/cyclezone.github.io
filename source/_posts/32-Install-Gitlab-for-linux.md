@@ -6,7 +6,7 @@ top: true
 cover: true
 coverImg: /medias/banner/2.jpeg
 password: 8d969eef6
-toc: false
+toc: true
 mathjax: false
 summary: How to Install Gitlab for linux
 categories: Gitlab

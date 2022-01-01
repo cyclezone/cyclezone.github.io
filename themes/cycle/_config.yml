@@ -103,7 +103,7 @@ music:
   autoHide: true    # hide automaticaly
   server: netease   #require	music platform: netease, tencent, kugou, xiami, baidu
   type: playlist    #require song, playlist, album, search, artist
-  id: 12107286     #require	song id / playlist id / album id / search keyword
+  id: 2058008145    #2410391740 12107286 require	song id / playlist id / album id / search keyword
   fixed: true       # 开启吸底模式
   autoplay: false   # 是否自动播放
   theme: '#42b983'
@@ -158,12 +158,12 @@ indexbtn:
 socialLink:
   github:  https://github.com/cyclezone
   email:   ycae@outlook.com
-  facebook: # https://www.facebook.com/xxx
-  twitter: # https://twitter.com/xxx
   qq: 123456789
   weibo: # https://weibo.com/xxx
   zhihu: # https://www.zhihu.com/xxx
   rss: true # true、false
+  twitter: # https://twitter.com/xxx
+  facebook: https://www.facebook.com/groups/cyclezone.cn
 
 # Whether to activate the Post TOC, and Configure which title types are supported by TOC support.
 # You can add `toc: false` to the Front-matter of a post to turn off the TOC.
@@ -195,7 +195,7 @@ reward:
 copyright:
   enable: true
   minCharNumber: 100 # 至少复制多少个字符就追加版权信息.
-  description: 本文章著作权归作者所有，任何形式的转载都请注明出处。
+  description: 本文章著作权归cyclezone所有，任何形式的转载都请注明出处。
 
 # Whether to activate the mathjax, this is a global configuration, but the post still does not open the mathjax rendering.
 # Considering that the mathjax loading is time consuming,
