@@ -1,0 +1,3081 @@
+<?xml version="1.0" encoding="utf-8"?>
+<search>
+  <entry>
+    <title>Hexo 常用命令</title>
+    <url>/2021/12/10/1-hello-world/</url>
+    <content><![CDATA[<p>Welcome to <a href="https://hexo.io/">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues">GitHub</a>.</p>
+<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">$ hexo new <span class="token string">"My New Post"</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>More info: <a href="https://hexo.io/docs/writing.html">Writing</a></p>
+<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">$ hexo server<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>More info: <a href="https://hexo.io/docs/server.html">Server</a></p>
+<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">$ hexo generate<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>More info: <a href="https://hexo.io/docs/generating.html">Generating</a></p>
+<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash">$ hexo deploy<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>More info: <a href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>
+]]></content>
+      <categories>
+        <category>Hexo blog</category>
+      </categories>
+      <tags>
+        <tag>cycle 2021</tag>
+        <tag>Blog</tag>
+        <tag>Hexo</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>10. signal SIGBUS: illegal alignment</title>
+    <url>/2021/12/19/10-signal-SIGBUS-illegal-alignment/</url>
+    <content><![CDATA[<h1 id="10-signal-SIGBUS-illegal-alignment"><a href="#10-signal-SIGBUS-illegal-alignment" class="headerlink" title="10. signal SIGBUS: illegal alignment"></a>10. signal SIGBUS: illegal alignment</h1><p>For some architecture,eg. SPARC、m68k, when access the illegal alignment address,the CPU will throw the SIGBUS signal;<br>but for some other architecture,eg. IA-32 from Intel,that is OK;</p>
+<p>the last code for the legal alignment address usually is ‘0’,’4’,’8’,’C’;</p>
+<h2 id="10-1-WHAT-is-ALIGNMENT"><a href="#10-1-WHAT-is-ALIGNMENT" class="headerlink" title="10.1 WHAT is ALIGNMENT"></a>10.1 WHAT is ALIGNMENT</h2><p><img src="./img/10_signal_SIGBUS_illegal_alignment_align.png" alt="10_signal_SIGBUS_illegal_alignment_align"></p>
+<h2 id="10-2-METHOD"><a href="#10-2-METHOD" class="headerlink" title="10.2 METHOD"></a>10.2 METHOD</h2><ol>
+<li><p>use memcpy ,not use this illegal alignment address directly</p>
+</li>
+<li><p>redesign the data structure with the reserved space to make the address alignment legally;</p>
+</li>
+</ol>
+<p><img src="./img/10_signal_SIGBUS_illegal_alignment_method.png" alt="10_signal_SIGBUS_illegal_alignment_method"></p>
+<h2 id="10-3-DEMO"><a href="#10-3-DEMO" class="headerlink" title="10.3 DEMO"></a>10.3 DEMO</h2><p>testDemo:</p>
+<pre class="line-numbers language-none"><code class="language-none">bool Align_noTemplate(float&amp; t, float f)&#123;
+	t &#x3D; f; return true;
+&#125; 
+template&lt;&gt; inline bool Align(float&amp; t, float f)&#123;
+	t &#x3D; f; return true;
+&#125;
+template&lt;class T&gt; bool Align_Float(T&amp; t, T f)&#123;
+	t &#x3D; f; return true;
+&#125;
+test()
+&#123;
+LIN_INFO linInfo;float fVal &#x3D; 1.8;
+linInfo.xscale &#x3D; fVal;                        &#x2F;&#x2F;&#x2F;1.use &#x3D;,          OK
+memcpy(&amp;linInfo.xscale, &amp;fVal, sizeof(float));&#x2F;&#x2F;&#x2F;2.memcpy,         OK
+Align_noTemplate(linInfo.xscale, fVal );      &#x2F;&#x2F;&#x2F;3.no template     OK
+Align_Float(linInfo.xscale, fVal );           &#x2F;&#x2F;&#x2F;4.template.temp   OK
+linInfo.xscale &#x3D; fVal;
+Align_Float(linInfo.xscale, fVal );           &#x2F;&#x2F;&#x2F;5.template.direct BAD
+&#125;
+
+
+char szBuffer[512] &#x3D; &#123; 0 &#125;;
+memset(szBuffer,1,sizeof(char)*512);
+for(int m &#x3D; 0; m &lt; 16;m++)&#123;
+	float fVal &#x3D; 1.8;
+	char* ptr &#x3D; (szBuffer+m);
+	float* pfVal &#x3D; (float*)ptr;
+	fVal &#x3D; *pfVal; 
+	Align_noTemplate(*pfVal, fVal); &#x2F;&#x2F;&#x2F;1. OK
+	Align_Float(*pfVal, fVal);      &#x2F;&#x2F;&#x2F;2. sometimes BAD
+&#125;
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+
+<h2 id="10-4-Link-ERROR"><a href="#10-4-Link-ERROR" class="headerlink" title="10.4 Link ERROR"></a>10.4 Link ERROR</h2><p><img src="./img/10_signal_SIGBUS_illegal_alignment.png" alt="initialization routine failed"></p>
+<p>Case description:</p>
+<ol>
+<li><p>the application is broken down and throw the SIGBUS signal;<br>the signal give the illegal allignment detail;</p>
+</li>
+<li><p>when we check the logic,for the variable which has the illegal allignment address,<br>we have fix it with ‘memcpy’ method;<br>despite the fixes,the cpu give the SIGBUS signal;</p>
+</li>
+<li><p>then debug the function,in the debuger stack we find the error line is ‘Gray’ ,<br>but the upper logic function line is ‘Black’; the Gray line is not located in the right place;<br>To check this,we add the log with ‘LOGITEST’ in the target function,recompile and run,<br>we CANNOT get the log in the logcat window; which indicate that maybe the library link the the wrong function;</p>
+</li>
+<li><p>when rename and relink the target function ,compile and run, we can get the log and the SIGBUS signal disappear;</p>
+</li>
+<li><p>for this case, from the outside,the illegal allignment SIGBUS is the orignal question essentially;<br>deal it with ‘memcpy’ method is the right choice;<br>But in the library we maybe find the target function more than once which may have different logic,<br>especially when we merge many many static libs into one dynamic library;</p>
+</li>
+<li><p>rename the target function or recall the function with the unique namespace ,<br>through this we fix this question;</p>
+</li>
+<li><p>so when we copy the existed functions,prefer to Surround the functions with the unique name space or rename the functions ,<br>to make them unambiguous;</p>
+</li>
+</ol>
+]]></content>
+      <categories>
+        <category>cycle zone</category>
+      </categories>
+      <tags>
+        <tag>cycle 2021</tag>
+        <tag>alignment</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>12. OGCWMTS</title>
+    <url>/2021/12/19/12-OGCWMTS/</url>
+    <content><![CDATA[<h1 id="12-OGCWMTS"><a href="#12-OGCWMTS" class="headerlink" title="12. OGCWMTS"></a>12. OGCWMTS</h1><ol>
+<li><p>OGC WMTS (Web MAP Tile Service) is a standard for web map;<br>but for different map vendor,they may use it vary from each other,especially for the non-mainstream vendor;</p>
+</li>
+<li><p>for mainstream vendor,they list the readME document in the easy access website usually;<br>Follow the the readMe document,we can use the tile service easily with not that much time and effort;</p>
+<p>but for no-mainstream vendor,How can we do?</p>
+</li>
+</ol>
+<p>3.for example ,we get the server instance url:<br>  <a href="https://fxpc.mem.gov.cn/data_preparation/a12eadf6-1a57-43fe-9054-2e22277bd553/8c6a43c6-fa48-4f2b-9296-f2c02c4474a7/img08/wmts/2CA54B6D242305ABF3822EC38D121CD9/WMTSCapabilities.xml">https://fxpc.mem.gov.cn/data_preparation/a12eadf6-1a57-43fe-9054-2e22277bd553/8c6a43c6-fa48-4f2b-9296-f2c02c4474a7/img08/wmts/2CA54B6D242305ABF3822EC38D121CD9/WMTSCapabilities.xml</a> </p>
+<p>  when we access the url above in chrome explore,we get some information about the server capabilities information,like this:</p>
+<pre><code>&lt;ows:ServiceIdentification&gt;
+...
+&lt;/ows:ServiceIdentification&gt;
+&lt;ows:ServiceProvider&gt;
+...
+&lt;/ows:ServiceProvider&gt;
+&lt;ows:OperationsMetadata&gt;
+...
+&lt;/ows:OperationsMetadata&gt;
+&lt;Contents&gt;
+&lt;Layer&gt;
+&lt;Format&gt;tiles&lt;/Format&gt;
+&lt;TileMatrixSetLink&gt;
+&lt;TileMatrixSet&gt;default028mm&lt;/TileMatrixSet&gt;
+&lt;/TileMatrixSetLink&gt;
+&lt;TileMatrixSetLink&gt;
+&lt;TileMatrixSet&gt;nativeTileMatrixSet&lt;/TileMatrixSet&gt;
+&lt;/TileMatrixSetLink&gt;
+&lt;/Layer&gt;
+&lt;TileMatrixSet&gt;
+...
+&lt;/TileMatrixSet&gt;
+&lt;TileMatrixSet&gt;
+...
+&lt;/TileMatrixSet&gt;
+&lt;/Contents&gt;
+&lt;/Capabilities&gt;
+</code></pre>
+<p>  the server url parse ENGINE parse the the above url  to url:</p>
+<pre><code>https://fxpc.mem.gov.cn/data_preparation/a12eadf6-1a57-43fe-9054-2e22277bd553/8c6a43c6-fa48-4f2b-9296-f2c02c4474a7/img08/wmts?service=WMTS&amp;version=1.0.0&amp;request=GetCapabilities
+
+OR
+
+https://fxpc.mem.gov.cn/data_preparation/a12eadf6-1a57-43fe-9054-2e22277bd553/8c6a43c6-fa48-4f2b-9296-f2c02c4474a7/wmts?layer=img08&amp;service=WMTS&amp;version=1.0.0&amp;request=GetCapabilities
+
+so we get the capabilities information;
+
+then we want to get the tile image buffer stream, HOW?
+</code></pre>
+<ol start="4">
+<li>for Tianditu WMTS,we get the instruction from ‘  <a href="http://lbs.tianditu.gov.cn/server/MapService.html">http://lbs.tianditu.gov.cn/server/MapService.html</a> ‘ ,</li>
+</ol>
+<p> the example url is :</p>
+<pre><code>    http://t0.tianditu.gov.cn/img_w/wmts?SERVICE=WMTS&amp;REQUEST=GetTile&amp;VERSION=1.0.0&amp;LAYER=img&amp;STYLE=default&amp;TILEMATRIXSET=w&amp;FORMAT=tiles&amp;TILEMATRIX=&#123;z&#125;&amp;TILEROW=&#123;x&#125;&amp;TILECOL=&#123;y&#125;&amp;tk=yourtoken
+ 
+</code></pre>
+<p>  According the url above,we make the target url:</p>
+<pre><code>    https://fxpc.mem.gov.cn/data_preparation/a12eadf6-1a57-43fe-9054-2e22277bd553/8c6a43c6-fa48-4f2b-9296-f2c02c4474a7/img08/wmts/?SERVICE=WMTS&amp;REQUEST=GetTile&amp;VERSION=1.0.0&amp;LAYER=img08&amp;STYLE=default&amp;FORMAT=tiles&amp;TILEMATRIXSET=nativeTileMatrixSet&amp;TILEMATRIX=1&amp;TILEROW=0&amp;TILECOL=1
+
+    or
+
+    https://fxpc.mem.gov.cn/data_preparation/a12eadf6-1a57-43fe-9054-2e22277bd553/8c6a43c6-fa48-4f2b-9296-f2c02c4474a7/img08/wmts/2CA54B6D242305ABF3822EC38D121CD9?SERVICE=WMTS&amp;REQUEST=GetTile&amp;VERSION=1.0.0&amp;LAYER=img08&amp;STYLE=default&amp;FORMAT=tiles&amp;TILEMATRIXSET=nativeTileMatrixSet&amp;TILEMATRIX=1&amp;TILEROW=0&amp;TILECOL=1
+</code></pre>
+<p>  access them in chrome explore, Both ERROR;</p>
+<ol start="5">
+<li><p>add the token? no token;<br>access the original url in Arcgis pro 2.5;we get the tile stream and display normally;<br>WHY? perhaps the wrong target url;<br>How to get the right url;</p>
+</li>
+<li><p>use fiddler  (<a href="https://www.telerik.com/fiddler">https://www.telerik.com/fiddler</a>);<br>run fiddler,at the same time,refresh the target layer in Arcgis pro 2.5;<br>the fiddler get some useful information,in fiddler,pick the target line;<br>get :</p>
+<pre><code> data_preparation/a12eadf6-1a57-43fe-9054-2e22277bd553/8c6a43c6-fa48-4f2b-9296-f2c02c4474a7/wmts/2CA54B6D242305ABF3822EC38D121CD9?SERVICE=WMTS&amp;REQUEST=GetTile&amp;VERSION=1.0.0&amp;LAYER=img08&amp;STYLE=default&amp;FORMAT=tiles&amp;TILEMATRIXSET=nativeTileMatrixSet&amp;TILEMATRIX=4&amp;TILEROW=2&amp;TILECOL=12
+</code></pre>
+<p>append host site <a href="https://fxpc.mem.gov.cn/">https://fxpc.mem.gov.cn/</a> ;</p>
+<pre><code> https://fxpc.mem.gov.cn/data_preparation/a12eadf6-1a57-43fe-9054-2e22277bd553/8c6a43c6-fa48-4f2b-9296-f2c02c4474a7/wmts/2CA54B6D242305ABF3822EC38D121CD9?SERVICE=WMTS&amp;REQUEST=GetTile&amp;VERSION=1.0.0&amp;LAYER=img08&amp;STYLE=default&amp;FORMAT=tiles&amp;TILEMATRIXSET=nativeTileMatrixSet&amp;TILEMATRIX=4&amp;TILEROW=2&amp;TILECOL=12
+</code></pre>
+<p>access the above url in chrome explore,OK, we get it,we get the tile image stream;</p>
+</li>
+</ol>
+]]></content>
+      <categories>
+        <category>cycle zone</category>
+      </categories>
+      <tags>
+        <tag>cycle 2021</tag>
+        <tag>WMTS</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>14. Makefile error make (e=2): The system cannot find the file specified</title>
+    <url>/2021/12/19/14-Makefile-error-make-e-2-The-system-cannot-find-the-file-specified/</url>
+    <content><![CDATA[<h1 id="14-Makefile-error-make-e-2-The-system-cannot-find-the-file-specified"><a href="#14-Makefile-error-make-e-2-The-system-cannot-find-the-file-specified" class="headerlink" title="14. Makefile error make (e=2): The system cannot find the file specified"></a>14. Makefile error make (e=2): The system cannot find the file specified</h1><ol>
+<li>when compile Qt for android in Windows Environment, crash the following case:</li>
+</ol>
+  <pre class="line-numbers language-none"><code class="language-none">cannot find E:\Qt\qtbase\src\android\jar\QtAndroid.jar
+jar cf QtAndroid.jar -C .classes .
+process_begin: CreateProcess(NULL, jar cf QtAndroid.jar -C .classes ., ...) failed.
+make (e&#x3D;2): The system cannot find the file specified<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+<ol start="2">
+<li><p>almost certainly complaining that Windows cannot find ‘jar’.</p>
+<p>This is almost certainly because the value of %PATH% (or whatever) is different when make spawns a shell/console then when you have it open manually.</p>
+<p>Compare the values to confirm that. Then either use the full path to ‘jar’ in the makefile recipe or ensure that the value of PATH is set correctly for make’s usage</p>
+</li>
+<li><p>in console , print ‘where java’,then show the full path of java.exe;</p>
+<p>but when print ‘where jar’,cannot show the full path of ‘jar.exe’;<br>in path %JAVA_HOME%\bin, we can find jar.exe  essentially, but now we cannot;</p>
+<p>when we check the JAVA folder in other PC ,we find that file ‘jar.exe’;<br>then copy the qt source code, compile java code,<br>run ‘jar cf QtAndroid.jar -C .classes .’;<br>that work OK;</p>
+<p>so  the java environment maybe has been broken sometimes when we install other program;</p>
+<p>copy the jar.exe into the target PC or reinstall JDK in the target PC,<br>then check,OK,we solve this problem;</p>
+</li>
+<li><p>besides this,when search this topic key words,we find the similar question;<br>almost certainly complaining that Windows cannot find some target process,</p>
+<p>what we should do is locate the target process path,make the compiler know the path,<br>find the target process in the path;</p>
+</li>
+<li><p>fro more information, please visit </p>
+<ul>
+<li><a href="https://stackoverflow.com/questions/33674973/makefile-error-make-e-2-the-system-cannot-find-the-file-specified">https://stackoverflow.com/questions/33674973/makefile-error-make-e-2-the-system-cannot-find-the-file-specified</a><br>or</li>
+<li><a href="https://stackoverflow.com/questions/7291442/error-cannot-run-program-jar-createprocess-error-2-the-system-cannot-find-t">https://stackoverflow.com/questions/7291442/error-cannot-run-program-jar-createprocess-error-2-the-system-cannot-find-t</a></li>
+</ul>
+</li>
+</ol>
+]]></content>
+      <categories>
+        <category>cycle zone</category>
+      </categories>
+      <tags>
+        <tag>cycle 2021</tag>
+        <tag>makefile</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>15. compile Qt for android in Windows Environment</title>
+    <url>/2021/12/19/15-compile-Qt-for-android-in-Windows-Environment/</url>
+    <content><![CDATA[<h1 id="15-compile-Qt-for-android-in-Windows-Environment"><a href="#15-compile-Qt-for-android-in-Windows-Environment" class="headerlink" title="15. compile Qt for android in Windows Environment"></a>15. compile Qt for android in Windows Environment</h1><p>for more infomation,please visit <a href="https://doc.qt.io/qt-5/android-building.html">https://doc.qt.io/qt-5/android-building.html</a> </p>
+<h2 id="15-1-Prepare"><a href="#15-1-Prepare" class="headerlink" title="15.1. Prepare"></a>15.1. Prepare</h2><p>To build Qt for Android under a Windows environment, follow the steps below:</p>
+<p>Preparing the Build Environment<br>Install the following:</p>
+<ul>
+<li>A JDK package such as AdoptOpenJDK, JDK, or OpenJDK.</li>
+<li>MinGW 7.3 toolchain</li>
+<li>Perl</li>
+</ul>
+<p>Then set the respective environment variables from the Environment Variables system UI, or from the build command line prompt. For the default Command prompt:</p>
+<ul>
+<li>set JDK_ROOT=<JDK_ROOT_PATH>\bin</li>
+<li>set MINGW_ROOT=<MINGW_ROOT_PATH>\bin</li>
+<li>set PERL_ROOT=<PERL_ROOT_PATH>\bin</li>
+<li>set PATH=%MINGW_ROOT%;%PERL_ROOT%;%JDK_ROOT%:%PATH%</li>
+</ul>
+<p>Then, in the command line prompt, verify that:</p>
+<pre class="line-numbers language-none"><code class="language-none">where gcc.exe
+The command should list gcc.exe under the path &lt;MINGW_ROOT&gt; first.
+
+where mingw32-make.exe
+The command should list mingw32-make.exe under the path &lt;MINGW_ROOT&gt; first.
+
+where javac.exe
+The command should list javac.exe under the path &lt;JDK_ROOT&gt; first.<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<ul>
+<li><p>Note: JDK 11 or earlier must be used to properly build Qt for Android.</p>
+</li>
+<li><p>Note: Qt for Android does not support building with Microsoft Visual C++ (MSVC), we only support building with MinGW.</p>
+</li>
+<li><p>If you have downloaded the source code archive from Qt Downloads, then unpack the archive if you have not done so already.  qt-everywhere-src-%VERSION%.tar.xz package</p>
+</li>
+</ul>
+<h2 id="15-2-Compile"><a href="#15-2-Compile" class="headerlink" title="15.2. Compile"></a>15.2. Compile</h2><ol>
+<li>save the following compile script into file *.bat</li>
+<li>open cmd console,open the source code path,</li>
+<li>run the *.bat created in step 1;</li>
+</ol>
+<h3 id="compile-script"><a href="#compile-script" class="headerlink" title="compile script"></a>compile script</h3><pre class="line-numbers language-none"><code class="language-none">:::::::::::::::::::::::::::::::::::::compile script ::::::::::::::::::::::::::::::::::::
+:::::::::::::::::::::::::::::::::::::arm64-v8a  armeabi-v7a  armeabi::::::::::::::::::::
+
+@echo %PATH%
+
+set &quot;ANDROID_API_VERSION&#x3D;android-21&quot;
+set &quot;ANDROID_SDK_ROOT&#x3D;D:\android\program\adt\sdk&quot;
+set &quot;ANDROID_TARGET_ARCH&#x3D;arm64-v8a&quot;
+set &quot;ANDROID_BUILD_TOOLS_REVISION&#x3D;21.1.2&quot;
+set &quot;ANDROID_NDK_PATH&#x3D;D:\android\program\adt\ndk-r20b&quot;
+set &quot;ANDROID_TOOLCHAIN_VERSION&#x3D;4.9&quot;
+set &quot;ANDROID_NDK_HOST&#x3D;windows-x86_64&quot;
+set &quot;BUILD_PATH&#x3D;E:\Qt\build&quot;
+set &quot;PREFIX_PATH&#x3D;E:\Qt\install&quot;
+
+set JDK_ROOT&#x3D;D:\Pragram\Java\jdk1.8.0_162\bin
+set MINGW_ROOT&#x3D;E:\SoftWare\mingw32\bin
+set PERL_ROOT&#x3D;C:\Strawberry\perl\bin
+set PATH&#x3D;%MINGW_ROOT%;%PERL_ROOT%;%JDK_ROOT%:%PATH%
+
+::configure.bat -prefix F:\Qt\build -platform win32-g++ -opengl es2 -xplatform android-g++ -android-ndk %ANDROID_NDK_PATH% -android-sdk %ANDROID_SDK_ROOT% -android-toolchain-version 4.9 -nomake tests -nomake examples
+::configure.bat  -developer-build -platform win32-g++ -opengl dynamic -xplatform android-g++ -android-ndk %ANDROID_NDK_PATH% -android-sdk %ANDROID_SDK_ROOT% -android-toolchain-version 4.9 -nomake tests -nomake examples
+
+::configure.bat -platform win32-g++ -opengl es2 -xplatform android-g++ -android-ndk %ANDROID_NDK_PATH% -android-sdk %ANDROID_SDK_ROOT% -android-toolchain-version 4.9 -android-ndk-host windows-x86_64 -android-ndk-platform android-21 -opensource -confirm-license -nomake tests -nomake examples -static
+::configure.bat -opengl dynamic -no-opengl
+
+pause
+
+mkdir %BUILD_PATH%
+mkdir %PREFIX_PATH%
+mkdir %BUILD_PATH%\%ANDROID_TARGET_ARCH%
+mkdir %PREFIX_PATH%\%ANDROID_TARGET_ARCH%
+cd %BUILD_PATH%\%ANDROID_TARGET_ARCH%
+
+..\..\5.12.5\configure.bat -platform win32-g++ -opengl es2 -xplatform android-clang -android-ndk %ANDROID_NDK_PATH% -android-sdk %ANDROID_SDK_ROOT% -android-toolchain-version 4.9 -android-ndk-host windows-x86_64 -android-ndk-platform android-21 -prefix %PREFIX_PATH%\%ANDROID_TARGET_ARCH% -opensource -confirm-license -nomake tests -nomake examples -shared
+
+::mingw32-make -j4
+mingw32-make
+
+pause
+:::::::::::::::::::::::::::::::::::::compile script::::::::::::::::::::::::::::::::::::<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<h2 id="15-3-some-problems"><a href="#15-3-some-problems" class="headerlink" title="15.3 some problems"></a>15.3 some problems</h2><h3 id="Android-linker-undefined-reference-to-bsd-signal"><a href="#Android-linker-undefined-reference-to-bsd-signal" class="headerlink" title="Android linker: undefined reference to bsd_signal"></a>Android linker: undefined reference to bsd_signal</h3><ul>
+<li>/android/ndk/platforms/android-9/arch-arm/usr/include/signal.h:113: error: undefined reference to ‘bsd_signal’</li>
+</ul>
+<p>Till android-19 inclusive NDK-s signal.h declared bsd_signal extern and signal was an inline calling bsd_signal.</p>
+<p>Starting with android-21 signal is an extern and bsd_signal is not declared at all.</p>
+<p>What’s interesting, bsd_signal was still available as a symbol in NDK r10e android-21 libc.so (so there were no linking errors if using r10e), but is not available in NDK r11 and up.</p>
+<p>Removing of bsd_signal from NDK-s android-21+ libc.so results in linking errors if code built with android-21+ is linked with static libs built with lower NDK levels that call signal or bsd_signal. Most popular library which calls signal is OpenSSL.</p>
+<p>WARNING: Building those static libs with android-21+ (which would put signal symbol directly) would link fine, but would result in *.so failing to load on older Android OS devices due to signal symbol not found in theirs libc.so.</p>
+<p>Therefore it’s better to stick with &lt;=android-19 for any code that calls signal or bsd_signal.</p>
+<p>To link a library built with android-21 I ended up declaring a bsd_signal wrapper which would call bsd_signal from libc.so (it’s still available in device’s libc.so, even up to Android 7.0).</p>
+<pre class="line-numbers language-none"><code class="language-none">#if (__ANDROID_API__ &gt; 19)
+#include &lt;android&#x2F;api-level.h&gt;
+#include &lt;android&#x2F;log.h&gt;
+#include &lt;signal.h&gt;
+#include &lt;dlfcn.h&gt;
+
+extern &quot;C&quot; &#123;
+  typedef __sighandler_t (*bsd_signal_func_t)(int, __sighandler_t);
+  bsd_signal_func_t bsd_signal_func &#x3D; NULL;
+
+  __sighandler_t bsd_signal(int s, __sighandler_t f) &#123;
+    if (bsd_signal_func &#x3D;&#x3D; NULL) &#123;
+      &#x2F;&#x2F; For now (up to Android 7.0) this is always available 
+      bsd_signal_func &#x3D; (bsd_signal_func_t) dlsym(RTLD_DEFAULT, &quot;bsd_signal&quot;);
+
+      if (bsd_signal_func &#x3D;&#x3D; NULL) &#123;
+        &#x2F;&#x2F; You may try dlsym(RTLD_DEFAULT, &quot;signal&quot;) or dlsym(RTLD_NEXT, &quot;signal&quot;) here
+        &#x2F;&#x2F; Make sure you add a comment here in StackOverflow
+        &#x2F;&#x2F; if you find a device that doesn&#39;t have &quot;bsd_signal&quot; in its libc.so!!!
+
+        __android_log_assert(&quot;&quot;, &quot;bsd_signal_wrapper&quot;, &quot;bsd_signal symbol not found!&quot;);
+      &#125;
+    &#125;
+
+    return bsd_signal_func(s, f);
+  &#125;
+&#125;
+#endif<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>PS. Looks like the bsd_signal symbol will be brought back to libc.so in NDK r13:<br>for more information ,please visit </p>
+<ul>
+<li><a href="https://stackoverflow.com/questions/36746904/android-linker-undefined-reference-to-bsd-signal">https://stackoverflow.com/questions/36746904/android-linker-undefined-reference-to-bsd-signal</a></li>
+<li><a href="https://github.com/android-ndk/ndk/issues/160#issuecomment-236295994">https://github.com/android-ndk/ndk/issues/160#issuecomment-236295994</a></li>
+</ul>
+]]></content>
+      <categories>
+        <category>compile Qt</category>
+      </categories>
+      <tags>
+        <tag>cycle 2021</tag>
+        <tag>Qt</tag>
+        <tag>compile</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>13. View dynamic library dependency</title>
+    <url>/2021/12/19/13-View-dynamic-library-dependency/</url>
+    <content><![CDATA[<h1 id="13-View-dynamic-library-dependency"><a href="#13-View-dynamic-library-dependency" class="headerlink" title="13. View dynamic library dependency"></a>13. View dynamic library dependency</h1><ul>
+<li><p>for Windows,  use dependency-walker</p>
+</li>
+<li><p>for linux,  use ldd command </p>
+   <pre class="line-numbers language-none"><code class="language-none">ldd libjpeg.so
+ldd: warning: you do not have execution permission for &#96;.&#x2F;libjpeg.so&#39;
+linux-vdso.so.1 &#x3D;&gt;  (0x00007ffea15a2000)
+libc.so.6 &#x3D;&gt; &#x2F;lib64&#x2F;libc.so.6 (0x00007f8949b12000)
+&#x2F;lib64&#x2F;ld-linux-x86-64.so.2 (0x00007f894a138000)<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre></li>
+<li><p>for android , use readelf in ndk,</p>
+   <pre class="line-numbers language-none"><code class="language-none">PS D:\android\program\adt\ndk_r16b\toolchains\arm-linux-androideabi-4.9\prebuilt\windows-x86_64\arm-linux-androideabi\bin&gt; 
+.\readelf.exe -d D:\android\samples\app\libs\armeabi-v7a\libQt5Core.so
+
+Dynamic section at offset 0x72f0a4 contains 33 entries:
+Tag        Type                         Name&#x2F;Value
+0x00000003 (PLTGOT)                     0x730784
+0x00000002 (PLTRELSZ)                   28896 (bytes)
+0x00000017 (JMPREL)                     0x73c8c
+0x00000014 (PLTREL)                     REL
+0x00000011 (REL)                        0x6aba4
+0x00000012 (RELSZ)                      37096 (bytes)
+0x00000013 (RELENT)                     8 (bytes)
+0x6ffffffa (RELCOUNT)                   1956
+0x00000006 (SYMTAB)                     0x1f0
+0x0000000b (SYMENT)                     16 (bytes)
+0x00000005 (STRTAB)                     0x18b50
+0x0000000a (STRSZ)                      236876 (bytes)
+0x6ffffef5 (GNU_HASH)                   0x5289c
+0x00000004 (HASH)                       0x5d790
+0x00000001 (NEEDED)                     Shared library: [libz.so]
+0x00000001 (NEEDED)                     Shared library: [libc++_shared.so]
+0x00000001 (NEEDED)                     Shared library: [liblog.so]
+0x00000001 (NEEDED)                     Shared library: [libm.so]
+0x00000001 (NEEDED)                     Shared library: [libdl.so]
+0x00000001 (NEEDED)                     Shared library: [libc.so]
+0x0000000e (SONAME)                     Library soname: [libQt5Core.so]
+0x0000001a (FINI_ARRAY)                 0x730088
+0x0000001c (FINI_ARRAYSZ)               16 (bytes)
+0x00000019 (INIT_ARRAY)                 0x730098
+0x0000001b (INIT_ARRAYSZ)               12 (bytes)
+0x0000001e (FLAGS)                      BIND_NOW
+0x6ffffffb (FLAGS_1)                    Flags: NOW
+0x6ffffff0 (VERSYM)                     0x679fc
+0x6ffffffc (VERDEF)                     0x6ab28
+0x6ffffffd (VERDEFNUM)                  1
+0x6ffffffe (VERNEED)                    0x6ab44
+0x6fffffff (VERNEEDNUM)                 3
+0x00000000 (NULL)                       0x0<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></li>
+</ul>
+]]></content>
+      <categories>
+        <category>cycle zone</category>
+      </categories>
+      <tags>
+        <tag>cycle 2021</tag>
+        <tag>library</tag>
+        <tag>dependency</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>16.How to link static c++  &#39;libc++_static.a&#39; when compile shared dynamic Qt</title>
+    <url>/2021/12/19/16-link-static-c-libc-static-a-when-compile-shared-dynamic-Qt/</url>
+    <content><![CDATA[<h1 id="16-link-static-c-‘libc-static-a’-when-compile-shared-dynamic-Qt"><a href="#16-link-static-c-‘libc-static-a’-when-compile-shared-dynamic-Qt" class="headerlink" title="16. link static c++  ‘libc++_static.a’ when compile shared dynamic Qt"></a>16. link static c++  ‘libc++_static.a’ when compile shared dynamic Qt</h1><p>when compile dynamic Qt library,we use the configure item -shared;<br>then qmake generate *.pro file into the makefile whith the corresponding configuration;<br>in the end ,we get the *.so file which link the dynamic c++  file “libc++_shared.so”;</p>
+<pre class="line-numbers language-none"><code class="language-none">PS D:\android\program\adt\ndk_r16b\toolchains\arm-linux-androideabi-4.9\prebuilt\windows-x86_64\arm-linux-androideabi\bin&gt; 
+.\readelf.exe -d E:\qt\libQt5Core.so
+
+Dynamic section at offset 0x609670 contains 31 entries:
+  Tag        Type                         Name&#x2F;Value
+0x0000000000000001 (NEEDED)             Shared library: [libz.so]
+0x0000000000000001 (NEEDED)             Shared library: [libc++_shared.so]
+0x0000000000000001 (NEEDED)             Shared library: [liblog.so]
+0x0000000000000001 (NEEDED)             Shared library: [libm.so]
+0x0000000000000001 (NEEDED)             Shared library: [libdl.so]
+0x0000000000000001 (NEEDED)             Shared library: [libc.so]
+0x000000000000000e (SONAME)             Library soname: [libQt5Core.so]<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h2 id="How-to-link-the-static-C"><a href="#How-to-link-the-static-C" class="headerlink" title="How to link the static C++?"></a>How to link the static C++?</h2><ol>
+<li><p>locate the makefile which match with ‘corelib.pro’;</p>
+</li>
+<li><p>open the makefile,find the TAG “LIBS”,from this tag,we know the libraries which libQt*.so depend on ,inculde libc++_shared.so ;</p>
+ <pre class="line-numbers language-none"><code class="language-none">LIBS          &#x3D; $(SUBLIBS)  D:&#x2F;android&#x2F;program&#x2F;adt&#x2F;ndk-r20b&#x2F;platforms&#x2F;android-21&#x2F;arch-arm&#x2F;usr&#x2F;lib&#x2F;libz.so 
+E:&#x2F;Qt&#x2F;buildr20b&#x2F;qtbase&#x2F;lib&#x2F;libqtpcre2.a 
+-LD:\android\program\adt\ndk-r20b&#x2F;sources&#x2F;cxx-stl&#x2F;llvm-libc++&#x2F;libs&#x2F;armeabi-v7a D:\android\program\adt\ndk-r20b&#x2F;sources&#x2F;cxx-stl&#x2F;llvm-libc++&#x2F;libs&#x2F;armeabi-v7a&#x2F;libc++.so.21 -llog -lz -lm -ldl -lc 
+-LD:\android\program\adt\ndk-r20b&#x2F;sources&#x2F;cxx-stl&#x2F;llvm-libc++&#x2F;libs&#x2F;armeabi-v7a D:\android\program\adt\ndk-r20b&#x2F;sources&#x2F;cxx-stl&#x2F;llvm-libc++&#x2F;libs&#x2F;armeabi-v7a&#x2F;libc++.so.21 -llog -lz -lm -ldl -lc
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre></li>
+<li><p>in source code folder ../qtbase/ , search key words ‘-llog -lz -lm -ldl -lc’ ;<br> we find the file ‘android-base-tail.conf’</p>
+ <pre class="line-numbers language-none"><code class="language-none">      QMAKE_LIBS_PRIVATE      &#x3D; $$ANDROID_CXX_STL_LIBS -llog -lz -lm -ldl -lc
+    &#96;&#96;&#96;       
+4. then search key words &#39;ANDROID_CXX_STL_LIBS&#39;
+   we find the file &#39;qmake.conf&#39;
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+<p> exists($$ANDROID_SOURCES_CXX_STL_LIBDIR/libc++.so): <br>   ANDROID_CXX_STL_LIBS = -lc++<br> else: <br>   ANDROID_CXX_STL_LIBS = $$ANDROID_SOURCES_CXX_STL_LIBDIR/libc++.so.$$replace(ANDROID_PLATFORM, “android-“, “”)</p>
+<pre class="line-numbers language-none"><code class="language-none">
+5. according to the tag &#39;LIBS&#39; information list in step 2,
+  guess &#39;exists($$ANDROID_SOURCES_CXX_STL_LIBDIR&#x2F;libc++.so)&#39; return false; so modify file &#39;qmake.conf&#39;:
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+<pre><code> exists($$ANDROID_SOURCES_CXX_STL_LIBDIR/libc++.so): \
+   ANDROID_CXX_STL_LIBS = -lc++
+ else: \
+   ANDROID_CXX_STL_LIBS = $$ANDROID_SOURCES_CXX_STL_LIBDIR/libc++.a.$$replace(ANDROID_PLATFORM, &quot;android-&quot;, &quot;&quot;)
+</code></pre>
+ <pre class="line-numbers language-none"><code class="language-none">6. rebuild Qt and check the file libQt*.so
+  
+    &#96;&#96;&#96;    
+    PS D:\android\program\adt\ndk_r16b\toolchains\arm-linux-androideabi-4.9\prebuilt\windows-x86_64\arm-linux-androideabi\bin&gt; 
+    .\readelf.exe -d E:\Qt\libQt5Core.so
+
+    Dynamic section at offset 0x440508 contains 32 entries:
+    Tag        Type                         Name&#x2F;Value
+    0x00000003 (PLTGOT)                     0x441e74
+    0x00000002 (PLTRELSZ)                   33536 (bytes)
+    0x00000017 (JMPREL)                     0xa36a0
+    0x00000014 (PLTREL)                     REL
+    0x00000011 (REL)                        0x94eb8
+    0x00000012 (RELSZ)                      59368 (bytes)
+    0x00000013 (RELENT)                     8 (bytes)
+    0x6ffffffa (RELCOUNT)                   2995
+    0x00000006 (SYMTAB)                     0x1f0
+    0x0000000b (SYMENT)                     16 (bytes)
+    0x00000005 (STRTAB)                     0x20890
+    0x0000000a (STRSZ)                      337204 (bytes)
+    0x6ffffef5 (GNU_HASH)                   0x72dc4
+    0x00000004 (HASH)                       0x80b74
+    0x00000001 (NEEDED)                     Shared library: [libz.so]
+    0x00000001 (NEEDED)                     Shared library: [liblog.so]
+    0x00000001 (NEEDED)                     Shared library: [libm.so]
+    0x00000001 (NEEDED)                     Shared library: [libdl.so]
+    0x00000001 (NEEDED)                     Shared library: [libc.so]
+    0x0000000e (SONAME)                     Library soname: [libQt5Core.so]
+    0x0000001a (FINI_ARRAY)                 0x437228<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+</li>
+</ol>
+]]></content>
+      <categories>
+        <category>cycle zone</category>
+      </categories>
+      <tags>
+        <tag>cycle 2021</tag>
+        <tag>link</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>17. rewind anticlockwise polypolygon</title>
+    <url>/2021/12/19/17-rewind-anticlockwise-polypolygon/</url>
+    <content><![CDATA[<h1 id="17-rewind-anticlockwise-polypolygon"><a href="#17-rewind-anticlockwise-polypolygon" class="headerlink" title="17. rewind anticlockwise polypolygon"></a>17. rewind anticlockwise polypolygon</h1><pre class="line-numbers language-none"><code class="language-none">    
+long ClockSpace::CheckPolyPolyGon(DOT* pDotBuf, long* ne, int na)
+&#123;
+  if (na &lt;&#x3D; 0) return 0;
+  else if (na &#x3D;&#x3D; 1) return 1;
+
+  long nDotIndex &#x3D; 0; bool bClockwiseBase &#x3D; false;
+  for (int i &#x3D; 0; i &lt; na; ++i)
+  &#123;
+    bool bClockwise &#x3D; ClockSpace::IsClockwise(pDotBuf + nDotIndex, ne[i]);
+    
+    if (i &#x3D;&#x3D; 0) 
+      bClockwiseBase &#x3D; bClockwise;
+    else if (bClockwise &#x3D;&#x3D; bClockwiseBase)
+      ClockSpace::Rewind(pDotBuf + nDotIndex, ne[i]);
+    nDotIndex +&#x3D; ne[i];
+  &#125;
+
+  return na;
+&#125;
+
+void   ClockSpace::Rewind(DOT *tp, long n)
+&#123;
+  long i, mid;
+  DOT tmp;
+  mid &#x3D; n &#x2F; 2;
+  for (i &#x3D; 0; i &lt; mid; i++)
+  &#123;
+    tmp &#x3D; tp[i];
+    tp[i] &#x3D; tp[n - i - 1];
+    tp[n - i - 1] &#x3D; tmp;
+  &#125;
+&#125;
+
+bool ClockSpace::IsClockwise(DOT* pDotBuf, long ne) &#123;
+  double maxY &#x3D; 0.0;
+  int index &#x3D; 0;
+
+  &#x2F;&#x2F;找到Y值最大的点及其前一点和后一点
+  for (int i &#x3D; 0; i &lt; ne; i++) &#123;
+    DOT* pt &#x3D; pDotBuf+i;
+    if (i &#x3D;&#x3D; 0) &#123;
+      maxY &#x3D; pt-&gt;y;
+      index &#x3D; 0;
+      continue;
+    &#125;
+    if (maxY &lt; pt-&gt;y) &#123;
+      maxY &#x3D; pt-&gt;y;
+      index &#x3D; i;
+    &#125;
+  &#125;
+
+  int front &#x3D; index &#x3D;&#x3D; 0 ? ne - 2 : index - 1;
+  int middle &#x3D; index;
+  int after &#x3D; index + 1;
+
+  &#x2F;&#x2F;利用矢量叉积判断是逆时针还是顺时针。设矢量P &#x3D; ( x1, y1 )，Q &#x3D; ( x2, y2 )，则矢量叉积定义为由(0,0)、p1、p2和p1+p2    
+  &#x2F;&#x2F;所组成的平行四边形的带符号的面积，即：P × Q &#x3D; x1*y2 - x2*y1，其结果是一个标量。
+  &#x2F;&#x2F;显然有性质 P × Q &#x3D; - ( Q × P ) 和 P × ( - Q ) &#x3D; - ( P × Q )。
+  &#x2F;&#x2F;叉积的一个非常重要性质是可以通过它的符号判断两矢量相互之间的顺逆时针关系：
+  &#x2F;&#x2F;若 P × Q &gt; 0 , 则P在Q的顺时针方向。
+  &#x2F;&#x2F;若 P × Q &lt; 0 , 则P在Q的逆时针方向。
+  &#x2F;&#x2F;若 P × Q &#x3D; 0 , 则P与Q共线，但可能同向也可能反向。
+  &#x2F;&#x2F;解释：
+  &#x2F;&#x2F;a×b&#x3D;(ay * bz - by * az, az * bx - ax * bz, ax * by - ay * bx) 又因为az bz都为0，所以a×b&#x3D;（0，0， ax * by - ay * bx）
+  &#x2F;&#x2F;根据右手系（叉乘满足右手系），若 P × Q &gt; 0,ax * by - ay * bx&gt;0,也就是大拇指指向朝上，所以P在Q的顺时针方向，一下同理。
+
+  DOT* frontPt &#x3D; (pDotBuf + front); 
+  DOT* middlePt &#x3D; (pDotBuf + middle); 
+  DOT* afterPt &#x3D;  (pDotBuf + after);
+
+  return (afterPt-&gt;x - frontPt-&gt;x) * (middlePt-&gt;y - frontPt-&gt;y)
+    - (middlePt-&gt;x - frontPt-&gt;x) * (afterPt-&gt;y - frontPt-&gt;y) &gt; 0.0;
+&#125;
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+]]></content>
+      <categories>
+        <category>cycle zone</category>
+      </categories>
+      <tags>
+        <tag>cycle 2021</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>18. Parse Segments</title>
+    <url>/2021/12/19/18-Parse-Segments/</url>
+    <content><![CDATA[<h1 id="18-Parse-Segments"><a href="#18-Parse-Segments" class="headerlink" title="18. Parse Segments"></a>18. Parse Segments</h1><pre><code>woid testDemo()
+&#123;
+  std::vector&lt;std::string&gt;  values;
+  std::string strInfo = &quot;id;name;property&quot;;
+  ParseSegments(strInfo, &#39;;&#39;, values);
+&#125;
+//////////////////////////////////////////
+int ParseSegments(std::string strValue, char chPartition, std::vector&lt;std::string&gt; &amp; values)
+&#123;
+  size_t idx = 0;
+  values.clear();
+  std::vector&lt;size_t&gt; indexs;
+  for (; idx &lt; strValue.size(); idx++)
+  &#123;
+    if (strValue[idx] == chPartition)
+    &#123;
+      indexs.push_back(idx);
+    &#125;
+    else if (idx == strValue.size() - 1)
+    &#123;
+      indexs.push_back(idx + 1);
+    &#125;
+  &#125;
+  size_t nPosBegin = 0;
+  for (idx = 0; idx &lt; indexs.size(); idx++)
+  &#123;
+    values.push_back(strValue.substr(nPosBegin, indexs[idx] - nPosBegin));
+    nPosBegin = indexs[idx] + 1;
+  &#125;
+  return idx;
+&#125;
+</code></pre>
+]]></content>
+      <categories>
+        <category>cycle zone</category>
+      </categories>
+      <tags>
+        <tag>cycle 2021</tag>
+        <tag>string</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>19. QT_NO_CLIPBOARD</title>
+    <url>/2021/12/19/19-QT-NO-CLIPBOARD/</url>
+    <content><![CDATA[<h1 id="19-QT-NO-CLIPBOARD"><a href="#19-QT-NO-CLIPBOARD" class="headerlink" title="19. QT_NO_CLIPBOARD"></a>19. QT_NO_CLIPBOARD</h1><h2 id="19-1-problem-description"><a href="#19-1-problem-description" class="headerlink" title="19.1 problem description"></a>19.1 problem description</h2><pre><code>void test()
+&#123;
+  int argc = 1; 
+  char* argv[] = &#123;&quot;libnative-lib.so&quot;&#125;;
+  QApplication  application(argc,argv);
+&#125;
+</code></pre>
+<p>the function test() is broken when init the resources in Android Environment,</p>
+<p>when debug that funtion ‘QApplication  application(argc,argv);’</p>
+<p>step into when hit the following function which has the Macro ‘QT_NO_CLIPBOARD’;</p>
+<pre><code>#ifndef QT_NO_CLIPBOARD
+    m_androidPlatformClipboard = new QAndroidPlatformClipboard();
+#endif
+</code></pre>
+<p>continue to step into ‘new QAndroidPlatformClipboard()’;<br>some jni methods has been called ,but we cannot find the method,so program  sink without any return ;</p>
+<h2 id="19-2-method"><a href="#19-2-method" class="headerlink" title="19.2 method"></a>19.2 method</h2><ol>
+<li>to find the method is the essential way;</li>
+<li>but here we use another way in case that we have no so much information about the clipboard jni method;So if we do not call that logic function,just pass over it, the program do not sink;</li>
+</ol>
+<h3 id="19-2-1-HOW-to-pass-over-it"><a href="#19-2-1-HOW-to-pass-over-it" class="headerlink" title="19.2.1 HOW to pass over it?"></a>19.2.1 HOW to pass over it?</h3><p>we can define the Macro ‘QT_NO_CLIPBOARD’ to pass over it;</p>
+<p>next we exam the method;</p>
+<ol>
+<li><p>search the macro ‘QT_NO_CLIPBOARD’ in the source code folder;<br>we get many hits in serveral modules ,such as gui | android platform | widget | modbus | assitant tools;<br>but there is no hit about ‘define QT_NO_CLIPBOARD’;<br>WHERE to deine the macro?</p>
+</li>
+<li><p>check some  *.h or *.cpp files in which hit the macro;<br>find the common includes, ‘#include &lt;QtGui/private/qtguiglobal_p.h&gt;’</p>
+<p>in qtguiglobal_p.h ,then locate :</p>
+<pre><code> #include &lt;QtGui/qtguiglobal.h&gt;
+ #include &lt;QtCore/private/qglobal_p.h&gt;
+ #include &lt;QtGui/private/qtgui-config_p.h&gt;
+</code></pre>
+<p>in  qtguiglobal.h,locate:</p>
+<pre><code> #include &lt;QtCore/qglobal.h&gt;
+ #include &lt;QtGui/qtgui-config.h&gt;
+</code></pre>
+<p> in qglobal.h or qglobal_p.h, we cannot find any macro defination;</p>
+<p> for qtgui-config_p.h or qtgui-config.h, firstly we cannot find them in the source code folder;<br> we find them in the compile folder which has been created when run the configure command;<br> in qtgui-config_p.h or qtgui-config.h, we can find many macro definition;</p>
+</li>
+<li><p>we edit the file ‘qtgui-config_p.h’ by appending the definition of the macro  QT_NO_CLIPBOARD ;<br>then compile the source code again and test the code;<br>OK,we success; prove that that method is OK;</p>
+</li>
+<li><p>But  WHY we need edit the file?</p>
+</li>
+</ol>
+<h3 id="19-2-2-WHY-we-need-edit-the-file"><a href="#19-2-2-WHY-we-need-edit-the-file" class="headerlink" title="19.2.2   WHY we need edit the file?"></a>19.2.2   WHY we need edit the file?</h3><p>   is there another way to define the macro?</p>
+<ol>
+<li><p>in file qtgui-config.h, when we search key words ‘clipboard’ ,<br>we find ‘#define QT_FEATURE_clipboard 1’;</p>
+<p>so what create the file qtgui-config.h and define FEATURE_clipboard?</p>
+</li>
+<li><p>in the folder which locate the file qtgui-config.h, we find file qtgui-config.pri;</p>
+</li>
+</ol>
+<pre class="line-numbers language-none"><code class="language-none">QT.gui.enabled_features &#x3D; accessibility action opengles2 clipboard colornames cssparser cursor desktopservices imageformat_xpm draganddrop opengl imageformatplugin highdpiscaling im image_heuristic_mask image_text imageformat_bmp imageformat_jpeg imageformat_png imageformat_ppm imageformat_xbm movie pdf picture sessionmanager shortcut standarditemmodel systemtrayicon tabletevent texthtmlparser textodfwriter validator vulkan whatsthis wheelevent
+QT.gui.disabled_features &#x3D; angle combined-angle-lib dynamicgl opengles3 opengles31 opengles32 openvg
+QT.gui.QT_CONFIG &#x3D; accessibility action opengles2 clipboard colornames cssparser cursor desktopservices imageformat_xpm draganddrop opengl egl freetype imageformatplugin harfbuzz highdpiscaling ico im image_heuristic_mask image_text imageformat_bmp imageformat_jpeg imageformat_png imageformat_ppm imageformat_xbm movie pdf picture sessionmanager shortcut standarditemmodel systemtrayicon tabletevent texthtmlparser textodfwriter validator whatsthis wheelevent
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+<p>in file qtgui-config.pri,clipboard is the enabled feature;<br>just list above;    </p>
+<ol start="3">
+<li>so what create the file qtgui-config.pri? How to make clipboard disabled ?</li>
+</ol>
+<h3 id="19-2-3-How-to-make-clipboard-disabled"><a href="#19-2-3-How-to-make-clipboard-disabled" class="headerlink" title="19.2.3 How to make clipboard disabled ?"></a>19.2.3 How to make clipboard disabled ?</h3><ol>
+<li><p>in source code folder, search key words ‘clipboard’ ,</p>
+</li>
+<li><p>locate file ‘configure.json’; the configure script use this json file to configure;</p>
+</li>
+<li><p>in json file,<br>CHANGE from </p>
+<pre class="line-numbers language-none"><code class="language-none">&quot;clipboard&quot;: &#123;
+	&quot;label&quot;: &quot;QClipboard&quot;,
+	&quot;purpose&quot;: &quot;Provides cut and paste operations.&quot;,
+	&quot;section&quot;: &quot;Kernel&quot;,
+	&quot;condition&quot;: &quot;!config.integrity &amp;&amp; !config.qnx&quot;,
+	&quot;output&quot;: [ &quot;publicFeature&quot;, &quot;feature&quot; ]
+&#125;,<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>into</p>
+ <pre class="line-numbers language-none"><code class="language-none">&quot;clipboard&quot;: &#123;
+	&quot;label&quot;: &quot;QClipboard&quot;,
+	&quot;purpose&quot;: &quot;Provides cut and paste operations.&quot;,
+	&quot;section&quot;: &quot;Kernel&quot;,
+	&quot;autoDetect&quot;: &quot;config.msvc&quot;,
+	&quot;condition&quot;: &quot;!config.integrity &amp;&amp; !config.qnx&quot;,
+	&quot;output&quot;: [ &quot;publicFeature&quot;, &quot;feature&quot; ]
+&#125;,<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></li>
+<li><p>save the changes and reconfigure,<br>locate the file qtgui-config.h , there is no QT_FEATURE_clipboard defination;<br>but we find ‘#define QT_NO_CLIPBOARD ‘;</p>
+</li>
+<li><p>bingo! we have made  FEATURE clipboard disabled;</p>
+</li>
+<li><p>recompile the source code and retest the demo;OK;</p>
+</li>
+</ol>
+]]></content>
+      <categories>
+        <category>cycle zone</category>
+      </categories>
+      <tags>
+        <tag>cycle 2021</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Build blog with hexo and github</title>
+    <url>/2021/12/12/2-build-blog-with-hexo-and-github/</url>
+    <content><![CDATA[<h1 id="Build-Blog-with-hexo-and-github"><a href="#Build-Blog-with-hexo-and-github" class="headerlink" title="Build Blog with hexo and github"></a>Build Blog with hexo and github</h1><p><a href="https://docs.github.com/en/pages/getting-started-with-github-pages">https://docs.github.com/en/pages/getting-started-with-github-pages</a></p>
+<h2 id="1-prepare"><a href="#1-prepare" class="headerlink" title="1. prepare"></a>1. prepare</h2><ol>
+<li>github user and key</li>
+<li>git bash tool</li>
+<li>node.js</li>
+</ol>
+<h2 id="2-init-hexo-template"><a href="#2-init-hexo-template" class="headerlink" title="2. init hexo template"></a>2. init hexo template</h2><ol>
+<li><p>in blank folder ‘/e/blog ‘ , open git bash ;            </p>
+<pre><code> npm install -g hexo
+</code></pre>
+</li>
+<li><p>init hexo</p>
+<pre><code> hexo init
+</code></pre>
+</li>
+<li><p>open server</p>
+<pre><code> npm install --&gt;hexo server --&gt;hexo clean --&gt;hexo generate --&gt;hexo deploy
+</code></pre>
+</li>
+</ol>
+<h2 id="2-1-init-hexo-template"><a href="#2-1-init-hexo-template" class="headerlink" title="2.1 init hexo template"></a>2.1 init hexo template</h2><pre><code>root@QOL6GT6 MINGW64 /
+$ cd /e/blog
+
+root@QOL6GT6 MINGW64 /e/blog
+$ ls
+
+root@QOL6GT6 MINGW64 /e/blog
+$ npm install -g hexo
+
+added 87 packages, and audited 88 packages in 12s
+
+12 packages are looking for funding
+    run `npm fund` for details
+
+1 moderate severity vulnerability
+
+Some issues need review, and may require choosing
+a different dependency.
+
+Run `npm audit` for details.
+
+root@QOL6GT6 MINGW64 /e/blog
+$ npm fund
+1
+
+root@QOL6GT6 MINGW64 /e/blog
+$ hexo init
+INFO  Cloning hexo-starter https://github.com/hexojs/hexo-starter.git
+fatal: unable to access &#39;https://github.com/hexojs/hexo-starter.git/&#39;: OpenSSL SSL_read: Connection was reset, errno 10054
+WARN  git clone failed. Copying data instead
+INFO  Install dependencies
+INFO  Start blogging with Hexo!
+
+root@QOL6GT6 MINGW64 /e/blog
+$ npm install
+
+up to date, audited 239 packages in 3s
+
+15 packages are looking for funding
+    run `npm fund` for details
+
+1 moderate severity vulnerability
+
+Some issues need review, and may require choosing
+a different dependency.
+
+Run `npm audit` for details.
+
+root@QOL6GT6 MINGW64 /e/blog
+$ hexo server
+INFO  Validating config
+INFO  Start processing
+INFO  Hexo is running at http://localhost:4000 . Press Ctrl+C to stop.
+(node:10160) Warning: Accessing non-existent property &#39;lineno&#39; of module exports inside circular dependency
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:10160) Warning: Accessing non-existent property &#39;column&#39; of module exports inside circular dependency
+(node:10160) Warning: Accessing non-existent property &#39;filename&#39; of module exports inside circular dependency
+(node:10160) Warning: Accessing non-existent property &#39;lineno&#39; of module exports inside circular dependency
+(node:10160) Warning: Accessing non-existent property &#39;column&#39; of module exports inside circular dependency
+(node:10160) Warning: Accessing non-existent property &#39;filename&#39; of module exports inside circular dependency
+INFO  Bye!
+
+root@QOL6GT6 MINGW64 /e/blog
+$ hexo clean
+INFO  Validating config
+INFO  Deleted database.
+
+root@QOL6GT6 MINGW64 /e/blog
+$ hexo generate
+INFO  Validating config
+INFO  Start processing
+INFO  Files loaded in 120 ms
+(node:6324) Warning: Accessing non-existent property &#39;lineno&#39; of module exports inside circular dependency
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:6324) Warning: Accessing non-existent property &#39;column&#39; of module exports inside circular dependency
+(node:6324) Warning: Accessing non-existent property &#39;filename&#39; of module exports inside circular dependency
+(node:6324) Warning: Accessing non-existent property &#39;lineno&#39; of module exports inside circular dependency
+(node:6324) Warning: Accessing non-existent property &#39;column&#39; of module exports inside circular dependency
+(node:6324) Warning: Accessing non-existent property &#39;filename&#39; of module exports inside circular dependency
+INFO  Generated: archives/index.html
+INFO  Generated: archives/2021/index.html
+INFO  Generated: fancybox/fancybox_loading@2x.gif
+INFO  Generated: js/script.js
+INFO  Generated: css/style.css
+INFO  Generated: index.html
+INFO  Generated: fancybox/blank.gif
+INFO  Generated: fancybox/fancybox_loading.gif
+INFO  Generated: fancybox/fancybox_sprite.png
+INFO  Generated: fancybox/fancybox_sprite@2x.png
+INFO  Generated: css/fonts/fontawesome-webfont.ttf
+INFO  Generated: fancybox/fancybox_overlay.png
+INFO  Generated: fancybox/jquery.fancybox.css
+INFO  Generated: fancybox/helpers/fancybox_buttons.png
+INFO  Generated: fancybox/jquery.fancybox.pack.js
+INFO  Generated: fancybox/jquery.fancybox.js
+INFO  Generated: fancybox/helpers/jquery.fancybox-thumbs.css
+INFO  Generated: fancybox/helpers/jquery.fancybox-buttons.css
+INFO  Generated: archives/2021/12/index.html
+INFO  Generated: fancybox/helpers/jquery.fancybox-media.js
+INFO  Generated: fancybox/helpers/jquery.fancybox-thumbs.js
+INFO  Generated: fancybox/helpers/jquery.fancybox-buttons.js
+INFO  Generated: css/images/banner.jpg
+INFO  Generated: css/fonts/fontawesome-webfont.svg
+INFO  Generated: css/fonts/fontawesome-webfont.woff
+INFO  Generated: css/fonts/FontAwesome.otf
+INFO  Generated: css/fonts/fontawesome-webfont.eot
+INFO  Generated: 2021/12/12/hello-world/index.html
+INFO  28 files generated in 381 ms
+
+root@QOL6GT6 MINGW64 /e/blog
+$ hexo deploy
+INFO  Validating config
+
+root@QOL6GT6 MINGW64 /e/blog
+$ hexo server
+INFO  Validating config
+INFO  Start processing
+INFO  Hexo is running at http://localhost:4000 . Press Ctrl+C to stop.
+(node:7984) Warning: Accessing non-existent property &#39;lineno&#39; of module exports inside circular dependency
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:7984) Warning: Accessing non-existent property &#39;column&#39; of module exports inside circular dependency
+(node:7984) Warning: Accessing non-existent property &#39;filename&#39; of module exports inside circular dependency
+(node:7984) Warning: Accessing non-existent property &#39;lineno&#39; of module exports inside circular dependency
+(node:7984) Warning: Accessing non-existent property &#39;column&#39; of module exports inside circular dependency
+(node:7984) Warning: Accessing non-existent property &#39;filename&#39; of module exports inside circular dependency
+INFO  Good bye
+
+root@QOL6GT6 MINGW64 /e/blog
+$
+</code></pre>
+<h2 id="3-hexo-command"><a href="#3-hexo-command" class="headerlink" title="3. hexo command"></a>3. hexo command</h2><ul>
+<li>hexo new “postName” #新建文章</li>
+<li>hexo new page “pageName” #新建页面</li>
+<li>hexo generate #生成静态页面至public目录</li>
+<li>hexo server #开启预览访问端口（默认端口4000，’ctrl + c’关闭server）</li>
+<li>hexo deploy #部署到GitHub</li>
+<li>hexo help  # 查看帮助</li>
+<li>hexo version  #查看Hexo的版本</li>
+</ul>
+<h2 id="4-deploy"><a href="#4-deploy" class="headerlink" title="4. deploy"></a>4. deploy</h2><ol>
+<li><p>generate ssh key and set in github.com</p>
+</li>
+<li><p>in file _config.yml, find the node:  deploy</p>
+</li>
+</ol>
+<p>eg.</p>
+<pre><code>deploy:
+    type: git
+    repository: git@github.com:username/username.github.io.git
+    branch: master
+</code></pre>
+<ol start="3">
+<li><p>deploy</p>
+<pre><code> hexo clean
+ hexo deploy
+</code></pre>
+</li>
+</ol>
+<h2 id="5-visit-blog"><a href="#5-visit-blog" class="headerlink" title="5. visit blog"></a>5. visit blog</h2><pre><code>visit url: username.github.io
+</code></pre>
+]]></content>
+      <categories>
+        <category>GitHub pages blog</category>
+      </categories>
+      <tags>
+        <tag>cycle 2021</tag>
+        <tag>Blog</tag>
+        <tag>hexo</tag>
+        <tag>github</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>21. Init Qt resource</title>
+    <url>/2021/12/19/21-init-Qt-resource/</url>
+    <content><![CDATA[<h1 id="21-Init-Qt-resource"><a href="#21-Init-Qt-resource" class="headerlink" title="21. Init Qt resource"></a>21. Init Qt resource</h1><pre><code>public class QtEnvironment &#123;
+    public static int Init(Activity activity) &#123;
+        String rootPath = android.os.Environment.getExternalStorageDirectory().getAbsolutePath();
+        String apkPath = activity.getApplicationInfo().publicSourceDir;
+
+        String nativeLibraryPrefix = activity.getApplicationInfo().nativeLibraryDir + &quot;/&quot;;
+
+        DexClassLoader classLoader = new DexClassLoader(&quot;&quot;, // .jar/.apk files
+                activity.getDir(&quot;outdex&quot;, Context.MODE_PRIVATE).getAbsolutePath(), // directory where optimized DEX files should be written.
+                null, // libs folder (if exists)
+                activity.getClassLoader());
+
+        QtNative.setClassLoader(classLoader);
+
+        String[] qtLibs = &#123;&quot;Qt5Core&quot;,&quot;Qt5Gui&quot;,&quot;Qt5Widgets&quot;,&quot;qtforandroid&quot;&#125;;
+        ArrayList&lt;String&gt; libraryList = new ArrayList&lt;String&gt;();
+
+        String libPrefix = nativeLibraryPrefix + &quot;lib&quot;;
+        for (int i = 0; i &lt; qtLibs.length; i++)
+            libraryList.add(libPrefix + qtLibs[i] + &quot;.so&quot;);
+        QtNative.loadQtLibraries(libraryList);
+
+        return 1;
+    &#125;
+
+&#125;
+</code></pre>
+]]></content>
+      <categories>
+        <category>cycle zone</category>
+      </categories>
+      <tags>
+        <tag>cycle 2021</tag>
+        <tag>Qt</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>20. How to debug with add-dsym in AS</title>
+    <url>/2021/12/19/20-debug-with-add-dsym-in-AS/</url>
+    <content><![CDATA[<h1 id="20-debug-with-add-dsym-in-AS"><a href="#20-debug-with-add-dsym-in-AS" class="headerlink" title="20. debug with add-dsym in AS"></a>20. debug with add-dsym in AS</h1><h2 id="20-1-detail-version"><a href="#20-1-detail-version" class="headerlink" title="20.1 detail version"></a>20.1 detail version</h2><ol>
+<li><p>Compile the codes and Debug the app;</p>
+</li>
+<li><p>in Debug Tab,select app Tab,then select LLDB Tab;<br>here we cannot attach the debug symbol;</p>
+</li>
+<li><p>in left dock buttons, click the pause button to pause the program,then select LLDB Tab;</p>
+</li>
+<li><p>in LLDB tab,attach the library symbols;just like:<br>add-dsym E:/Qt/build/armeabi-v7a/qtbase/plugins/platforms/android/libqtforandroid.so<br>if need to attach more than one library,call add-dsym one by one;</p>
+</li>
+<li><p>when we have add the target libraries, we can see the information:</p>
+<pre class="line-numbers language-none"><code class="language-none">    ‘symbol file &#39;E:\Qt\build\armeabi-v7a\qtbase\plugins\platforms\android\libqtforandroid.so&#39; 
+    has been added to 
+    &#39;C:\Users\Administrator\.lldb\module_cache\remote-android\.cache\A3E31994\libqtforandroid.so&#39;’
+   &#96;&#96;&#96;     
+6. in left dock buttons, click the resume button to resume the program;
+7. then contine to debug the program; 
+8. Step into the attached library;
+
+
+## 20.2 short version
+
+1. Debug ---&gt; app ---&gt;LLDB
+2. pause
+3. add-dsym 
+4. resume
+5. debug
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>Executing commands in ‘D:\android\Android Studio\bin\lldb\shared\stl_printers\load_script’.<br>(lldb) script import sys<br>(lldb) script import os<br>(lldb) script gala_available = os.environ.get(‘AS_GALA_PATH’) is not None<br>(lldb) script exec(“if gala_available: sys.path.append(os.environ[‘AS_GALA_PATH’])”)<br>(lldb) script exec(“if gala_available: import gdb”)<br>(lldb) script exec(“if gala_available: import gdb.printing”)<br>(lldb) script libstdcxx_printers_available = gala_available and (os.environ.get(‘AS_LIBSTDCXX_PRINTER_PATH’) is not None)<br>(lldb) script exec(“if libstdcxx_printers_available: sys.path.append(os.environ[‘AS_LIBSTDCXX_PRINTER_PATH’])”)<br>(lldb) script exec(“if libstdcxx_printers_available: import printers”)<br>(lldb) script exec(“if libstdcxx_printers_available: printers.register_libstdcxx_printers(None)”)<br>(lldb) script exec(“if lldb.debugger.GetCategory(‘libstdc++-v6’).IsValid(): lldb.debugger.GetCategory(‘gnu-libstdc++’).SetEnabled(False)”)<br>(lldb) add-dsym E:/Qt/build/armeabi-v7a/qtbase/plugins/platforms/android/libqtforandroid.so<br>symbol file ‘E:\Qt\build\armeabi-v7a\qtbase\plugins\platforms\android\libqtforandroid.so’ has been added to ‘C:\Users\Administrator.lldb\module_cache\remote-android.cache\9BBA21BF\libqtforandroid.so’<br>(lldb) add-dsym E:/Qt/build/armeabi-v7a/qtbase/lib/libQt5Gui.so<br>symbol file ‘E:\Qt\build\armeabi-v7a\qtbase\lib\libQt5Gui.so’ has been added to ‘C:\Users\Administrator.lldb\module_cache\remote-android.cache\8D29BD13\libQt5Gui.so’</p>
+</li>
+</ol>
+<p>  ```</p>
+]]></content>
+      <categories>
+        <category>cycle zone</category>
+      </categories>
+      <tags>
+        <tag>cycle 2021</tag>
+        <tag>add-dsym</tag>
+        <tag>Android</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>23. Howt to access unaligned memory</title>
+    <url>/2021/12/20/23-Howt-to-access-unaligned-memory/</url>
+    <content><![CDATA[<h1 id="23-Howt-to-access-unaligned-memory"><a href="#23-Howt-to-access-unaligned-memory" class="headerlink" title="23. Howt to access unaligned memory"></a>23. Howt to access unaligned memory</h1><ul>
+<li><p>Unaligned memory accesses occur when you try to read N bytes of data starting from an address </p>
+<p>that is not evenly divisible by N (i.e. addr % N != 0).</p>
+<p>For example, reading 4 bytes of data from address 0x10004 is fine, </p>
+<p>but reading 4 bytes of data from address 0x10005 would be an unaligned memory access.</p>
+</li>
+<li><p>when access the unligned memory directly,OS may sent SIGBUS error;</p>
+</li>
+<li><p>if read the unligned memory, use function ‘get_unaligned(ptr)’</p>
+<p>if write the unligned  memory,use memcpy();</p>
+</li>
+<li><p>for more information ,please visit <a href="https://www.kernel.org/doc/html/latest/core-api/unaligned-memory-access.html">https://www.kernel.org/doc/html/latest/core-api/unaligned-memory-access.html</a></p>
+</li>
+</ul>
+<h2 id="case-1-both-dt-and-st-is-aligned"><a href="#case-1-both-dt-and-st-is-aligned" class="headerlink" title="case 1: both dt and st is aligned"></a>case 1: both dt and st is aligned</h2> <pre class="line-numbers language-none"><code class="language-none">## for case: both dt and st is aligned
+template&lt;typename T&gt; void i_AssignValue(T&amp; dt, T&amp; st)
+&#123;
+	i_FromString(dt, i_ToString(st));
+&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<h2 id="case-2-either-dt-or-st-is-aligned-or-both-are-unligned"><a href="#case-2-either-dt-or-st-is-aligned-or-both-are-unligned" class="headerlink" title="case 2: either dt or st is aligned or both are unligned"></a>case 2: either dt or st is aligned or both are unligned</h2> <pre class="line-numbers language-none"><code class="language-none">&#x2F;************************************************************
+ *  for case: either dt or st is unaligned;
+ *  if read the unligned value, use function &#39;get_unaligned(ptr)&#39;
+ *  if write the unligned value,use memcpy();
+*************************************************************&#x2F;
+
+#ifdef BUTTER_ANDROID
+#ifndef __GET_UNALIGNED_
+#define __GET_UNALIGNED_
+
+#define __get_unaligned_t(type, ptr) (&#123;						\
+	const struct &#123; type x; &#125; __packed *__pptr &#x3D; (__typeof(__pptr))(ptr);	\
+	__pptr-&gt;x;								\
+&#125;)
+
+#define get_unaligned(ptr)	__get_unaligned_t(__typeof(*(ptr)), (ptr))
+
+#endif &#x2F;* __GET_UNALIGNED_ *&#x2F;
+
+&#x2F;&#x2F;&#x2F; for case: Ether dt or st is unaligned
+template&lt;&gt; inline void i_AssignValue(float&amp; dt, float&amp; st)
+&#123;
+	float val;
+	const void* ptr &#x3D; (void*)&amp;st;
+	&#x2F;&#x2F;uint16_t temp16 &#x3D; get_unaligned((uint16_t *) ptr); &#x2F;&#x2F;OK
+	float temp16 &#x3D; get_unaligned((float *) ptr); &#x2F;&#x2F;&#x2F; read the unligned memory
+	std::string strVal &#x3D; i_ToString((double)temp16);
+	i_FromString&lt;float&gt;(val,strVal);
+	memcpy(&amp;dt, &amp;val, sizeof(float)); &#x2F;&#x2F;&#x2F; write the unligned memory
+&#125;
+
+#endif &#x2F;&#x2F;BUTTER_ANDROID
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+]]></content>
+      <categories>
+        <category>cycle zone</category>
+      </categories>
+      <tags>
+        <tag>cycle 2021</tag>
+        <tag>unaligned memory</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>24. Unable to open DISPLAY</title>
+    <url>/2021/12/20/24-Unable-to-open-DISPLAY/</url>
+    <content><![CDATA[<h1 id="24-Unable-to-open-DISPLAY"><a href="#24-Unable-to-open-DISPLAY" class="headerlink" title="24. Unable to open DISPLAY"></a>24. Unable to open DISPLAY</h1><pre class="line-numbers language-none"><code class="language-none">java.lang.reflect.InvocationTargetException
+Casued by:
+java.lang.unsupportedOperationException:Unable to open DISPLAY
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+<h2 id="solution"><a href="#solution" class="headerlink" title="solution"></a>solution</h2><ul>
+<li>echo $DISPLAY</li>
+<li>export DISPLAY=:1</li>
+<li>xhost +</li>
+<li>run sh run.sh</li>
+</ul>
+]]></content>
+      <categories>
+        <category>cycle zone</category>
+      </categories>
+      <tags>
+        <tag>cycle 2021</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>22. Template specialization</title>
+    <url>/2021/12/20/22-Template-specialization/</url>
+    <content><![CDATA[<h1 id="22-Template-specialization"><a href="#22-Template-specialization" class="headerlink" title="22. Template specialization"></a>22. Template specialization</h1><ol>
+<li><p>we use template function which has the original operation<br>to cover some or several cases;</p>
+<p>but when template function  crash some special case,<br>the original operation cannot cover  ,</p>
+<p>we may specialize the template function with the speicial operation  ;</p>
+</li>
+<li><p>in common ,function name is same in different cases,</p>
+<p>but with different parameter type and different operation;</p>
+</li>
+</ol>
+  <pre class="line-numbers language-none"><code class="language-none">template&lt;typename T&gt; bool i_FromString(T&amp; t,std::string str)
+&#123;
+  istringstream is(str);
+  is.imbue(LOC_CHS);
+  is &gt;&gt; t;
+  return true;
+&#125;
+template&lt;size_t N&gt; inline bool i_FromString(char (&amp;sz)[N],std::string str)
+&#123;
+  if (N&gt;0)
+  &#123;
+    memset(sz,0,sizeof(char)*N);
+    strncpy(sz,str.c_str(),N-1);
+    return true;
+  &#125;
+  return false;
+&#125;
+template&lt;&gt; inline bool i_FromString(char*&amp; t,std::string str)
+&#123;
+  const char* pChVal &#x3D; str.c_str();
+  lstrcpyn(t,pChVal,strlen(pChVal)+1);
+  return true;
+&#125;
+
+template&lt;&gt; inline bool i_FromString(float&amp; t,std::string str)
+&#123;
+  if(str !&#x3D; &quot;&quot;)
+  &#123;
+    float fVal &#x3D; atof(str.c_str());
+    memcpy(&amp;t,&amp;fVal,sizeof(float));
+    return true;
+  &#125;
+  return false;
+&#125;
+
+template&lt;&gt; inline bool i_FromString(double&amp; t,std::string str)
+&#123;
+  if(str !&#x3D; &quot;&quot;)
+  &#123;
+#if defined(BUTTER_ANDROID)
+    double dVal &#x3D; atof(str.c_str());
+    memcpy(&amp;t,&amp;dVal,sizeof(double));
+#else
+    t &#x3D; atof(str.c_str());
+#endif
+    return true;
+  &#125;
+  return false;
+&#125;
+
+template&lt;&gt; inline bool i_FromString(GUID&amp; t,std::string str)
+&#123;
+  CString   strTemp;
+  if(str !&#x3D; &quot;&quot;)
+  &#123;
+    strTemp &#x3D; str.c_str();
+    CvtStringToGuid(strTemp,t);
+    return true;
+  &#125;
+  return false;
+&#125;
+
+template&lt;&gt; inline bool i_FromString(string&amp; t,std::string str)
+&#123;
+  t &#x3D; str;
+  return true;
+&#125;
+template&lt;&gt; inline bool i_FromString(CString&amp; t, std::string str)
+&#123;
+  t &#x3D; str.c_str();
+  return true;
+&#125;
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+]]></content>
+      <categories>
+        <category>cycle zone</category>
+      </categories>
+      <tags>
+        <tag>cycle 2021</tag>
+        <tag>template</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>25. Compute time cost</title>
+    <url>/2021/12/21/25-compute-time-cost/</url>
+    <content><![CDATA[<h1 id="25-Compute-time-cost"><a href="#25-Compute-time-cost" class="headerlink" title="25. Compute time cost"></a>25. Compute time cost</h1><pre class="line-numbers language-none"><code class="language-none">
+int main()
+&#123;
+	&#123;
+		CHTime timecost;
+		fun1();
+	&#125;
+	
+	&#123;
+		CHTime timecost;
+		fun2();
+		timecost.getTime();
+	&#125;
+&#125;
+
+&#x2F;&#x2F;&#x2F;&#x2F;**********************CHTime.h************************
+
+#ifdef WIN32
+&#x2F;&#x2F;&#x2F; for windows
+#include &lt;windows.h&gt;　
+#else &#x2F;&#x2F;BUTTER_LINUX
+&#x2F;&#x2F;&#x2F;&#x2F; for linux
+#include &lt;sys&#x2F;time.h&gt;　
+#endif
+
+class CHTime
+&#123;
+public:
+	CHTime()&#123; 
+		Begin();
+	&#125;
+	~CHTime()&#123;
+		End();
+	&#125;
+	void Begin()
+	&#123;
+#ifdef WIN32
+       QueryPerformanceFrequency(&amp;m_freq);
+       QueryPerformanceCounter(&amp;m_queryBegin);
+#else
+       gettimeofday(&amp;m_begin,NULL);
+#endif
+	&#125;
+	void End()
+	&#123;
+#ifdef WIN32   
+       QueryPerformanceCounter(&amp;m_queryEnd);
+       m_timeuse&#x3D;(double)(m_queryEnd.QuadPart-m_queryBegin.QuadPart)&#x2F;(double)m_freq.QuadPart * 1000.0; 
+#else
+       gettimeofday(&amp;m_end,NULL);
+       m_timeuse &#x3D; (m_end.tv_sec - m_begin.tv_sec) + (double)(m_end.tv_usec - m_begin.tv_usec)&#x2F;1000.0;
+#endif
+      cout&lt;&lt;&quot;timecost &#x3D; &quot;&lt;&lt;m_timeuse&lt;&lt;endl;  &#x2F;&#x2F;（unit：ms）
+	&#125;
+	double getTime()
+	&#123;
+		End(); 
+		return m_timeuse;
+	&#125;
+protected:	
+    double m_timeuse;&#x2F;&#x2F;&#x2F;ms
+
+#ifdef WIN32
+    LARGE_INTEGER m_queryBegin,m_queryEnd,m_freq;
+#else
+	struct timeval m_begin,m_end;
+#endif
+
+&#125;
+
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>]]></content>
+      <categories>
+        <category>cycle zone</category>
+      </categories>
+      <tags>
+        <tag>cycle 2021</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>26. how to get tianditu token</title>
+    <url>/2021/12/21/26-how-to-get-tianditu-token/</url>
+    <content><![CDATA[<h1 id="26-how-to-get-tianditu-token"><a href="#26-how-to-get-tianditu-token" class="headerlink" title="26. how to get tianditu token"></a>26. how to get tianditu token</h1><p><img src="./img/26_tiandituToken.png" alt="get tianditu token"></p>
+<p>STEPS:</p>
+<ul>
+<li><ol>
+<li>visit ‘tianditu.gov.cn’ in chrome browser;</li>
+</ol>
+</li>
+<li><ol start="2">
+<li>Press ‘F12’and show the right window;</li>
+</ol>
+</li>
+<li><ol start="3">
+<li>click and drag or move or zoom in or zoom out the left map;<br>some information will list in the right window;</li>
+</ol>
+</li>
+<li><ol start="4">
+<li>choose the ‘NetWork’ tab,in ‘Name’ window list the requests,choose any one;</li>
+</ol>
+</li>
+<li><ol start="5">
+<li><p>in Headers tab, ‘General’ Node,we get the URL:</p>
+<p><a href="https://t6.tianditu.gov.cn/vec_w/wmts?SERVICE=WMTS&amp;REQUEST=GetTile&amp;VERSION=1.0.0&amp;LAYER=vec&amp;STYLE=default&amp;TILEMATRIXSET=w&amp;FORMAT=tiles&amp;TILECOL=55&amp;TILEROW=24&amp;TILEMATRIX=6&amp;tk=9a02b3cdd29cd346de4df04229797710">https://t6.tianditu.gov.cn/vec_w/wmts?SERVICE=WMTS&amp;REQUEST=GetTile&amp;VERSION=1.0.0&amp;LAYER=vec&amp;STYLE=default&amp;TILEMATRIXSET=w&amp;FORMAT=tiles&amp;TILECOL=55&amp;TILEROW=24&amp;TILEMATRIX=6&amp;tk=9a02b3cdd29cd346de4df04229797710</a></p>
+</li>
+</ol>
+</li>
+<li><ol start="6">
+<li>in the above URL,get the value of the key ‘tk’ Ok, we get the tianditu token: 9a02b3cdd29cd346de4df04229797710</li>
+</ol>
+</li>
+</ul>
+]]></content>
+      <categories>
+        <category>cycle zone</category>
+      </categories>
+      <tags>
+        <tag>cycle 2021</tag>
+        <tag>Tianditu</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>27. How to compile cario</title>
+    <url>/2021/12/21/27-compile-cario/</url>
+    <content><![CDATA[<h1 id="27-How-to-compile-cario"><a href="#27-How-to-compile-cario" class="headerlink" title="27. How to compile cario"></a>27. How to compile cario</h1><h2 id="For-linux-Steps"><a href="#For-linux-Steps" class="headerlink" title="For linux, Steps:"></a>For linux, Steps:</h2><ol>
+<li><p>get source codes </p>
+ <pre class="line-numbers language-none"><code class="language-none">from http:&#x2F;&#x2F;www.cairographics.org&#x2F;releases&#x2F;pixman-0.40.0.tar.gz  
+get pixman library;
+
+from https:&#x2F;&#x2F;cairographics.org&#x2F;snapshots&#x2F;cairo-1.17.2.tar.xz
+get cario library;
+
+or visit url: https:&#x2F;&#x2F;www.cairographics.org&#x2F;releases&#x2F; 
+select the latest version;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></li>
+<li><p>then copy the source codes into some folder,<br>like: /home/src/code/ ;</p>
+<p>in shell terminal,use commands below to decompress the tar file; </p>
+ <pre class="line-numbers language-none"><code class="language-none">tar zxvf pixman-0.40.0.tar.gz 
+tar zxvf cairo-1.17.2.tar.xz <span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre></li>
+<li><p>compile pixman</p>
+<p>   open the pixman source code root folder,then configure、 make、install</p>
+ <pre class="line-numbers language-none"><code class="language-none">cd &#x2F;home&#x2F;src&#x2F;code&#x2F;pixman-0.40.0
+
+.&#x2F;configure --prefix&#x3D;&#x2F;home&#x2F;src&#x2F;code&#x2F;pixman 
+
+make
+
+make install<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></li>
+<li><p>compile cario</p>
+<p> 4.1 open the cario source code root folder, then configure、 make、install</p>
+ <pre class="line-numbers language-none"><code class="language-none">cd &#x2F;home&#x2F;src&#x2F;code&#x2F;cairo-1.17.2
+
+.&#x2F;configure --prefix&#x3D;&#x2F;home&#x2F;src&#x2F;code&#x2F;cario --enable-ps pixman_CFLAGS&#x3D;&#39;-I&#x2F;home&#x2F;src&#x2F;code&#x2F;pixman&#x2F;include&#x2F;pixman-1&#39; pixman_LIBS&#x3D;&#39;-L&#x2F;home&#x2F;src&#x2F;code&#x2F;pixman&#x2F;lib -lpixman-1&#39;
+
+make
+
+make install<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p> 4.2 how to get the dependent librarys information</p>
+<pre><code> use &#39; ./configure --help &#39; get some environment variables，like below;
+</code></pre>
+ <pre class="line-numbers language-none"><code class="language-none">png_CFLAGS  C compiler flags for png, overriding pkg-config
+png_LIBS    linker flags for png, overriding pkg-config 
+gl_CFLAGS   C compiler flags for gl, overriding pkg-config
+gl_LIBS     linker flags for gl, overriding pkg-config
+FREETYPE_CFLAGS
+		C compiler flags for FREETYPE, overriding pkg-config
+FREETYPE_LIBS
+		linker flags for FREETYPE, overriding pkg-config
+FONTCONFIG_CFLAGS
+		C compiler flags for FONTCONFIG, overriding pkg-config
+FONTCONFIG_LIBS
+		linker flags for FONTCONFIG, overriding pkg-config
+LIBRSVG_CFLAGS
+		C compiler flags for LIBRSVG, overriding pkg-config
+LIBRSVG_LIBS
+		linker flags for LIBRSVG, overriding pkg-config
+pixman_CFLAGS
+		C compiler flags for pixman, overriding pkg-config
+pixman_LIBS linker flags for pixman, overriding pkg-config<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p> set the environment variables:</p>
+ <pre class="line-numbers language-none"><code class="language-none">pixman_CFLAGS&#x3D;&#39;-I&#x2F;home&#x2F;src&#x2F;code&#x2F;pixman&#x2F;include&#x2F;pixman-1&#39; 
+pixman_LIBS&#x3D;&#39;-L&#x2F;home&#x2F;src&#x2F;code&#x2F;pixman&#x2F;lib -lpixman-1&#39;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre></li>
+<li><p>get cario library</p>
+ <pre class="line-numbers language-none"><code class="language-none">open folder &#x2F;home&#x2F;src&#x2F;code&#x2F;cario ,get libs<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+<h2 id="For-Android-Steps"><a href="#For-Android-Steps" class="headerlink" title="For Android, Steps:"></a>For Android, Steps:</h2><pre class="line-numbers language-none"><code class="language-none">export CPPFLAGS&#x3D;--sysroot&#x3D;&quot;&#x2F;opt&#x2F;android-ndk-r13b&#x2F;platforms&#x2F;android-23&#x2F;arch-arm&#x2F; &quot;
+export CFLAGS&#x3D;--sysroot&#x3D;&quot;&#x2F;opt&#x2F;android-ndk-r13b&#x2F;platforms&#x2F;android-23&#x2F;arch-arm&#x2F; &quot;
+export CXXFLAGS&#x3D;--sysroot&#x3D;&quot;&#x2F;opt&#x2F;android-ndk-r13b&#x2F;platforms&#x2F;android-23&#x2F;arch-arm&#x2F; &quot;
+export LDFLAGS&#x3D;--sysroot&#x3D;&quot;&#x2F;opt&#x2F;android-ndk-r13b&#x2F;platforms&#x2F;android-23&#x2F;arch-arm&#x2F; &quot;
+export CC&#x3D;&quot;&#x2F;opt&#x2F;android-ndk-r13b&#x2F;toolchains&#x2F;arm-linux-androideabi-4.9&#x2F;prebuilt&#x2F;linux-x86_64&#x2F;bin&#x2F;arm-linux-androideabi-gcc &quot;
+export CXX&#x3D;&quot;&#x2F;opt&#x2F;android-ndk-r13b&#x2F;toolchains&#x2F;arm-linux-androideabi-4.9&#x2F;prebuilt&#x2F;linux-x86_64&#x2F;bin&#x2F;arm-linux-androideabi-g++ &quot;
+
+.&#x2F;configure --host&#x3D;arm --prefix&#x3D;&#x2F;opt&#x2F;cairo&#x2F;cairo --with-sysroot&#x3D;&quot;&#x2F;opt&#x2F;android-ndk-r13b&#x2F;platforms&#x2F;android-23&#x2F;arch-arm&#x2F;&quot; --enable-png&#x3D;yes --disable-xlib --disable-xlib-xrender --enable-directfb&#x3D;no --enable-ft&#x3D;yes  --enable-fc&#x3D;no --disable-win32 --disable-svg --enable-pdf&#x3D;yes  FREETYPE_CFLAGS&#x3D;&#39;-I&#x2F;opt&#x2F;cairo&#x2F;freetype&#x2F;include&#x2F;freetype2&#39; FREETYPE_LIBS&#x3D;&#39;-L&#x2F;opt&#x2F;cairo&#x2F;freetype&#x2F;lib -lfreetype&#39; png_CFLAGS&#x3D;&#39;-I&#x2F;opt&#x2F;cairo&#x2F;png&#x2F;include&#39; png_LIBS&#x3D;&#39;-L&#x2F;opt&#x2F;cairo&#x2F;png&#x2F;lib -lpng16&#39; pixman_CFLAGS&#x3D;&#39;-I&#x2F;opt&#x2F;cairo&#x2F;pix_man&#x2F;include&#x2F;pixman-1&#39; pixman_LIBS&#x3D;&#39;-L&#x2F;opt&#x2F;cairo&#x2F;pix_man&#x2F;lib -lpixman-1&#39; --enable-xcb&#x3D;no 
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<h2 id="For-IOS-Steps"><a href="#For-IOS-Steps" class="headerlink" title="For IOS, Steps:"></a>For IOS, Steps:</h2></li>
+</ol>
+<pre class="line-numbers language-none"><code class="language-none">#export PKG_CONFIG_PATH&#x3D;&#x2F;usr&#x2F;lib&#x2F;pkgconfig&#x2F;
+export BUILD_ARCHS&#x3D;armv7 armv7s arm64 i386 x86_64
+#IOS_LINK_FLAG&#x3D; -arch x86_64
+export IOS_BUILD_TOOLS_DIR&#x3D;&#x2F;Applications&#x2F;Xcode.app&#x2F;Contents&#x2F;Developer&#x2F;Toolchains&#x2F;XcodeDefault.xctoolchain&#x2F;usr&#x2F;bin&#x2F;
+export IOS_SYSROOT_DIR&#x3D;&quot;&#x2F;Applications&#x2F;Xcode.app&#x2F;Contents&#x2F;Developer&#x2F;Platforms&#x2F;iPhoneSimulator.platform&#x2F;Developer&#x2F;SDKs&#x2F;iPhoneSimulator.sdk&quot;
+#export CC&#x3D;&quot;&#x2F;Applications&#x2F;Xcode.app&#x2F;Contents&#x2F;Developer&#x2F;usr&#x2F;bin&#x2F;gcc &quot;
+#export CXX&#x3D;&quot;&#x2F;Applications&#x2F;Xcode.app&#x2F;Contents&#x2F;Developer&#x2F;usr&#x2F;bin&#x2F;g++ &quot;
+
+#export CC&#x3D;&quot;&#x2F;Applications&#x2F;Xcode.app&#x2F;Contents&#x2F;Developer&#x2F;Toolchains&#x2F;XcodeDefault.xctoolchain&#x2F;usr&#x2F;bin&#x2F;clang &quot;
+#export CXX&#x3D;&quot;&#x2F;Applications&#x2F;Xcode.app&#x2F;Contents&#x2F;Developer&#x2F;Toolchains&#x2F;XcodeDefault.xctoolchain&#x2F;usr&#x2F;bin&#x2F;clang++ &quot;
+
+.&#x2F;configure --prefix&#x3D;&#x2F;opt&#x2F;simulator_cairo_lib&#x2F;cairo CC&#x3D;&quot;&#x2F;Applications&#x2F;Xcode.app&#x2F;Contents&#x2F;Developer&#x2F;usr&#x2F;bin&#x2F;gcc -arch x86_64&quot; --with-sysroot&#x3D;&quot;&#x2F;Applications&#x2F;Xcode.app&#x2F;Contents&#x2F;Developer&#x2F;Platforms&#x2F;iPhoneSimulator.platform&#x2F;Developer&#x2F;SDKs&#x2F;iPhoneSimulator.sdk&quot; AR&#x3D;&quot;&#x2F;Applications&#x2F;Xcode.app&#x2F;Contents&#x2F;Developer&#x2F;Toolchains&#x2F;XcodeDefault.xctoolchain&#x2F;usr&#x2F;bin&#x2F;ar&quot; --enable-xlib&#x3D;no --enable-xlib-xrender&#x3D;no --enable-ft&#x3D;no --enable-script&#x3D;no --enable-ps&#x3D;no --enable-pdf&#x3D;no --enable-svg&#x3D;no --enable-trace&#x3D;no --enable-interpreter&#x3D;no --enable-png&#x3D;no  pixman_CFLAGS&#x3D;&#39;-I&#x2F;opt&#x2F;simulator_cairo_lib&#x2F;pixmap&#x2F;include&#x2F;pixman-1&#39; pixman_LIBS&#x3D;&#39;-L&#x2F;opt&#x2F;simulator_cairo_lib&#x2F;pixmap&#x2F;lib -lpixman-1&#39; png_CFLAGS&#x3D;&#39;-I&#x2F;opt&#x2F;simulator_cairo_lib&#x2F;png&#x2F;include&#39; png_LIBS&#x3D;&#39;-L&#x2F;opt&#x2F;simulator_cairo_lib&#x2F;png&#x2F;lib&#x2F; -lpng16&#39; <span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>]]></content>
+      <categories>
+        <category>cycle zone</category>
+      </categories>
+      <tags>
+        <tag>cycle 2021</tag>
+        <tag>cario</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>29.lib-config.cmake</title>
+    <url>/2021/12/22/29-lib-config-cmake/</url>
+    <content><![CDATA[<h1 id="29-lib-config-cmake"><a href="#29-lib-config-cmake" class="headerlink" title="29.lib-config.cmake"></a>29.lib-config.cmake</h1><ul>
+<li> set(xxx_FOUND TRUE)</li>
+<li> use xxx_INCLUDE_DIRS and xxx_LIBRARIES in CMakeLists.txt</li>
+<li> set(xxx_INCLUDE_DIRS ${MYSQLCPPCONN_INCLUDE_DIR} )</li>
+<li> set(xxx_LIBRARIES ${MYSQLCPPCONN_LIBRARY} )</li>
+</ul>
+<h2 id="pslib-config-cmake"><a href="#pslib-config-cmake" class="headerlink" title="pslib-config.cmake"></a>pslib-config.cmake</h2><pre class="line-numbers language-none"><code class="language-none">get_filename_component(_DIR &quot;$&#123;CMAKE_CURRENT_LIST_FILE&#125;&quot; PATH)
+
+if(NOT PSLIB_FIND_COMPONENTS)
+    set(PSLIB_FIND_COMPONENTS pslib pslib)
+    if(PSLIB_FIND_REQUIRED)
+        set(PSLIB_FIND_REQUIRED_pslib TRUE)
+    endif()
+
+    set(PSLIB_FOUND TRUE)
+endif()
+
+set(PSLIB_INCLUDE_DIRS $&#123;_DIR&#125;&#x2F;..&#x2F;..&#x2F;include)
+set(PSLIB_LIBRARIES)
+if (EXISTS $&#123;_DIR&#125;&#x2F;..&#x2F;..&#x2F;lib&#x2F;pslib.a)
+    list(APPEND PSLIB_LIBRARIES optimized $&#123;_DIR&#125;&#x2F;..&#x2F;..&#x2F;lib&#x2F;pslib.a)
+endif()
+if (EXISTS $&#123;_DIR&#125;&#x2F;..&#x2F;..&#x2F;debug&#x2F;lib&#x2F;pslib.a)
+    list(APPEND PSLIB_LIBRARIES debug $&#123;_DIR&#125;&#x2F;..&#x2F;..&#x2F;debug&#x2F;lib&#x2F;pslib.a)
+endif()
+if (EXISTS $&#123;_DIR&#125;&#x2F;..&#x2F;..&#x2F;lib&#x2F;pslib.lib)
+    list(APPEND PSLIB_LIBRARIES optimized $&#123;_DIR&#125;&#x2F;..&#x2F;..&#x2F;lib&#x2F;pslib.lib)
+endif()
+if (EXISTS $&#123;_DIR&#125;&#x2F;..&#x2F;..&#x2F;debug&#x2F;lib&#x2F;pslib.lib)
+    list(APPEND PSLIB_LIBRARIES debug $&#123;_DIR&#125;&#x2F;..&#x2F;..&#x2F;debug&#x2F;lib&#x2F;pslib.lib)
+endif()<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<h2 id="mysqlcppconn-config-cmake"><a href="#mysqlcppconn-config-cmake" class="headerlink" title="mysqlcppconn-config.cmake"></a>mysqlcppconn-config.cmake</h2><pre class="line-numbers language-none"><code class="language-none"># Name: &lt;Name&gt;Config.cmake  or &lt;lower name&gt;-config.cmake
+# mysqlcppconn-config.cmake or MYSQLCPPCONNConfig.cmake  
+# similar to OpenCVConfig.cmake   
+
+# Tips for MYSQLCPPCONN_ROOT_DIR
+# use &quot;C:&#x2F;Program Files&#x2F;MySQL&#x2F;Connector.C++ 1.1&quot;, otherwise cmake-gui can not auto find include and library
+
+set(MYSQLCPPCONN_FOUND TRUE) # auto 
+set(MYSQLCPPCONN_ROOT_DIR &quot;C:&#x2F;Program Files&#x2F;MySQL&#x2F;Connector.C++ 1.1&quot;)
+
+find_path(MYSQLCPPCONN_INCLUDE_DIR NAMES cppconn&#x2F;driver.h PATHS &quot;$&#123;MYSQLCPPCONN_ROOT_DIR&#125;&#x2F;include&quot;) 
+mark_as_advanced(MYSQLCPPCONN_INCLUDE_DIR) # show entry in cmake-gui
+
+find_library(MYSQLCPPCONN_LIBRARY NAMES mysqlcppconn.lib PATHS &quot;$&#123;MYSQLCPPCONN_ROOT_DIR&#125;&#x2F;lib&#x2F;opt&quot;) 
+mark_as_advanced(MYSQLCPPCONN_LIBRARY) # show entry in cmake-gui
+
+# use xxx_INCLUDE_DIRS and xxx_LIBRARIES in CMakeLists.txt
+set(MYSQLCPPCONN_INCLUDE_DIRS $&#123;MYSQLCPPCONN_INCLUDE_DIR&#125; )
+set(MYSQLCPPCONN_LIBRARIES $&#123;MYSQLCPPCONN_LIBRARY&#125; )
+
+# cmake entry will be saved to build&#x2F;CMakeCache.txt 
+
+message( &quot;mysqlcppconn-config.cmake &quot; $&#123;MYSQLCPPCONN_ROOT_DIR&#125;)<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<h2 id="halcon-config-cmake"><a href="#halcon-config-cmake" class="headerlink" title="halcon-config.cmake"></a>halcon-config.cmake</h2><pre class="line-numbers language-none"><code class="language-none"># halcon-config.cmake or HALCONConfig.cmake  
+
+set(HALCON_FOUND TRUE) # auto 
+set(HALCON_ROOT_DIR E:&#x2F;git&#x2F;car&#x2F;windows&#x2F;lib&#x2F;halcon)
+
+find_path(HALCON_INCLUDE_DIR NAMES halconcpp&#x2F;HalconCpp.h PATHS &quot;$&#123;HALCON_ROOT_DIR&#125;&#x2F;include&quot;) 
+mark_as_advanced(HALCON_INCLUDE_DIR) # show entry in cmake-gui
+
+find_library(HALCON_LIBRARY NAMES halconcpp.lib PATHS &quot;$&#123;HALCON_ROOT_DIR&#125;&#x2F;lib&#x2F;x64-win64&quot;) 
+mark_as_advanced(HALCON_LIBRARY) # show entry in cmake-gui
+
+# use xxx_INCLUDE_DIRS and xxx_LIBRARIES in CMakeLists.txt
+set(HALCON_INCLUDE_DIRS $&#123;HALCON_INCLUDE_DIR&#125; )
+set(HALCON_LIBRARIES $&#123;HALCON_LIBRARY&#125; )
+
+message( &quot;halcon-config.cmake &quot; $&#123;HALCON_ROOT_DIR&#125;)<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<h2 id="usage"><a href="#usage" class="headerlink" title="usage"></a>usage</h2><pre class="line-numbers language-none"><code class="language-none">find_package(HALCON REQUIRED) # user-defined
+include_directories($&#123;HALCON_INCLUDE_DIRS&#125;)
+
+find_package(MYSQLCPPCONN REQUIRED) # user-defined
+include_directories($&#123;MYSQLCPPCONN_INCLUDE_DIRS&#125;)
+
+target_link_libraries(demo $&#123;HALCON_LIBRARIES&#125; $&#123;MYSQLCPPCONN_LIBRARIES&#125;)<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h2 id="cmake-gui-entry"><a href="#cmake-gui-entry" class="headerlink" title="cmake-gui entry"></a>cmake-gui entry</h2><ol>
+<li> start cmake-gui, and at first,we should set</li>
+</ol>
+<ul>
+<li>HALCON_DIR = E:/git/car/share/cmake-3.10/Modules</li>
+<li>MYSQLCPPCONN_DIR = E:/git/car/share/cmake-3.10/Modules</li>
+</ul>
+<ol start="2">
+<li> then configure</li>
+</ol>
+<ul>
+<li>HALCON_INCLUDE_DIR and HALCON_LIBRARY will be found.</li>
+<li>MYSQLCPPCONN_INCLUDE_DIR and MYSQLCPPCONN_LIBRARY will be found.</li>
+</ul>
+]]></content>
+      <categories>
+        <category>cycle zone</category>
+      </categories>
+      <tags>
+        <tag>cycle 2021</tag>
+        <tag>cmake</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>28.QGuiApplication(int &amp;argc, char **argv)</title>
+    <url>/2021/12/22/28-QGuiApplication-int-argc-char-argv/</url>
+    <content><![CDATA[<h1 id="28-QGuiApplication-int-amp-argc-char-argv"><a href="#28-QGuiApplication-int-amp-argc-char-argv" class="headerlink" title="28.QGuiApplication(int &amp;argc, char **argv)"></a>28.QGuiApplication(int &amp;argc, char **argv)</h1><p> for more information, please visit </p>
+<p>   <a href="https://doc.qt.io/qt-5/qguiapplication.html#QGuiApplication">https://doc.qt.io/qt-5/qguiapplication.html#QGuiApplication</a></p>
+<p>   <a href="https://stackoverflow.com/questions/17979185/qt-5-1-qapplication-without-display-qxcbconnection-could-not-connect-to-displ">https://stackoverflow.com/questions/17979185/qt-5-1-qapplication-without-display-qxcbconnection-could-not-connect-to-displ</a></p>
+<p>Initializes the window system and constructs an application object with argc command line arguments in argv.</p>
+<p>Warning: The data referred to by argc and argv must stay valid for the entire lifetime of the QGuiApplication object. In addition, argc must be greater than zero and argv must contain at least one valid character string.</p>
+<p>The global qApp pointer refers to this application object. Only one application object should be created.</p>
+<p>This application object must be constructed before any paint devices (including pixmaps, bitmaps etc.).</p>
+<p>Note: argc and argv might be changed as Qt removes command line arguments that it recognizes.</p>
+<h2 id="Supported-Command-Line-Options"><a href="#Supported-Command-Line-Options" class="headerlink" title="Supported Command Line Options"></a>Supported Command Line Options</h2><p>All Qt programs automatically support a set of command-line options that allow modifying the way Qt will interact with the windowing system. Some of the options are also accessible via environment variables, which are the preferred form if the application can launch GUI sub-processes or other applications (environment variables will be inherited by child processes). When in doubt, use the environment variables.</p>
+<h3 id="The-options-currently-supported-are-the-following"><a href="#The-options-currently-supported-are-the-following" class="headerlink" title="The options currently supported are the following:"></a>The options currently supported are the following:</h3><pre class="line-numbers language-none"><code class="language-none">-platform platformName[:options], specifies the Qt Platform Abstraction (QPA) plugin.
+Overrides the QT_QPA_PLATFORM environment variable.<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<pre class="line-numbers language-none"><code class="language-none">-platformpluginpath path, specifies the path to platform plugins.
+Overrides the QT_QPA_PLATFORM_PLUGIN_PATH environment variable.
+
+-platformtheme platformTheme, specifies the platform theme.
+Overrides the QT_QPA_PLATFORMTHEME environment variable.
+
+-plugin plugin, specifies additional plugins to load. The argument may appear multiple times.
+Concatenated with the plugins in the QT_QPA_GENERIC_PLUGINS environment variable.
+
+-qmljsdebugger&#x3D;, activates the QML&#x2F;JS debugger with a specified port. The value must be of format port:1234[,block], where block is optional and will make the application wait until a debugger connects to it.
+-qwindowgeometry geometry, specifies window geometry for the main window using the X11-syntax. For example: -qwindowgeometry 100x100+50+50
+-qwindowicon, sets the default window icon
+-qwindowtitle, sets the title of the first window
+-reverse, sets the application&#39;s layout direction to Qt::RightToLeft. This option is intended to aid debugging and should not be used in production. The default value is automatically detected from the user&#39;s locale (see also QLocale::textDirection()).
+-session session, restores the application from an earlier session.
+The following standard command line options are available for X11:
+
+-display hostname:screen_number, switches displays on X11.
+Overrides the DISPLAY environment variable.
+
+-geometry geometry, same as -qwindowgeometry.
+Platform-Specific Arguments
+You can specify platform-specific arguments for the -platform option. Place them after the platform plugin name following a colon as a comma-separated list. For example, -platform windows:dialogs&#x3D;xp,fontengine&#x3D;freetype.<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+
+<h3 id="platformName-const-QString"><a href="#platformName-const-QString" class="headerlink" title="platformName : const QString"></a>platformName : const QString</h3><p>This property holds the name of the underlying platform plugin.</p>
+<p>The QPA platform plugins are located in qtbase\src\plugins\platforms. At the time of writing, the following platform plugin names are supported:</p>
+<pre class="line-numbers language-none"><code class="language-none">android
+cocoa is a platform plugin for macOS.
+directfb
+eglfs is a platform plugin for running Qt5 applications on top of EGL and OpenGL ES 2.0 without an actual windowing system (like X11 or Wayland). For more information, see EGLFS.
+ios (also used for tvOS)
+kms is an experimental platform plugin using kernel modesetting and DRM (Direct Rendering Manager).
+linuxfb writes directly to the framebuffer. For more information, see LinuxFB.
+minimal is provided as an examples for developers who want to write their own platform plugins. However, you can use the plugin to run GUI applications in environments without a GUI, such as servers.
+minimalegl is an example plugin.
+offscreen
+openwfd
+qnx
+windows
+wayland is a platform plugin for modern Linux desktops and some embedded systems.
+xcb is the X11 plugin used on regular desktop Linux platforms.
+For more information about the platform plugins for embedded Linux devices, see Qt for Embedded Linux.
+
+Access functions:
+
+QString	platformName()<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="The-following-parameters-are-available-for-platform-windows"><a href="#The-following-parameters-are-available-for-platform-windows" class="headerlink" title="The following parameters are available for -platform windows:"></a>The following parameters are available for -platform windows:</h3><pre class="line-numbers language-none"><code class="language-none">altgr, detect the key AltGr found on some keyboards as Qt::GroupSwitchModifier (since Qt 5.12).
+darkmode&#x3D;[1|2] controls how Qt responds to the activation of the Dark Mode for applications introduced in Windows 10 1903 (since Qt 5.15).
+A value of 1 causes Qt to switch the window borders to black when Dark Mode for applications is activated and no High Contrast Theme is in use. This is intended for applications that implement their own theming.
+
+A value of 2 will in addition cause the Windows Vista style to be deactivated and switch to the Windows style using a simplified palette in dark mode. This is currently experimental pending the introduction of new style that properly adapts to dark mode.
+
+dialogs&#x3D;[xp|none], xp uses XP-style native dialogs and none disables them.
+dpiawareness&#x3D;[0|1|2] Sets the DPI awareness of the process (see High DPI Displays, since Qt 5.4).
+fontengine&#x3D;freetype, uses the FreeType font engine.
+menus&#x3D;[native|none], controls the use of native menus.
+Native menus are implemented using Win32 API and are simpler than QMenu-based menus in for example that they do allow for placing widgets on them or changing properties like fonts and do not provide hover signals. They are mainly intended for Qt Quick. By default, they will be used if the application is not an instance of QApplication or for Qt Quick Controls 2 applications (since Qt 5.10).
+
+nocolorfonts Turn off DirectWrite Color fonts (since Qt 5.8).
+nodirectwrite Turn off DirectWrite fonts (since Qt 5.8).
+nomousefromtouch Ignores mouse events synthesized from touch events by the operating system.
+nowmpointer Switches from Pointer Input Messages handling to legacy mouse handling (since Qt 5.12).
+reverse Activates Right-to-left mode (experimental). Windows title bars will be shown accordingly in Right-to-left locales (since Qt 5.13).
+tabletabsoluterange&#x3D;&lt;value&gt; Sets a value for mouse mode detection of WinTab tablets (Legacy, since Qt 5.3).
+The following parameter is available for -platform cocoa (on macOS):
+
+fontengine&#x3D;freetype, uses the FreeType font engine.
+For more information about the platform-specific arguments available for embedded Linux platforms, see Qt for Embedded Linux.<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+]]></content>
+      <categories>
+        <category>cycle zone</category>
+      </categories>
+      <tags>
+        <tag>cycle 2021</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Arcgis online url</title>
+    <url>/2021/12/19/3-Arcgis-online-url/</url>
+    <content><![CDATA[<h1 id="3-Arcgis-online-url"><a href="#3-Arcgis-online-url" class="headerlink" title="3. Arcgis online url"></a>3. Arcgis online url</h1><p><a href="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/1/1/1">https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/1/1/1</a></p>
+<p>from  </p>
+<p><a href="https://github.com/giswqs/qgis-earthengine-examples/blob/master/Folium/ee-api-folium-setup.ipynb">https://github.com/giswqs/qgis-earthengine-examples/blob/master/Folium/ee-api-folium-setup.ipynb</a></p>
+<pre><code>from 
+
+https://github.com/giswqs/qgis-earthengine-examples/blob/master/Basemaps/qgis_basemaps.py
+
+sources = []
+sources.append([&quot;connections-xyz&quot;,&quot;Google Maps&quot;,&quot;&quot;,&quot;&quot;,&quot;&quot;,&quot;https://mt1.google.com/vt/lyrs=m&amp;x=%7Bx%7D&amp;y=%7By%7D&amp;z=%7Bz%7D&quot;,&quot;&quot;,&quot;19&quot;,&quot;0&quot;])
+sources.append([&quot;connections-xyz&quot;,&quot;Google Satellite&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;https://mt1.google.com/vt/lyrs=s&amp;x=%7Bx%7D&amp;y=%7By%7D&amp;z=%7Bz%7D&quot;, &quot;&quot;, &quot;19&quot;, &quot;0&quot;])
+sources.append([&quot;connections-xyz&quot;,&quot;Google Terrain&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;https://mt1.google.com/vt/lyrs=t&amp;x=%7Bx%7D&amp;y=%7By%7D&amp;z=%7Bz%7D&quot;, &quot;&quot;, &quot;19&quot;, &quot;0&quot;])
+sources.append([&quot;connections-xyz&quot;,&quot;Google Terrain Hybrid&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;https://mt1.google.com/vt/lyrs=p&amp;x=%7Bx%7D&amp;y=%7By%7D&amp;z=%7Bz%7D&quot;, &quot;&quot;, &quot;19&quot;, &quot;0&quot;])
+sources.append([&quot;connections-xyz&quot;,&quot;Google Satellite Hybrid&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;https://mt1.google.com/vt/lyrs=y&amp;x=%7Bx%7D&amp;y=%7By%7D&amp;z=%7Bz%7D&quot;, &quot;&quot;, &quot;19&quot;, &quot;0&quot;])
+sources.append([&quot;connections-xyz&quot;,&quot;Stamen Terrain&quot;, &quot;&quot;, &quot;&quot;, &quot;Map tiles by Stamen Design, under CC BY 3.0. Data by OpenStreetMap, under ODbL&quot;, &quot;http://tile.stamen.com/terrain/%7Bz%7D/%7Bx%7D/%7By%7D.png&quot;, &quot;&quot;, &quot;20&quot;, &quot;0&quot;])
+sources.append([&quot;connections-xyz&quot;,&quot;Stamen Toner&quot;, &quot;&quot;, &quot;&quot;, &quot;Map tiles by Stamen Design, under CC BY 3.0. Data by OpenStreetMap, under ODbL&quot;, &quot;http://tile.stamen.com/toner/%7Bz%7D/%7Bx%7D/%7By%7D.png&quot;, &quot;&quot;, &quot;20&quot;, &quot;0&quot;])
+sources.append([&quot;connections-xyz&quot;,&quot;Stamen Toner Light&quot;, &quot;&quot;, &quot;&quot;, &quot;Map tiles by Stamen Design, under CC BY 3.0. Data by OpenStreetMap, under ODbL&quot;, &quot;http://tile.stamen.com/toner-lite/%7Bz%7D/%7Bx%7D/%7By%7D.png&quot;, &quot;&quot;, &quot;20&quot;, &quot;0&quot;])
+sources.append([&quot;connections-xyz&quot;,&quot;Stamen Watercolor&quot;, &quot;&quot;, &quot;&quot;, &quot;Map tiles by Stamen Design, under CC BY 3.0. Data by OpenStreetMap, under ODbL&quot;, &quot;http://tile.stamen.com/watercolor/%7Bz%7D/%7Bx%7D/%7By%7D.jpg&quot;, &quot;&quot;, &quot;18&quot;, &quot;0&quot;])
+sources.append([&quot;connections-xyz&quot;,&quot;Wikimedia Map&quot;, &quot;&quot;, &quot;&quot;, &quot;OpenStreetMap contributors, under ODbL&quot;, &quot;https://maps.wikimedia.org/osm-intl/%7Bz%7D/%7Bx%7D/%7By%7D.png&quot;, &quot;&quot;, &quot;20&quot;, &quot;1&quot;])
+sources.append([&quot;connections-xyz&quot;,&quot;Wikimedia Hike Bike Map&quot;, &quot;&quot;, &quot;&quot;, &quot;OpenStreetMap contributors, under ODbL&quot;, &quot;http://tiles.wmflabs.org/hikebike/%7Bz%7D/%7Bx%7D/%7By%7D.png&quot;, &quot;&quot;, &quot;17&quot;, &quot;1&quot;])
+sources.append([&quot;connections-xyz&quot;,&quot;Esri Boundaries Places&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/%7Bz%7D/%7By%7D/%7Bx%7D&quot;, &quot;&quot;, &quot;20&quot;, &quot;0&quot;])
+sources.append([&quot;connections-xyz&quot;,&quot;Esri Gray (dark)&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;http://services.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/%7Bz%7D/%7By%7D/%7Bx%7D&quot;, &quot;&quot;, &quot;16&quot;, &quot;0&quot;])
+sources.append([&quot;connections-xyz&quot;,&quot;Esri Gray (light)&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;http://services.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/%7Bz%7D/%7By%7D/%7Bx%7D&quot;, &quot;&quot;, &quot;16&quot;, &quot;0&quot;])
+sources.append([&quot;connections-xyz&quot;,&quot;Esri National Geographic&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;http://services.arcgisonline.com/ArcGIS/rest/services/NatGeo_World_Map/MapServer/tile/%7Bz%7D/%7By%7D/%7Bx%7D&quot;, &quot;&quot;, &quot;12&quot;, &quot;0&quot;])
+sources.append([&quot;connections-xyz&quot;,&quot;Esri Ocean&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;https://services.arcgisonline.com/ArcGIS/rest/services/Ocean/World_Ocean_Base/MapServer/tile/%7Bz%7D/%7By%7D/%7Bx%7D&quot;, &quot;&quot;, &quot;10&quot;, &quot;0&quot;])
+sources.append([&quot;connections-xyz&quot;,&quot;Esri Satellite&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/%7Bz%7D/%7By%7D/%7Bx%7D&quot;, &quot;&quot;, &quot;17&quot;, &quot;0&quot;])
+sources.append([&quot;connections-xyz&quot;,&quot;Esri Standard&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/%7Bz%7D/%7By%7D/%7Bx%7D&quot;, &quot;&quot;, &quot;17&quot;, &quot;0&quot;])
+sources.append([&quot;connections-xyz&quot;,&quot;Esri Terrain&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;https://server.arcgisonline.com/ArcGIS/rest/services/World_Terrain_Base/MapServer/tile/%7Bz%7D/%7By%7D/%7Bx%7D&quot;, &quot;&quot;, &quot;13&quot;, &quot;0&quot;])
+sources.append([&quot;connections-xyz&quot;,&quot;Esri Transportation&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Transportation/MapServer/tile/%7Bz%7D/%7By%7D/%7Bx%7D&quot;, &quot;&quot;, &quot;20&quot;, &quot;0&quot;])
+sources.append([&quot;connections-xyz&quot;,&quot;Esri Topo World&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;http://services.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/%7Bz%7D/%7By%7D/%7Bx%7D&quot;, &quot;&quot;, &quot;20&quot;, &quot;0&quot;])
+sources.append([&quot;connections-xyz&quot;,&quot;OpenStreetMap Standard&quot;, &quot;&quot;, &quot;&quot;, &quot;OpenStreetMap contributors, CC-BY-SA&quot;, &quot;http://tile.openstreetmap.org/%7Bz%7D/%7Bx%7D/%7By%7D.png&quot;, &quot;&quot;, &quot;19&quot;, &quot;0&quot;])
+sources.append([&quot;connections-xyz&quot;,&quot;OpenStreetMap H.O.T.&quot;, &quot;&quot;, &quot;&quot;, &quot;OpenStreetMap contributors, CC-BY-SA&quot;, &quot;http://tile.openstreetmap.fr/hot/%7Bz%7D/%7Bx%7D/%7By%7D.png&quot;, &quot;&quot;, &quot;19&quot;, &quot;0&quot;])
+sources.append([&quot;connections-xyz&quot;,&quot;OpenStreetMap Monochrome&quot;, &quot;&quot;, &quot;&quot;, &quot;OpenStreetMap contributors, CC-BY-SA&quot;, &quot;http://tiles.wmflabs.org/bw-mapnik/%7Bz%7D/%7Bx%7D/%7By%7D.png&quot;, &quot;&quot;, &quot;19&quot;, &quot;0&quot;])
+sources.append([&quot;connections-xyz&quot;,&quot;Strava All&quot;, &quot;&quot;, &quot;&quot;, &quot;OpenStreetMap contributors, CC-BY-SA&quot;, &quot;https://heatmap-external-b.strava.com/tiles/all/bluered/%7Bz%7D/%7Bx%7D/%7By%7D.png&quot;, &quot;&quot;, &quot;15&quot;, &quot;0&quot;])
+sources.append([&quot;connections-xyz&quot;,&quot;Strava Run&quot;, &quot;&quot;, &quot;&quot;, &quot;OpenStreetMap contributors, CC-BY-SA&quot;, &quot;https://heatmap-external-b.strava.com/tiles/run/bluered/%7Bz%7D/%7Bx%7D/%7By%7D.png?v=19&quot;, &quot;&quot;, &quot;15&quot;, &quot;0&quot;])
+sources.append([&quot;connections-xyz&quot;,&quot;Open Weather Map Temperature&quot;, &quot;&quot;, &quot;&quot;, &quot;Map tiles by OpenWeatherMap, under CC BY-SA 4.0&quot;, &quot;http://tile.openweathermap.org/map/temp_new/%7Bz%7D/%7Bx%7D/%7By%7D.png?APPID=1c3e4ef8e25596946ee1f3846b53218a&quot;, &quot;&quot;, &quot;19&quot;, &quot;0&quot;])
+sources.append([&quot;connections-xyz&quot;,&quot;Open Weather Map Clouds&quot;, &quot;&quot;, &quot;&quot;, &quot;Map tiles by OpenWeatherMap, under CC BY-SA 4.0&quot;, &quot;http://tile.openweathermap.org/map/clouds_new/%7Bz%7D/%7Bx%7D/%7By%7D.png?APPID=ef3c5137f6c31db50c4c6f1ce4e7e9dd&quot;, &quot;&quot;, &quot;19&quot;, &quot;0&quot;])
+sources.append([&quot;connections-xyz&quot;,&quot;Open Weather Map Wind Speed&quot;, &quot;&quot;, &quot;&quot;, &quot;Map tiles by OpenWeatherMap, under CC BY-SA 4.0&quot;, &quot;http://tile.openweathermap.org/map/wind_new/%7Bz%7D/%7Bx%7D/%7By%7D.png?APPID=f9d0069aa69438d52276ae25c1ee9893&quot;, &quot;&quot;, &quot;19&quot;, &quot;0&quot;])
+sources.append([&quot;connections-xyz&quot;,&quot;CartoDb Dark Matter&quot;, &quot;&quot;, &quot;&quot;, &quot;Map tiles by CartoDB, under CC BY 3.0. Data by OpenStreetMap, under ODbL.&quot;, &quot;http://basemaps.cartocdn.com/dark_all/%7Bz%7D/%7Bx%7D/%7By%7D.png&quot;, &quot;&quot;, &quot;20&quot;, &quot;0&quot;])
+sources.append([&quot;connections-xyz&quot;,&quot;CartoDb Positron&quot;, &quot;&quot;, &quot;&quot;, &quot;Map tiles by CartoDB, under CC BY 3.0. Data by OpenStreetMap, under ODbL.&quot;, &quot;http://basemaps.cartocdn.com/light_all/%7Bz%7D/%7Bx%7D/%7By%7D.png&quot;, &quot;&quot;, &quot;20&quot;, &quot;0&quot;])
+sources.append([&quot;connections-xyz&quot;,&quot;Bing VirtualEarth&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;http://ecn.t3.tiles.virtualearth.net/tiles/a&#123;q&#125;.jpeg?g=1&quot;, &quot;&quot;, &quot;19&quot;, &quot;1&quot;])
+</code></pre>
+]]></content>
+      <categories>
+        <category>cycle zone</category>
+      </categories>
+      <tags>
+        <tag>cycle 2021</tag>
+        <tag>arcgis url</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>31.How to Install Zentao for linux</title>
+    <url>/2021/12/23/31-Install-Zentao-for-linux/</url>
+    <content><![CDATA[<h1 id="31-Install-Zentao-for-linux"><a href="#31-Install-Zentao-for-linux" class="headerlink" title="31.Install Zentao for linux"></a>31.Install Zentao for linux</h1><h2 id="Install-steps"><a href="#Install-steps" class="headerlink" title="Install steps"></a>Install steps</h2><ul>
+<li><ol>
+<li><p>visit <a href="https://www.zentao.net/dynamic/zentaopms.pro10.3.1-80434.html">https://www.zentao.net/dynamic/zentaopms.pro10.3.1-80434.html</a> ,</p>
+<p> get the linux install package,eg. ‘ZenTaoPMS.15.7.1.zbox_64.tar.gz ‘</p>
+</li>
+</ol>
+</li>
+<li><ol start="2">
+<li>copy the package file into linux file folder,such as ‘ /user/zen ‘</li>
+</ol>
+</li>
+<li><ol start="3">
+<li>open folder where package located, ‘cd /user/zen ‘</li>
+</ol>
+</li>
+<li><ol start="4">
+<li><p>unzip the file to target folder  ‘/opt/‘; </p>
+<pre><code>    sudo tar -zxvf  ZenTaoPMS.15.7.1.zbox_64.tar.gz -C /opt
+</code></pre>
+<p> then in folder ‘ /opt/zbox ‘,we find ./zbox entry;</p>
+</li>
+</ol>
+</li>
+<li><ol start="5">
+<li>set port number for mysql and apache;<pre><code>   cd /opt/zbox 
+   ./zbox  -mp 3307 
+   ./zbox  -ap 9091 
+</code></pre>
+mp for mysql port;  ap for apache port</li>
+</ol>
+</li>
+<li><ol start="6">
+<li><p>add user into DataBase</p>
+<pre><code>cd /opt/zbox/auth
+sh adduser.sh 
+
+This tool is used to add user to access adminer
+Account: root
+Password: Adding password for user root
+</code></pre>
+</li>
+</ol>
+</li>
+<li><ol start="7">
+<li>start mysql and apache<pre><code>cd /opt/zbox
+./zbox start
+</code></pre>
+</li>
+</ol>
+</li>
+<li><ol start="8">
+<li><p>visit ‘localhost:9091 ‘ in local machine or</p>
+<p>visit ‘192.168.10.50:9091 ‘ in remote machine;</p>
+<p>then login and use it;</p>
+<p>default user :   admin </p>
+<p>default key :    123456</p>
+</li>
+</ol>
+</li>
+<li><ol start="9">
+<li><p>when no longer use it,stop it;<br>when reboot,restart it;</p>
+<pre><code>cd /opt/zbox
+./zbox stop
+./zbox restart     
+</code></pre>
+</li>
+</ol>
+</li>
+<li><ol start="10">
+<li><p>if cannot visit，add port into firewall,if the firewall is active</p>
+<pre><code>  [root@localhost zbox]# systemctl status firewalld
+  ● firewalld.service - firewalld - dynamic firewall daemon
+     Loaded: loaded (/usr/lib/systemd/system/firewalld.service; enabled; vendor preset: enabled)
+     Active: active (running) since 日 2021-12-05 11:36:48 CST; 1h 47min ago
+       Docs: man:firewalld(1)
+   Main PID: 846 (firewalld)
+      Tasks: 2
+     CGroup: /system.slice/firewalld.service
+             └─846 /usr/bin/python2 -Es /usr/sbin/firewalld --nofork --nopid
+
+  12月 05 11:36:46 localhost.localdomain systemd[1]: Starting firewalld - dynam...
+  12月 05 11:36:48 localhost.localdomain systemd[1]: Started firewalld - dynami...
+  Hint: Some lines were ellipsized, use -l to show in full.
+  [root@localhost zbox]# firewall-cmd --list-ports
+  80/tcp 8081/tcp
+  [root@localhost zbox]# firewall-cmd --zone=public --add-port=9091/tcp --permanentsuccess
+  [root@localhost zbox]# firewall-cmd --list-ports
+  80/tcp 8081/tcp
+  [root@localhost zbox]# reboot  
+</code></pre>
+</li>
+</ol>
+</li>
+</ul>
+]]></content>
+      <categories>
+        <category>Zentao</category>
+      </categories>
+      <tags>
+        <tag>cycle 2021</tag>
+        <tag>Zentao</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>32.How to Install Gitlab for linux</title>
+    <url>/2021/12/23/32-Install-Gitlab-for-linux/</url>
+    <content><![CDATA[<h1 id="32-Install-Gitlab-for-linux"><a href="#32-Install-Gitlab-for-linux" class="headerlink" title="32.Install Gitlab for linux"></a>32.Install Gitlab for linux</h1><h2 id="About-gitlab"><a href="#About-gitlab" class="headerlink" title="About gitlab"></a>About gitlab</h2><pre class="line-numbers language-none"><code class="language-none">&#x2F;etc&#x2F;gitlab&#x2F;gitlab.rb          #gitlab配置文件
+&#x2F;opt&#x2F;gitlab                    #gitlab的程序安装目录
+&#x2F;var&#x2F;opt&#x2F;gitlab                #gitlab目录数据目录
+&#x2F;var&#x2F;opt&#x2F;gitlab&#x2F;git-data       #存放仓库数据
+gitlab-ctl reconfigure         #重新加载配置
+gitlab-ctl status              #查看当前gitlab所有服务运行状态
+gitlab-ctl stop                #停止gitlab服务
+gitlab-ctl stop nginx          #单独停止某个服务
+gitlab-ctl tail                #查看所有服务的日志
+
+Gitlab的服务构成：
+nginx：                        静态web服务器
+gitlab-workhorse               轻量级反向代理服务器
+logrotate                      日志文件管理工具
+postgresql                     数据库
+redis                          缓存数据库
+sidekiq                        用于在后台执行队列任务（异步执行）<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<h2 id="Install-steps"><a href="#Install-steps" class="headerlink" title="Install steps"></a>Install steps</h2><ol>
+<li><p>prepare </p>
+<ul>
+<li>centos 7 , 4G memory</li>
+<li>gitlab-ce-10.2.2-ce</li>
+<li>xftp ,xshell</li>
+</ul>
+</li>
+<li><p>visit <a href="https://mirrors.tuna.tsinghua.edu.cn/gitlab-ee/yum/el7/">https://mirrors.tuna.tsinghua.edu.cn/gitlab-ee/yum/el7/</a> ,</p>
+<p>  get the install package gitlab-ee-14.5.1-ee.0.el7.x86_64.rpm</p>
+<p>  then copy package to the target folder /user/gitlab in centos7 ;</p>
+</li>
+<li><p>install dependency and package </p>
+ <pre class="line-numbers language-none"><code class="language-none">yum install -y postfix sshd policycoreutils-python
+
+cd &#x2F;user&#x2F;gitlab
+
+rpm -ivh gitlab-ee-14.5.1-ee.0.el7.x86_64.rpm<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre></li>
+<li><p>configure</p>
+ <pre class="line-numbers language-none"><code class="language-none">[root@gitlab ~]# vim &#x2F;etc&#x2F;gitlab&#x2F;gitlab.rb     
+external_url &#39;http:&#x2F;&#x2F;192.168.1.21&#39;        
+[root@gitlab ~]# gitlab-ctl reconfigure <span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre></li>
+<li><p>visit gitlab </p>
+ <pre class="line-numbers language-none"><code class="language-none">in remote machine visit the ip configured in step 4;
+http:&#x2F;&#x2F;192.168.1.21<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre></li>
+<li><p>change ui chinese</p>
+<p> 1、dowload the service pack </p>
+ <pre class="line-numbers language-none"><code class="language-none">[root@gitlab ~]# git clone https:&#x2F;&#x2F;gitlab.com&#x2F;xhang&#x2F;gitlab.git
+[root@gitlab ~]# cd gitlab    <span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+<p> 2、find the branch version</p>
+ <pre class="line-numbers language-none"><code class="language-none">[root@gitlab ~]# git branch -a<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+<p> 3、compare version ,generate the service pack</p>
+ <pre class="line-numbers language-none"><code class="language-none">[root@gitlab ~]# git diff remotes&#x2F;origin&#x2F;10-2-stable remotes&#x2F;origin&#x2F;10-2-stable-zh &gt; &#x2F;tmp&#x2F;10.2.2-zh.diff<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+<p> 4、stop gitlab service</p>
+ <pre class="line-numbers language-none"><code class="language-none">[root@gitlab ~]# gitlab-ctl stop<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+<p> 5、patch the service pack</p>
+ <pre class="line-numbers language-none"><code class="language-none">[root@gitlab ~]# patch -d &#x2F;opt&#x2F;gitlab&#x2F;embedded&#x2F;service&#x2F;gitlab-rails -p1 &lt; &#x2F;tmp&#x2F;10.2.2-zh.diff<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+<p> 6、start and reconfigure</p>
+ <pre class="line-numbers language-none"><code class="language-none">[root@gitlab ~]# gitlab-ctl start
+[root@gitlab ~]# gitlab-ctl reconfigure<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre></li>
+<li><p>fire wall</p>
+<p>   if cannot visit gitlab,please close fire wall or open port 80;</p>
+ <pre class="line-numbers language-none"><code class="language-none">service iptables stop
+
+vi &#x2F;etc&#x2F;sysconfig&#x2F;iptables
+
+-A INPUT -m state --state NEW -m tcp -p tcp --dport 80 -j ACCEPT
+
+service iptables restart<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></li>
+<li><p>config email</p>
+ <pre class="line-numbers language-none"><code class="language-none">vim &#x2F;etc&#x2F;gitlab&#x2F;gitlab.rb  
+external_url &#39;http:&#x2F;&#x2F;192.168.1.21&#39; 
+### Email Settings
+gitlab_rails[&#39;gitlab_email_enabled&#39;] &#x3D; true
+gitlab_rails[&#39;gitlab_email_from&#39;] &#x3D; &#39;huawei@qq.com&#39;
+gitlab_rails[&#39;gitlab_email_display_name&#39;] &#x3D; &#39;huawei&#39;
+
+### GitLab email server settings
+### here use the qq email,if use other email server,modify the smtp address
+gitlab_rails[&#39;smtp_enable&#39;] &#x3D; true
+gitlab_rails[&#39;smtp_address&#39;] &#x3D; &quot;smtp.exmail.qq.com&quot;
+gitlab_rails[&#39;smtp_port&#39;] &#x3D; 465
+gitlab_rails[&#39;smtp_user_name&#39;] &#x3D; &quot;huawei@qq.com&quot;
+gitlab_rails[&#39;smtp_password&#39;] &#x3D; &quot;123456&quot;
+gitlab_rails[&#39;smtp_authentication&#39;] &#x3D; &quot;login&quot;
+gitlab_rails[&#39;smtp_enable_starttls_auto&#39;] &#x3D; true
+gitlab_rails[&#39;smtp_tls&#39;] &#x3D; true<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+</li>
+<li><p>login with root</p>
+</li>
+</ol>
+<pre class="line-numbers language-none"><code class="language-none">username: root
+password: QjD1J3CZW3XOnJnWX5ieUt7V6GoSJjskvQiBNPnxBDc&#x3D;
+password get from file &#39;initial_root_password&#39; which located in &#39; &#x2F;etc&#x2F;gitlab&#39;
+
+[root@localhost gitlab]# pwd
+&#x2F;etc&#x2F;gitlab
+[root@localhost gitlab]# ls
+gitlab.rb  gitlab-secrets.json  initial_root_password  trusted-certs
+[root@localhost gitlab]# cat initial_root_password 
+# WARNING: This value is valid only in the following conditions
+#          1. If provided manually (either via &#96;GITLAB_ROOT_PASSWORD&#96; environment variable or via &#96;gitlab_rails[&#39;initial_root_password&#39;]&#96; setting in &#96;gitlab.rb&#96;, it was provided before database was seeded for the first time (usually, the first reconfigure run).
+#          2. Password hasn&#39;t been changed manually, either via UI or via command line.
+#
+#          If the password shown here doesn&#39;t work, you must reset the admin password following https:&#x2F;&#x2F;docs.gitlab.com&#x2F;ee&#x2F;security&#x2F;reset_user_password.html#reset-your-root-password.
+
+Password: QjD1J3CZW3XOnJnWX5ieUt7V6GoSJjskvQiBNPnxBDc&#x3D;
+
+# NOTE: This file will be automatically deleted in the first reconfigure run after 24 hours.
+[root@localhost gitlab]#
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+]]></content>
+      <categories>
+        <category>Gitlab</category>
+      </categories>
+      <tags>
+        <tag>cycle 2021</tag>
+        <tag>gitlab</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>30.Tianditu-GetCapabilities</title>
+    <url>/2021/12/22/30-tianditu-GetCapabilities/</url>
+    <content><![CDATA[<h1 id="30-Tianditu-GetCapabilities"><a href="#30-Tianditu-GetCapabilities" class="headerlink" title="30.Tianditu-GetCapabilities"></a>30.Tianditu-GetCapabilities</h1><p>   <a href="http://t0.tianditu.gov.cn/vec_c/wmts?tk=9a02b3cdd29cd346de4df04229797710&amp;request=GetCapabilities&amp;service=wmts">http://t0.tianditu.gov.cn/vec_c/wmts?tk=9a02b3cdd29cd346de4df04229797710&amp;request=GetCapabilities&amp;service=wmts</a></p>
+]]></content>
+      <categories>
+        <category>cycle zone</category>
+      </categories>
+      <tags>
+        <tag>cycle 2021</tag>
+        <tag>Tianditu</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>33. Permission to github.io.git denied to another user</title>
+    <url>/2021/12/24/33-multiple%20user%20for%20github/</url>
+    <content><![CDATA[<h1 id="33-Permission-to-username-github-io-git-denied-to-another-username"><a href="#33-Permission-to-username-github-io-git-denied-to-another-username" class="headerlink" title="33.Permission to username/github.io.git denied to another username"></a>33.Permission to username/github.io.git denied to another username</h1><p>ERROR: Permission to cyclezone/cyclezone.github.io.git denied to cycle.<br>fatal: Could not read from remote repository.</p>
+<pre class="line-numbers language-none"><code class="language-none">root@user MINGW64 &#x2F;e&#x2F;git&#x2F;cyclezone.github.io (hexo)
+$ git push origin hexo
+ERROR: Permission to cyclezone&#x2F;cyclezone.github.io.git denied to cycle.
+fatal: Could not read from remote repository.
+
+Please make sure you have the correct access rights
+and the repository exists.
+
+root@user MINGW64 &#x2F;e&#x2F;git&#x2F;cyclezone.github.io (hexo)
+$ git log
+commit 7f6cb6c3ca90241362045ddc47fdd31995a32eec (HEAD -&gt; hexo)
+Author: cycle &lt;ycae#outlook.com&gt;
+Date:   Thu Dec 23 22:15:35 2021 +0800
+
+    empty branch
+
+root@user MINGW64 &#x2F;e&#x2F;git&#x2F;cyclezone.github.io (hexo)
+$ git push origin hexo
+ERROR: Permission to cyclezone&#x2F;cyclezone.github.io.git denied to cycle.
+fatal: Could not read from remote repository.
+
+
+root@user MINGW64 &#x2F;e&#x2F;git&#x2F;cyclezone.github.io (hexo)
+$ git config -l
+diff.astextplain.textconv&#x3D;astextplain
+filter.lfs.clean&#x3D;git-lfs clean -- %f
+filter.lfs.smudge&#x3D;git-lfs smudge -- %f
+filter.lfs.process&#x3D;git-lfs filter-process
+filter.lfs.required&#x3D;true
+http.sslbackend&#x3D;openssl
+http.sslcainfo&#x3D;D:&#x2F;Application&#x2F;program&#x2F;Git&#x2F;mingw64&#x2F;ssl&#x2F;certs&#x2F;ca-bundle.crt
+core.autocrlf&#x3D;true
+core.fscache&#x3D;true
+core.symlinks&#x3D;false
+core.editor&#x3D;notepad
+pull.rebase&#x3D;false
+credential.helper&#x3D;manager-core
+credential.https:&#x2F;&#x2F;dev.azure.com.usehttppath&#x3D;true
+init.defaultbranch&#x3D;master
+user.name&#x3D;cycle
+user.email&#x3D;ycae#outlook.com
+core.repositoryformatversion&#x3D;0
+core.filemode&#x3D;false
+core.bare&#x3D;false
+core.logallrefupdates&#x3D;true
+core.symlinks&#x3D;false
+core.ignorecase&#x3D;true
+remote.origin.url&#x3D;git@github.com:cyclezone&#x2F;cyclezone.github.io.git
+remote.origin.fetch&#x3D;+refs&#x2F;heads&#x2F;*:refs&#x2F;remotes&#x2F;origin&#x2F;*
+branch.main.remote&#x3D;origin
+branch.main.merge&#x3D;refs&#x2F;heads&#x2F;main
+user.name&#x3D;cyclezone
+user.email&#x3D;ycae#outlook.com
+
+root@user MINGW64 &#x2F;e&#x2F;git&#x2F;cyclezone.github.io (hexo)
+$ git remote rm origin
+
+root@user MINGW64 &#x2F;e&#x2F;git&#x2F;cyclezone.github.io (hexo)
+$ git remote add origin git@cycle.github.com:cyclezone&#x2F;cyclezone.github.io.git
+
+root@user MINGW64 &#x2F;e&#x2F;git&#x2F;cyclezone.github.io (hexo)
+$ git config -l
+diff.astextplain.textconv&#x3D;astextplain
+filter.lfs.clean&#x3D;git-lfs clean -- %f
+filter.lfs.smudge&#x3D;git-lfs smudge -- %f
+filter.lfs.process&#x3D;git-lfs filter-process
+filter.lfs.required&#x3D;true
+http.sslbackend&#x3D;openssl
+http.sslcainfo&#x3D;D:&#x2F;Application&#x2F;program&#x2F;Git&#x2F;mingw64&#x2F;ssl&#x2F;certs&#x2F;ca-bundle.crt
+core.autocrlf&#x3D;true
+core.fscache&#x3D;true
+core.symlinks&#x3D;false
+core.editor&#x3D;notepad
+pull.rebase&#x3D;false
+credential.helper&#x3D;manager-core
+credential.https:&#x2F;&#x2F;dev.azure.com.usehttppath&#x3D;true
+init.defaultbranch&#x3D;master
+user.name&#x3D;cycle
+user.email&#x3D;ycae#outlook.com
+core.repositoryformatversion&#x3D;0
+core.filemode&#x3D;false
+core.bare&#x3D;false
+core.logallrefupdates&#x3D;true
+core.symlinks&#x3D;false
+core.ignorecase&#x3D;true
+user.name&#x3D;cyclezone
+user.email&#x3D;ycae#outlook.com
+remote.origin.url&#x3D;git@cycle.github.com:cyclezone&#x2F;cyclezone.github.io.git
+remote.origin.fetch&#x3D;+refs&#x2F;heads&#x2F;*:refs&#x2F;remotes&#x2F;origin&#x2F;*
+
+root@user MINGW64 &#x2F;e&#x2F;git&#x2F;cyclezone.github.io (hexo)
+$ git status
+On branch hexo
+nothing to commit, working tree clean
+
+root@user MINGW64 &#x2F;e&#x2F;git&#x2F;cyclezone.github.io (hexo)
+$ git push origin hexo
+Enumerating objects: 3, done.
+Counting objects: 100% (3&#x2F;3), done.
+Delta compression using up to 8 threads
+Compressing objects: 100% (1&#x2F;1), done.
+Writing objects: 100% (2&#x2F;2), 227 bytes | 227.00 KiB&#x2F;s, done.
+Total 2 (delta 0), reused 0 (delta 0), pack-reused 0
+remote:
+remote: Create a pull request for &#39;hexo&#39; on GitHub by visiting:
+remote:      https:&#x2F;&#x2F;github.com&#x2F;cyclezone&#x2F;cyclezone.github.io&#x2F;pull&#x2F;new&#x2F;hexo
+remote:
+To cycle.github.com:cyclezone&#x2F;cyclezone.github.io.git
+ * [new branch]      hexo -&gt; hexo
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>]]></content>
+      <categories>
+        <category>cycle zone</category>
+      </categories>
+      <tags>
+        <tag>cycle 2021</tag>
+        <tag>github</tag>
+        <tag>Permission denied</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>34.error: invalid token at start of a preprocessor expression</title>
+    <url>/2022/01/03/34-error-invalid-token-at-start-of-a-preprocessor-expression/</url>
+    <content><![CDATA[<h2 id="34-error-invalid-token-at-start-of-a-preprocessor-expression"><a href="#34-error-invalid-token-at-start-of-a-preprocessor-expression" class="headerlink" title="34. error: invalid token at start of a preprocessor expression"></a>34. error: invalid token at start of a preprocessor expression</h2><p>for more information,visit</p>
+<p> <a href="https://stackoverflow.com/questions/36317145/macro-in-objective-c-calling-isequaltostring-produces-error-about-invalid-token">https://stackoverflow.com/questions/36317145/macro-in-objective-c-calling-isequaltostring-produces-error-about-invalid-token</a></p>
+<pre class="line-numbers language-none"><code class="language-none">error: invalid token at start of a preprocessor expression
+#if __amd64__ || __x86_64__ || _WIN64 || _M_X64
+#endif
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+
+<p>in some place; define _WIN64</p>
+<pre class="line-numbers language-none"><code class="language-none">
+#define _WIN64
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<p>Remove this line ;</p>
+<p>or change to</p>
+<pre class="line-numbers language-none"><code class="language-none">
+#ifdef __amd64__ || __x86_64__ || _WIN64 || _M_X64
+#endif 
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+]]></content>
+      <categories>
+        <category>cycle zone</category>
+      </categories>
+      <tags>
+        <tag>cycle 2022</tag>
+        <tag>preprocessor expression</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>36. process character</title>
+    <url>/2022/01/05/36-process-character/</url>
+    <content><![CDATA[<h1 id="36-process-character"><a href="#36-process-character" class="headerlink" title="36. process character"></a>36. process character</h1><pre class="line-numbers language-none"><code class="language-none">void process(const char* lpszString)
+&#123;
+  const char*		lpszBegin	&#x3D; lpszString;
+  const char*		lpszEnd		&#x3D; NULL;
+
+  &#x2F;&#x2F; skip space 
+  while(::isspace(*lpszBegin))
+    lpszBegin &#x3D; ::_tcsinc(lpszBegin);
+
+  &#x2F;&#x2F; begine with &#39;&lt;&#39; ?
+  if(*lpszBegin !&#x3D; _T(&#39;&lt;&#39;))
+    return 0;
+
+  &#x2F;&#x2F; skip&#39;&lt;&#39;
+  lpszBegin &#x3D; ::_tcsinc(lpszBegin);
+
+  &#x2F;&#x2F; if empty ,return
+  if(*lpszBegin &#x3D;&#x3D; _T(&#39;&gt;&#39;))
+      return;
+
+        bool bClosingTag &#x3D;false;
+  &#x2F;&#x2F; check label is character or not
+  if(!::isalpha(*lpszBegin))
+  &#123;
+    bClosingTag &#x3D; (*lpszBegin&#x3D;&#x3D;_T(&#39;&#x2F;&#39;));
+    if(bClosingTag)
+      lpszBegin &#x3D; ::_tcsinc(lpszBegin);
+    else
+      return 0;
+  &#125;
+
+  bOpeningTag &#x3D; !bClosingTag;
+  lpszEnd &#x3D; lpszBegin;
+  do
+  &#123;
+    &#x2F;&#x2F; include (a-z, A-Z) \(0-9) \&#39;-&#39; \&#39;-&#39; \&#39;:&#39; \&#39;.&#39;
+    if((!::isalnum(*lpszEnd)) &amp;&amp; 
+      (*lpszEnd!&#x3D;_T(&#39;-&#39;)) &amp;&amp; (*lpszEnd!&#x3D;_T(&#39;:&#39;)) &amp;&amp; 
+      (*lpszEnd!&#x3D;_T(&#39;_&#39;)) &amp;&amp; (*lpszEnd!&#x3D;_T(&#39;.&#39;)))
+    &#123;
+      &#x2F;&#x2F; if illegal
+      ASSERT(lpszEnd !&#x3D; lpszBegin);
+
+      &#x2F;&#x2F; check state
+      if(*lpszEnd&#x3D;&#x3D;NULL || ::isspace(*lpszEnd) || 
+        *lpszEnd &#x3D;&#x3D; _T(&#39;&gt;&#39;) || (*lpszEnd &#x3D;&#x3D; _T(&#39;&#x2F;&#39;) &amp;&amp; 
+        (!bClosingTag)))
+      &#123;
+        break;
+      &#125;
+      return 0;
+    &#125;
+
+    &#x2F;&#x2F; contine process next
+    lpszEnd &#x3D; ::_tcsinc(lpszEnd);
+  &#125; while(true);
+&#125;
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>]]></content>
+      <categories>
+        <category>cycle zone</category>
+      </categories>
+      <tags>
+        <tag>string</tag>
+        <tag>cycle 2022</tag>
+        <tag>tcsinc</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>35. Predefined MACROS from compiler、HardWare、OS</title>
+    <url>/2022/01/03/35-Predefined-MACROS-from-compiler%E3%80%81HardWare%E3%80%81OS/</url>
+    <content><![CDATA[<h1 id="35-Predefined-MACROS-from-compiler、HardWare、OS"><a href="#35-Predefined-MACROS-from-compiler、HardWare、OS" class="headerlink" title="35. Predefined MACROS from compiler、HardWare、OS"></a>35. Predefined MACROS from compiler、HardWare、OS</h1><h2 id="《Calling-conventions-for-different-C-compilers-and-operating-systems》"><a href="#《Calling-conventions-for-different-C-compilers-and-operating-systems》" class="headerlink" title="《Calling conventions for different C++ compilers and operating systems》"></a>《Calling conventions for different C++ compilers and operating systems》</h2><p>for more information ,</p>
+<p>please visit <a href="https://www.agner.org/optimize/calling_conventions.pdf">https://www.agner.org/optimize/calling_conventions.pdf</a>  [page 56]</p>
+<p>or</p>
+<p>search key words “《Calling conventions for different C++ compilers and operating systems》”</p>
+<p>Most C++ compilers have a predefined macro containing the version number of the<br>compiler. Programmers can use preprocessing directives to check for the existence of these<br>macros in order to detect which compiler the program is compiled on and thereby fix<br>problems with incompatible compilers.</p>
+<h2 id="Table-1-Compiler-version-predefined-macros"><a href="#Table-1-Compiler-version-predefined-macros" class="headerlink" title="Table 1. Compiler version predefined macros"></a>Table 1. Compiler version predefined macros</h2><pre class="line-numbers language-none"><code class="language-none">Compiler             |        Predefined macro
+Borland              |        __BORLANDC__
+Codeplay VectorC     |        __VECTORC__
+Digital Mars         |        __DMC__
+Gnu                  |        __GNUC__
+Intel                |        __INTEL_COMPILER
+Microsoft            |        _MSC_VER
+Pathscale            |        __PATHSCALE__
+Symantec             |        __SYMANTECC__
+Watcom               |        __WATCOMC__<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>Unfortunately, not all compilers have well - documented macros telling which hardware<br>platform and operating system they are compiling for.The following macros may or may not<br>be defined :</p>
+<h2 id="Table-2-Hardware-platform-predefined-macros"><a href="#Table-2-Hardware-platform-predefined-macros" class="headerlink" title="Table 2. Hardware platform predefined macros"></a>Table 2. Hardware platform predefined macros</h2><pre class="line-numbers language-none"><code class="language-none">platform              |       Predefined macro
+x86                   |      _M_IX86  __INTEL__  __i386__
+x86-64                |      _M_X64   __x86_64__  __amd64
+IA64                  |      __IA64__
+DEC Alpha             |      __ALPHA__
+Motorola Power PC     |      __POWERPC__
+Any little endian     |      __LITTLE_ENDIAN__
+Any big endian        |      __BIG_ENDIAN__<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h2 id="Table-3-Operating-system-predefined-macros"><a href="#Table-3-Operating-system-predefined-macros" class="headerlink" title="Table 3. Operating system predefined macros"></a>Table 3. Operating system predefined macros</h2><pre class="line-numbers language-none"><code class="language-none">Operating system       |    Predefined macro
+DOS 16 bit             |    __MSDOS__   _MSDOS
+Windows 16 bit         |    _WIN16
+Windows 32 bit         |    _WIN32      __WINDOWS__
+Windows 64 bit         |    _WIN64      _WIN32
+Linux 32 bit           |    __unix__    __linux__
+Linux 64 bit           |    __unix__    __linux__ __LP64__ __amd64
+BSD                    |    __unix__    __BSD__   __FREEBSD__
+Mac OS                 |    __APPLE__   __DARWIN__ __MACH__
+OS &#x2F; 2                 |    __OS2__<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>]]></content>
+      <categories>
+        <category>cycle zone</category>
+      </categories>
+      <tags>
+        <tag>cycle 2022</tag>
+        <tag>Predefined MACROS</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>38.Defines.h</title>
+    <url>/2022/01/08/38-defines-h/</url>
+    <content><![CDATA[<h1 id="38-Defines-h"><a href="#38-Defines-h" class="headerlink" title="38. Defines.h"></a>38. Defines.h</h1><pre class="line-numbers language-none"><code class="language-none">&#x2F;***********************************************************************
+* Software License Agreement (BSD License)
+*
+* Copyright 2020-2021  cheldon (program68@126.com). All rights reserved.
+*
+* Redistribution and use in source and binary forms, with or without
+* modification, are permitted provided that the following conditions
+* are met:
+*
+* 1. Redistributions of source code must retain the above copyright
+*    notice, this list of conditions and the following disclaimer.
+* 2. Redistributions in binary form must reproduce the above copyright
+*    notice, this list of conditions and the following disclaimer in the
+*    documentation and&#x2F;or other materials provided with the distribution.
+*
+* THIS SOFTWARE IS PROVIDED BY THE AUTHOR &#96;&#96;AS IS&#39;&#39; AND ANY EXPRESS OR
+* IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+* OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+* IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
+* INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+* NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+* DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+* THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+* (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+* THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*************************************************************************&#x2F;
+
+#ifndef BUTTER_DEFINES_H_
+#define BUTTER_DEFINES_H_
+
+
+#ifdef BUTTER_VERSION_
+#undef BUTTER_VERSION_
+#endif
+#define BUTTER_VERSION_ &quot;1.2.5&quot;
+
+#ifdef BUTTER_EXPORT
+#undef BUTTER_EXPORT
+#endif
+#ifdef WIN32
+&#x2F;* win32 dll export&#x2F;import directives *&#x2F;
+#ifdef BUTTER_EXPORTS
+#define BUTTER_EXPORT __declspec(dllexport)
+#elif defined(BUTTER_STATIC)
+#define BUTTER_EXPORT
+#else
+#define BUTTER_EXPORT __declspec(dllimport)
+#endif
+#else
+&#x2F;* unix needs nothing *&#x2F;
+#define BUTTER_EXPORT
+#endif
+
+#ifdef BUTTER_DEPRECATED
+#undef BUTTER_DEPRECATED
+#endif
+#ifdef __GNUC__
+#define BUTTER_DEPRECATED __attribute__ ((deprecated))
+#elif defined(_MSC_VER)
+#define BUTTER_DEPRECATED __declspec(deprecated)
+#else
+#pragma message(&quot;WARNING: You need to implement BUTTER_DEPRECATED for this compiler&quot;)
+#define BUTTER_DEPRECATED
+#endif
+
+#undef BUTTER_PLATFORM_64_BIT
+#undef BUTTER_PLATFORM_32_BIT
+#if __amd64__ || __x86_64__ || _WIN64 || _M_X64
+#define BUTTER_PLATFORM_64_BIT
+#else
+#define BUTTER_PLATFORM_32_BIT
+#endif
+
+#undef BUTTER_ARRAY_LEN
+#define BUTTER_ARRAY_LEN(a) (sizeof(a)&#x2F;sizeof(a[0]))
+
+#ifdef __cplusplus
+namespace butter &#123;
+#endif
+
+enum butter_log_level
+&#123;
+  BUTTER_LOG_NONE &#x3D; 0,
+  BUTTER_LOG_FATAL &#x3D; 1,
+  BUTTER_LOG_ERROR &#x3D; 2,
+  BUTTER_LOG_WARN &#x3D; 3,
+  BUTTER_LOG_INFO &#x3D; 4,
+  BUTTER_LOG_DEBUG &#x3D; 5
+&#125;;
+
+
+#ifdef __cplusplus
+&#125;
+#endif
+
+
+#endif &#x2F;* BUTTER_DEFINES_H_ *&#x2F;
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>]]></content>
+      <categories>
+        <category>cycle zone</category>
+      </categories>
+      <tags>
+        <tag>cycle 2022</tag>
+        <tag>BUTTER_DEPRECATED</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>37. no member named &#39;int64_t&#39; in the global namespace using::int64_t</title>
+    <url>/2022/01/05/37-no-member-named-int64-t-in-the-global-namespace-using-int64-t/</url>
+    <content><![CDATA[<h1 id="37-no-member-named-‘int64-t’-in-the-global-namespace-using-int64-t"><a href="#37-no-member-named-‘int64-t’-in-the-global-namespace-using-int64-t" class="headerlink" title="37. no member named ‘int64_t’ in the global namespace using::int64_t"></a>37. no member named ‘int64_t’ in the global namespace using::int64_t</h1><p>when compile android,</p>
+<pre class="line-numbers language-none"><code class="language-none">7. #include &lt;string&gt;
+8. #include &lt;algorithm&gt;
+ <span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+
+<p>compile the lines above,get the error below:</p>
+<pre class="line-numbers language-none"><code class="language-none">
+Compile++ arm  : butterbase &lt;&#x3D; basetemplate.cpp
+In file included from jni&#x2F;..&#x2F;..&#x2F;..&#x2F;..&#x2F;base&#x2F;basebutter.cpp:7:
+D:&#x2F;android&#x2F;ndk_r16b&#x2F;build&#x2F;&#x2F;..&#x2F;sources&#x2F;cxx-stl&#x2F;llvm-libc++&#x2F;include\cstdint:156:8: error: no member named &#39;int64_t&#39; in the global namespace
+using::int64_t;
+  ~~^
+In file included from jni&#x2F;..&#x2F;..&#x2F;..&#x2F;..&#x2F;base&#x2F;basebutter.cpp:8:
+In file included from D:&#x2F;android&#x2F;ndk_r16b&#x2F;build&#x2F;&#x2F;..&#x2F;sources&#x2F;cxx-stl&#x2F;llvm-libc++&#x2F;include\string:470:
+In file included from D:&#x2F;android&#x2F;ndk_r16b&#x2F;build&#x2F;&#x2F;..&#x2F;sources&#x2F;cxx-stl&#x2F;llvm-libc++&#x2F;include\string_view:169:
+In file included from D:&#x2F;android&#x2F;ndk_r16b&#x2F;build&#x2F;&#x2F;..&#x2F;sources&#x2F;cxx-stl&#x2F;llvm-libc++&#x2F;include\__string:56:
+In file included from D:&#x2F;android&#x2F;ndk_r16b&#x2F;build&#x2F;&#x2F;..&#x2F;sources&#x2F;cxx-stl&#x2F;llvm-libc++&#x2F;include\algorithm:643:
+In file included from D:&#x2F;android&#x2F;ndk_r16b&#x2F;build&#x2F;&#x2F;..&#x2F;sources&#x2F;cxx-stl&#x2F;llvm-libc++&#x2F;include\memory:658:
+D:&#x2F;android&#x2F;ndk_r16b&#x2F;build&#x2F;&#x2F;..&#x2F;sources&#x2F;cxx-stl&#x2F;llvm-libc++&#x2F;include\atomic:1873:17: error: use of undeclared identifier &#39;int64_t&#39;
+typedef atomic&lt; int64_t&gt; atomic_int64_t;
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+
+
+<h2 id="Method"><a href="#Method" class="headerlink" title="Method:"></a>Method:</h2><p>From</p>
+<pre class="line-numbers language-none"><code class="language-none">#include &lt;string&gt;
+#include &lt;algorithm&gt;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<p>change to</p>
+<pre class="line-numbers language-none"><code class="language-none">typedef long long                int64_t;
+#include &lt;string&gt;
+#include &lt;algorithm&gt;
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+]]></content>
+      <categories>
+        <category>cycle zone</category>
+      </categories>
+      <tags>
+        <tag>cycle 2022</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>38.1.configue host build target</title>
+    <url>/2022/01/09/38-1-configue-host-build-target/</url>
+    <content><![CDATA[<h2 id="38-1-configue-host-build-target"><a href="#38-1-configue-host-build-target" class="headerlink" title="38.1.configue host build target"></a>38.1.configue host build target</h2> <pre class="line-numbers language-none"><code class="language-none">
+.&#x2F;configure --host&#x3D;arm-linux-androideabi --prefix&#x3D;&#x2F;install
+
+.&#x2F;configure --host&#x3D;aarch64-linux-android --prefix&#x3D;&#x2F;install
+
+&#x2F;configure --prefix&#x3D;&#x2F;mingw --enable-win32thread \
+--host&#x3D;x86_64-w64-mingw32 --enable-static --enable-shared 
+
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+ <pre class="line-numbers language-none"><code class="language-none">--build&#x3D;BUILD
+
+指定软件包安装的系统平台。如果没有指定，默认值将是&#39;--host&#39;选项的值。
+
+
+--host&#x3D;HOST
+
+指定软件运行的系统平台。如果没有指定。将会运行&#96;config.guess&#39;来检测。
+
+
+--target&#x3D;GARGET
+
+指定软件面向(target to)的系统平台。这主要在程序语言工具如编译器和汇编器上下文中起作用。如果没有指定，默认将使用&#39;--host&#39;选项的值。
+
+
+--disable-FEATURE
+
+一些软件包可以选择这个选项来提供为大型选项的编译时配置，例如使用Kerberos认证系统或者一个实验性的编译器最优配置。如果默认是提供这些特性，可以使用&#39;--disable-FEATURE&#39;来禁用它，这里&#39;FEATURE&#39;是特性的名字，例如：
+
+$ .&#x2F;configure --disable-gui
+
+
+-enable-FEATURE[&#x3D;ARG]
+
+相反的，一些软件包可能提供了一些默认被禁止的特性,可以使用&#39;--enable-FEATURE&#39;来起用它。这里&#39;FEATURE&#39;是特性的名字。一个特性可能会接受一个可选的参数。例如：
+
+$ .&#x2F;configure --enable-buffers&#x3D;128
+
+&#96;--enable-FEATURE&#x3D;no&#39;与上面提到的&#39;--disable-FEATURE&#39;是同义的。
+
+
+--with-PACKAGE[&#x3D;ARG]
+
+在自由软件社区里，有使用已有软件包和库的优秀传统。当用&#39;configure&#39;来配置一个源码树时，可以提供其他已经安装的软件包的信息。例如，倚赖于Tcl和Tk的BLT器件工具包。要配置BLT，可能需要给&#39;configure&#39;提供一些关于我们把Tcl和Tk装的何处的信息：
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>]]></content>
+      <categories>
+        <category>cycle zone</category>
+      </categories>
+      <tags>
+        <tag>cycle 2022</tag>
+        <tag>linux</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>39. Rotate marker</title>
+    <url>/2022/01/08/39-rotate-marker/</url>
+    <content><![CDATA[<h1 id="39-Rotate-Marker"><a href="#39-Rotate-Marker" class="headerlink" title="39. Rotate Marker"></a>39. Rotate Marker</h1> <pre class="line-numbers language-none"><code class="language-none">
+ &#x2F;&#x2F; double x, y    the point before rotate;
+ &#x2F;&#x2F; double dx, dy  the base point rotate around;
+ &#x2F;&#x2F; double angle   roate angle in degree;
+ &#x2F;&#x2F; double xO, yO  the point after rotate;
+
+void RotateMarker(double x, double y, double dx, double dy, double angle, double&amp; xO, double&amp; yO)
+&#123;
+	double dRad &#x3D; angle*PI &#x2F; 180.0;
+	double dCos &#x3D; cos(dRad);
+	double dSin &#x3D; sin(dRad);
+	xO &#x3D; x*dCos - y*dSin + (1 - dCos)*dx + dSin*dy;
+	yO &#x3D; x*dSin + y*dCos + (1 - dCos)*dy - dSin*dx;
+&#125;
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>]]></content>
+      <categories>
+        <category>cycle zone</category>
+      </categories>
+      <tags>
+        <tag>cycle 2022</tag>
+        <tag>Rotate</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>How to configure host type in linux</title>
+    <url>/2021/12/13/4-configure-host-type/</url>
+    <content><![CDATA[<h2 id="1-–host-i686-w64-mingw32"><a href="#1-–host-i686-w64-mingw32" class="headerlink" title="1. –host=i686-w64-mingw32"></a>1. –host=i686-w64-mingw32</h2><pre class="line-numbers language-none"><code class="language-none">.&#x2F;configure --host&#x3D;i686-w64-mingw32     --prefix&#x3D;&#x2F;f&#x2F;libiconv1.16&#x2F;libiconv             CC&#x3D;i686-w64-mingw32-gcc             CPPFLAGS&#x3D;&quot;-I&#x2F;usr&#x2F;local&#x2F;mingw32&#x2F;include -Wall&quot;             LDFLAGS&#x3D;&quot;-L&#x2F;usr&#x2F;local&#x2F;mingw32&#x2F;lib&quot;<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<h2 id="2-–host-x86-64-w64-mingw32"><a href="#2-–host-x86-64-w64-mingw32" class="headerlink" title="2. –host=x86_64-w64-mingw32"></a>2. –host=x86_64-w64-mingw32</h2><pre><code>PATH=/usr/local/mingw64/bin:$PATH
+export PATH
+
+./configure --host=x86_64-w64-mingw32 --prefix=/f//libiconv1.16/libiconv \
+    CC=x86_64-w64-mingw32-gcc \
+    CPPFLAGS=&quot;-I/usr/local/mingw64/include -Wall&quot; \
+    LDFLAGS=&quot;-L/usr/local/mingw64/lib&quot;
+</code></pre>
+]]></content>
+      <tags>
+        <tag>cycle 2021</tag>
+        <tag>linux</tag>
+        <tag>host type</tag>
+        <tag>configure</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>40. 不能连接到吊销服务器，或者未能获得最终响应</title>
+    <url>/2022/01/09/40-CInternetSession-12057-%E4%B8%8D%E8%83%BD%E8%BF%9E%E6%8E%A5%E5%88%B0%E5%90%8A%E9%94%80%E6%9C%8D%E5%8A%A1%E5%99%A8%EF%BC%8C%E6%88%96%E8%80%85%E6%9C%AA%E8%83%BD%E8%8E%B7%E5%BE%97%E6%9C%80%E7%BB%88%E5%93%8D%E5%BA%94/</url>
+    <content><![CDATA[<h2 id="40-不能连接到吊销服务器，或者未能获得最终响应"><a href="#40-不能连接到吊销服务器，或者未能获得最终响应" class="headerlink" title="40. 不能连接到吊销服务器，或者未能获得最终响应"></a>40. 不能连接到吊销服务器，或者未能获得最终响应</h2><h3 id="40-1-ERROR-WINHTTP-SECURE-CERT-REV-FAILED-12057"><a href="#40-1-ERROR-WINHTTP-SECURE-CERT-REV-FAILED-12057" class="headerlink" title="40.1 ERROR_WINHTTP_SECURE_CERT_REV_FAILED [12057]"></a>40.1 ERROR_WINHTTP_SECURE_CERT_REV_FAILED [12057]</h3><pre class="line-numbers language-none"><code class="language-none">ERROR_WINHTTP_SECURE_CERT_REV_FAILED
+12057
+Indicates that revocation cannot be checked because the revocation server was offline (equivalent to CRYPT_E_REVOCATION_OFFLINE).<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+<p>use the following function<br><strong>CInternetSession::OpenURL()</strong>;</p>
+<p><em>CInternetSession</em> is a part of the Microsoft Foundation Classes C++ library.</p>
+<p>some options is related with ‘Internet Explore’;</p>
+<p>compare with windows 10 , windows server has different options;</p>
+<p><strong>Method:</strong></p>
+<ol>
+<li>open Internet Explore,find Tools button</li>
+<li>locate ‘Advandced Tab’ in Internet options Window;</li>
+<li>in node ‘Security Options’, unselect ‘Check for server certificate revocation’</li>
+</ol>
+<pre class="line-numbers language-none"><code class="language-none">打开 IE-&gt;Tools-&gt;Internet Options-&gt;Advanced Tab-&gt;Security Options-&gt;”Check for server certificate revocation(Requires Restart)”<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p><img src="./img/40-internet_options_security.png" alt="Internet Security Options"></p>
+<p>这个选项当前为选中状态（IE8默认是选中的）。取消这个选项，Bug 症状消失。经过测试发现只有 Windows Server 2003 Standard Edition 的 IE 默认选中该项，而且在其他平台即时此选项选中亦不会发生 Error 12057 (Microsoft’s Bug ? or with other options?)。决定通过编码解决这个问题。<br>其实编码解决这个问题倒是很简单， 在 HttpOpenRequest 后增加如下代码，设置当前 Http 连接选项取消这个检查</p>
+<pre class="line-numbers language-none"><code class="language-none">DWORD dwFlags &#x3D; 0;
+DWORD dwError &#x3D; 0;
+DWORD dwBuffLen &#x3D; sizeof(dwFlags);
+
+InternetQueryOption(m_hRequest, INTERNET_OPTION_SECURITY_FLAGS,(LPVOID)&amp;dwFlags, &amp;dwBuffLen);
+
+dwFlags |&#x3D; SECURITY_FLAG_IGNORE_REVOCATION;
+
+InternetSetOption(m_hRequest, INTERNET_OPTION_SECURITY_FLAGS, (LPVOID)&amp;dwFlags, sizeof(dwFlags)) ;
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+
+<h3 id="40-2-How-to-Request-URI"><a href="#40-2-How-to-Request-URI" class="headerlink" title="40.2 How to Request URI"></a>40.2 How to Request URI</h3><p><strong>1. with CHttpConnection::OpenRequest</strong></p>
+<pre class="line-numbers language-none"><code class="language-none">
+long Request(string strUri, byte** ppbuf, long&amp; len)
+&#123;
+	&#x2F;&#x2F; MSDN：CInternetSession第一个参数标识调用Internet功能的应用程序或实体的名称（例如，“Microsoft Internet Browser”）。
+	&#x2F;&#x2F;如果pstrAgent为NULL（缺省值），则框架将调用全局函数AfxGetAppName，该函数返回包含应用程序名称的以null结尾的字符串。
+	&#x2F;&#x2F; 某些协议使用此字符串来标识服务器应用程序。
+
+	CInternetSession    session(&quot;BUTTER&quot;);
+	CHttpFile*	        pHttpFile &#x3D; NULL;
+	long                ret &#x3D; 0;
+	len &#x3D; 0;
+	try
+	&#123;
+		Log(&quot;OpenURL_ERROR&quot;, &quot;pHttpFile: %p , Begin OpenRequest&quot;, pHttpFile);
+
+		DWORD dwFlags;
+		DWORD dwServerType;
+		CString strServer, strObject;
+		INTERNET_PORT nport;
+		AfxParseURL(strUri.c_str(), dwServerType, strServer, strObject, nport);
+
+		CHttpConnection* pHttpConnect &#x3D; session.GetHttpConnection(strServer, INTERNET_FLAG_SECURE, nport, NULL, NULL);
+		if (pHttpConnect)
+		&#123;
+			pHttpFile &#x3D; (CHttpFile*)pHttpConnect-&gt;OpenRequest(CHttpConnection::HTTP_VERB_POST, strObject, NULL, 1,
+				NULL, NULL,
+				INTERNET_FLAG_RELOAD | INTERNET_FLAG_NO_CACHE_WRITE | INTERNET_FLAG_KEEP_CONNECTION |
+				INTERNET_FLAG_SECURE | INTERNET_FLAG_IGNORE_CERT_CN_INVALID | INTERNET_FLAG_IGNORE_CERT_DATE_INVALID
+				&#x2F;&#x2F;SECURITY_FLAG_IGNORE_REVOCATION
+			);
+			if (pHttpFile)
+			&#123;
+				&#x2F;&#x2F;get web server option
+				pHttpFile-&gt;QueryOption(INTERNET_OPTION_SECURITY_FLAGS, dwFlags);
+				dwFlags |&#x3D; SECURITY_FLAG_IGNORE_UNKNOWN_CA;  &#x2F;&#x2F;忽略错误与未知的证书颁发机构
+				dwFlags |&#x3D; SECURITY_FLAG_IGNORE_REVOCATION;  &#x2F;&#x2F;忽略错误与撤销相关证书
+																&#x2F;&#x2F;set web server option
+				pHttpFile-&gt;SetOption(INTERNET_OPTION_SECURITY_FLAGS, dwFlags);
+				if (pHttpFile-&gt;SendRequest())
+				&#123;
+					&#x2F;&#x2F;get response status if success, return 200
+					DWORD dwStatus &#x3D; 0;
+					DWORD dwStatusLen &#x3D; sizeof(dwStatus);
+					pHttpFile-&gt;QueryInfo(HTTP_QUERY_FLAG_NUMBER | HTTP_QUERY_STATUS_CODE, &amp;dwStatus, &amp;dwStatusLen, 0);
+
+					Log(&quot;URL_Query&quot;, &quot;STATUS_CODE : %d &quot;, dwStatus);
+
+					if (dwStatus &#x3D;&#x3D; 200 )
+					&#123;
+						QByteArray buffer;
+						char tmpBuf[1024];
+						UINT nReadLen &#x3D; 0;
+						while (nReadLen &#x3D; pHttpFile-&gt;Read((void*)tmpBuf, 1024))
+						&#123;
+							buffer.append(tmpBuf, nReadLen);
+						&#125;
+						pHttpFile-&gt;Close();
+						delete pHttpFile;
+
+						if (!buffer.isEmpty())
+						&#123;
+							len &#x3D; buffer.length();
+							*ppbuf &#x3D; new byte[len];
+							memcpy(*ppbuf, buffer.data(), len);
+						&#125;
+						ret &#x3D; 1;
+					&#125;
+					else
+					    ret &#x3D; -1;
+				&#125;else&#123;
+				    ret &#x3D; -2;
+				&#125;
+			&#125;
+			else&#123;
+				ret &#x3D; -3;
+			&#125;
+		&#125;else
+			ret &#x3D; -4;
+	&#125;
+	catch (CInternetException* e)
+	&#123;
+		char szMsg[MAX_PATH] &#x3D; &#123; &quot;&#x2F;0&quot; &#125;;
+		e-&gt;GetErrorMessage(szMsg, MAX_PATH);
+		Log(&quot;URL_ERROR&quot;, &quot;error: [%d , %s ; pHttpFile: %p , url:  %s ] &quot;, e-&gt;m_dwError, szMsg, pHttpFile,strUri.c_str());
+
+		e-&gt;Delete();
+
+		if (pHttpFile)
+		&#123;
+			pHttpFile-&gt;Close();
+			delete pHttpFile;
+			pHttpFile &#x3D; NULL;
+		&#125;
+	&#125;
+
+	if (!pHttpFile)
+		Log(&quot;URL_ERROR&quot;, &quot;pHttpFile: %p &quot;, pHttpFile);
+
+	session.Close();
+	return ret;
+&#125;
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+
+<p><strong>2. with CInternetSession::OpenURL</strong></p>
+<pre class="line-numbers language-none"><code class="language-none">
+long Request(string strUri, byte** ppbuf, long&amp; len)
+&#123;
+	len &#x3D; 0;
+	CInternetSession    session(&quot;BUTTER&quot;);
+	CHttpFile*	        pHttpFile &#x3D; NULL;
+	long                ret &#x3D; 0;
+
+	try
+	&#123;
+		LPCTSTR	 pheader &#x3D; &quot;Mozilla&#x2F;5.0 (Windows NT 6.1) AppleWebKit&#x2F;537.36 (KHTML, like Gecko) Chrome&#x2F;31.0.1650.63 Safari&#x2F;537.36&quot;;
+		session.SetOption(INTERNET_OPTION_USER_AGENT, (LPVOID)pheader, strlen(pheader));
+		session.SetOption(INTERNET_OPTION_CONNECT_TIMEOUT, 5000);
+	    
+		DWORD dwFlag &#x3D; INTERNET_FLAG_TRANSFER_BINARY | INTERNET_FLAG_DONT_CACHE | INTERNET_FLAG_RELOAD;
+
+		pHttpFile &#x3D; (CHttpFile*)session.OpenURL(strUri.c_str(), 1, dwFlag, pheader);
+		if(pHttpFile)
+		&#123;
+			&#x2F;&#x2F;get response status if success, return 200
+			DWORD dwStatus &#x3D; 0;
+			DWORD dwStatusLen &#x3D; sizeof(dwStatus);
+			pHttpFile-&gt;QueryInfo(HTTP_QUERY_FLAG_NUMBER | HTTP_QUERY_STATUS_CODE, &amp;dwStatus, &amp;dwStatusLen, 0);
+
+			Log(&quot;URL_Query&quot;, &quot;STATUS_CODE : %d &quot;, dwStatus);
+
+			if (dwStatus &#x3D;&#x3D; 200 )
+			&#123;
+				QByteArray buffer;
+				char tmpBuf[1024];
+				UINT nReadLen &#x3D; 0;
+				while (nReadLen &#x3D; pHttpFile-&gt;Read((void*)tmpBuf, 1024))
+				&#123;
+					buffer.append(tmpBuf, nReadLen);
+				&#125;
+				pHttpFile-&gt;Close();
+				delete pHttpFile;
+
+				if (!buffer.isEmpty())
+				&#123;
+					len &#x3D; buffer.length();
+					*ppbuf &#x3D; new byte[len];
+					memcpy(*ppbuf, buffer.data(), len);
+				&#125;
+				ret &#x3D; 1;
+			&#125;
+		&#125;
+		else
+		    ret &#x3D; -1;
+		
+	&#125;
+	catch (CInternetException* e)
+	&#123;
+		char szMsg[MAX_PATH] &#x3D; &#123; &quot;&#x2F;0&quot; &#125;;
+		e-&gt;GetErrorMessage(szMsg, MAX_PATH);
+		Log(&quot;URL_ERROR&quot;, &quot;error: [%d , %s ; pHttpFile: %p , url:  %s ] &quot;, e-&gt;m_dwError, szMsg, pHttpFile, strUri.c_str());
+
+		e-&gt;Delete();
+		if (pHttpFile)
+		&#123;
+			pHttpFile-&gt;Close();
+			delete pHttpFile;
+			pHttpFile &#x3D; NULL;
+		&#125;
+	&#125;
+
+	if (!pHttpFile)
+	&#123;
+		Log(&quot;URL_ERROR&quot;, &quot;pHttpFile: %p &quot;, pHttpFile);
+		ret &#x3D; -2;
+	&#125;
+	
+	session.Close();
+	return ret;
+&#125;
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>]]></content>
+      <categories>
+        <category>cycle zone</category>
+      </categories>
+      <tags>
+        <tag>cycle 2022</tag>
+        <tag>CInternetSession</tag>
+        <tag>internet</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Hexo增加搜索功能</title>
+    <url>/2022/01/04/5-Hexo%E5%A2%9E%E5%8A%A0%E6%90%9C%E7%B4%A2%E5%8A%9F%E8%83%BD/</url>
+    <content><![CDATA[<h2 id="Hexo增加搜索功能具体操作"><a href="#Hexo增加搜索功能具体操作" class="headerlink" title="Hexo增加搜索功能具体操作"></a>Hexo增加搜索功能具体操作</h2><h3 id="1-安装搜索"><a href="#1-安装搜索" class="headerlink" title="1.安装搜索"></a>1.安装搜索</h3><p>  在Hexo的根目录下，打开命令可执行窗口，执行如下命令：</p>
+<pre class="line-numbers language-none"><code class="language-none">npm install hexo-generator-searchdb --save<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<h3 id="2-全局配置文件-config-yml，"><a href="#2-全局配置文件-config-yml，" class="headerlink" title="2.全局配置文件_config.yml，"></a>2.全局配置文件<code>_config.yml</code>，</h3><p>  新增如下内容：</p>
+<pre class="line-numbers language-none"><code class="language-none">search:
+  path: search.xml
+  field: post
+  format: html
+  limit: 10000
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="3-hexo主题配置文件（-themes-next-config-yml）"><a href="#3-hexo主题配置文件（-themes-next-config-yml）" class="headerlink" title="3.hexo主题配置文件（\themes\next_config.yml）"></a>3.hexo主题配置文件（<code>\themes\next_config.yml</code>）</h3><p>修改<code>local_search</code> 的<strong>enable</strong> 为 <strong>true</strong>：</p>
+<pre class="line-numbers language-none"><code class="language-none"># Local search
+# Dependencies: https:&#x2F;&#x2F;github.com&#x2F;flashlab&#x2F;hexo-generator-search
+local_search:
+  enable: true
+  # if auto, trigger search by changing input
+  # if manual, trigger search by pressing enter key or search button
+  trigger: auto
+  # show top n results per article, show all results by setting to -1
+  top_n_per_article: 1
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>]]></content>
+      <categories>
+        <category>cycle zone</category>
+      </categories>
+      <tags>
+        <tag>Hexo</tag>
+        <tag>cycle 2022</tag>
+        <tag>search</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>购房流程</title>
+    <url>/2021/12/20/6-%E8%B4%AD%E6%88%BF%E6%B5%81%E7%A8%8B/</url>
+    <content><![CDATA[<h1 id="购房流程"><a href="#购房流程" class="headerlink" title="购房流程"></a>购房流程</h1><h2 id="一、前期准备：明确房产所有人"><a href="#一、前期准备：明确房产所有人" class="headerlink" title="一、前期准备：明确房产所有人"></a>一、前期准备：明确房产所有人</h2><p>　　销售员的如花妙语并不能成为购房的法律依据，为了减少购房纠纷，您在售楼处务必要求销售员提供以下资料，这些资料是作为一个正规开发商所必备的，您务必逐一详查。</p>
+<p>　　1、营业执照</p>
+<p>　　正规的房地产企业都会到工商行政管理部门登记，您购房前务必查询该企业营业执照是否合法。</p>
+<p>　　2、企业资质</p>
+<p>　　建设部将开发企业的资质分为三级，一级最好。主要是根据开发企业的实力划分。企业资质代表着开发企业的信誉和市场业绩。点击查询销售机构信用档案。</p>
+<h2 id="二、购房流程之实地看房：验看五证二书"><a href="#二、购房流程之实地看房：验看五证二书" class="headerlink" title="二、购房流程之实地看房：验看五证二书"></a>二、购房流程之实地看房：验看五证二书</h2><p>　　购房者在购房时应要求房地产开发商和销售商提供齐全的“五证”、“二书”，这是法律对销售方的基本要求。“五证”是指《国有土地使用证》、《建设用地规划许可证》、《建设工程规划许可证》、《建设工程施工许可证》(建设工程开工证)、《商品房销售(预售)许可证》。“二书”是指《住宅质量保证书》和《住宅使用说明书》。</p>
+<p>　　“五证”中最重要的是《国有土地使用证》和《商品房销售(预售)许可证》，两者表明所购房屋属合法交易范畴。《商品房销售(预售)许可证》的预售范围为本项目可销售楼盘，购房者务必看清购买楼层是否在预售范围内。</p>
+<p>　　“两书”可以作为商品房买卖合同的补充约定，并且是房地产开发企业在商品房交付使用时，向购房人提供的对商品住宅承担质量责任的法律文件和保证文件。</p>
+<p>　　购房流程之实地看房应进行以下一系列考察：</p>
+<p>　　1、配套设施的考察</p>
+<p>　　住宅配套包括市政基础配套(供水、排污、电力、电信、燃气及供热、道路)、公共设施配套、安全保护设施等，合理安排，一次建成。</p>
+<p>　　(1)基础设施按规范要求</p>
+<p>　　(2)居住区功能的综合性</p>
+<p>　　(3)商业网点设施的配套</p>
+<p>　　(4)现场看楼宇环境</p>
+<p>　　2、社区环境的考察</p>
+<p>　　环境越来越成为一个时髦的字眼，所有的项目无不在宣称自己的环境适合于居住。其实，一个小区或一套房子的环境主要包括两个方面：周边地理环境(地段)和社区内的环境。</p>
+<p>　　(1)住在城里方便但不安静</p>
+<p>　　(2)郊区住宅适合休闲</p>
+<p>　　(3)城郊结合部升值潜力可观</p>
+<p>　　(4)谨慎选择社区周边小环境</p>
+<p>　　(5)考察小区环境主要注意几个数据：容积率、绿化率、楼间距，居住密度</p>
+<p>　　3、小区环境绿化的考察</p>
+<p>　　根据有关规定，小区环境绿化有以下标准，购房者应基于下列标准考察：</p>
+<p>　　(1)小区要封闭管理，保证小区绿化环境是为小区居民服务的，增进居民的领域感，保证小区环境的安全与安静。</p>
+<p>　　(2)要有足够的绿化面积</p>
+<p>　　(3)绿地应接近居民住宅，以利观赏使用</p>
+<p>　　(4)绿地空间应包含一定数量的活动场地，并布置座椅、铺装地石等设施，以满足居民休息、散布、运动、健身的需要。</p>
+<p>　　4、物业管理的考察</p>
+<p>　　(1)购房者应了解未来的物业管理公司</p>
+<p>　　(2)购房者应了解物业管理公司今后将提供哪些服务，服务的标准是什么</p>
+<p>　　(3)购房者应清楚今后房屋使用管理维修的具体制度</p>
+<p>　　(4)物业管理收费问题</p>
+<p>　　5、采光条件的考察</p>
+<p>　　6、对开发商的考察</p>
+<p>　　(1)背景调查购房者在决定选择某个住房后，可以到有关房地产管理部门去作一番调查和咨询。</p>
+<p>　　(2)现场考察为了能够彻底了解房地产开发商的情况，还可到房地产开发商已经开发的居住区去进行现场考察</p>
+<p>　　(3)态度分析购房者可以对购房过程种所受的礼遇态度进行自我分析，以此来衡量房地产开发商的优劣。</p>
+<p>　　购房流程之楼盘比较：考察楼盘地段交通</p>
+<p>　　买房要看周边环境，这是每位买房者都知道的常识。但究竟如何看，却并不是人人都熟悉。看周边环境，必须以自己选择的新房为中心地，看“衣食住行”及“开门七件事”的配套究竟如何。</p>
+<p>　　一、衣</p>
+<p>　　可囊括服装店、裁缝铺、洗衣房等，五金修理店也可以算入其内</p>
+<p>　　二、食</p>
+<p>　　为超市、菜场、油酱店、面包店、饮食店、小吃店等</p>
+<p>　　三、住</p>
+<p>　　不仅要看自己的房子，也要看周边的楼是怎样的房子，更要看有没有化工厂、电站、加油站、汽车、机动车维修点等，绿化如何也须看。</p>
+<p>　　四、行</p>
+<p>　　不仅要看房子附近有没有地铁、轻轨、来往车辆、有几个车站等，还要看高架旁的下车道是不是在你的新房附近，出门是不是单行道等。</p>
+<p>　　五、其他</p>
+<p>　　还得看附近有没有公园、银行、医院，有老人的家庭最好离医院近一点;有孩子的应关心托儿所、幼儿园、小学、中学等，看马路是不是车辆很多。当然，选房不可能十全十美，应根据每个不同购房者的各自需求。在考虑周边环境时，我们应做“加法”，多想一点，更仔细一点。而在选择主要项目时，要做“减法”，要突出自己最需要的，其他的可相应淡化一些。</p>
+<h2 id="三、购房流程之楼盘比较：如何挑选合适的户型"><a href="#三、购房流程之楼盘比较：如何挑选合适的户型" class="headerlink" title="三、购房流程之楼盘比较：如何挑选合适的户型"></a>三、购房流程之楼盘比较：如何挑选合适的户型</h2><p>　　挑选户型应注意以下几个方面：</p>
+<p>　　1.在100平方米左右的房子户型设计中，两居室一般是80-90平方米，三居室是110-120平方米。</p>
+<p>　　两居室中，起居室的面宽最低在3.8-4米，厅要大于20平方米，主卧要大于12平方米，面宽在3米左右，另一个卧室要大于10平方米，面宽也在3米左右。厨房要大于3平方米。三居室的起居室面宽大于4，面积要大于24。</p>
+<p>　　对于板楼而言，进深要比较短，一般在12-13米，面宽则在6米左右。</p>
+<p>　　2.基本元素包括采光，热，隔音，降噪和通风。对于采光和通风，一般面宽比上进深在1：1.5比较合适。在这方面板楼比塔楼有优势。</p>
+<p>　　3.具体空间上，厨房一定要有，而且应该是中式的</p>
+<p>　　尽管可能使用比较少，但一定要能开火。餐厅可以相对小一些。储物间一定要有，非常重要，中等衣帽间大小即可，两平方米左右，非常实用。</p>
+<p>　　4.功能分区要明确，流线设计要合理</p>
+<p>　　挑选户型八大忌</p>
+<p>　　1.忌大而无当大户型不能简单的理解为中小户型图纸的放大。它应该是一种全新理念上的设计，房屋整体功能要相应增加;房屋高度的合理增加;新型的采光设计、装修效果等也应有改进和提高，切忌大而无当。从我国目前家庭结构看，长时间内都将是三口之家。主导户型至少在十年内仍会以三室一厅或两室一厅为主。</p>
+<p>　　2.忌一览无余许多老的户型，进入户门后没有玄关设计，厅内景象一览无余，房屋整体缺乏层次感，卧室、书房的私密性和安适度受到影响。玄关的设计多种多样，通常有“密闭式”和“屏风式”两种设计，前者会多占用一些空间，后者实际上是一个完整方厅的一扇屏风，可用磨砂玻璃等半透明材料做成各种艺术造型。可起到丰富内涵的作用。</p>
+<p>　　3.忌厨厕扎堆不少蹩脚的户型设计中，厨房和卫生间紧连在一起，随着人们生活品位的提高，这种设计应予弃用。如果套房的面积较小，两者难以保持较长的距离，其房门也最好别设计成相对或并列的形式。在起居室最好不直接看到卫生间的房门，通过套房的整体户型设计的层次和曲折巧设卫生间，厨房由于多和餐厅相连，可以设在靠近户门的位置。</p>
+<p>　　4.忌厅内多门起居室(厅)内的户门过多，形成了对厅的实际面积的挤占。过去的设计中往往忽略了这一点，在实际使用当中，起居室往往变成了过廊和走道，而人们都愿意在厅中摆放沙发、电视，多门的起居厅使得以上家具难以摆放，起居厅的连续墙应保持在3米以上，以摆放家具。</p>
+<p>　　5.忌光线暗淡在选择住房时要尽可能重视卧室的采光效果。起居室、厨房、卫生间的采光效果依次类推。</p>
+<p>　　6.忌动静相扰所谓动静结合实际上也就是房间功能组合要趋于合理。例如按照生活起居方便的要求，卧室位置要求深一些，户门最好不要直接面对着厅。同时卫生间与主卧室的位置要近。避免不必要的穿堂越室。另外起居室是家人集中活动的空间，设置音箱、电视等发声设备的地方应该和主卧室尽可能的保持一段距离，以免互相干扰。</p>
+<p>　　7.忌厨房深藏不露厨房在使用中要排放烟气、产生噪音，所以切记不要把厨房设计在单元房的深处。另外，要注意厨房或卫生间中管道的处理，如果管道太多且明置，既不美观又挤占空间是一种不可取的设计。</p>
+<p>　　8.忌房屋通透性差房间之间和公共活动区域的通风状况的好坏，也是衡量户型设计成功与否的一个重要标志之一。过于曲折的户型设计往往使室内空气阻隔，夏日室内空气偏高。户内的空气对流是一项很重要的环保指标，只不过长期以来不太被人重视罢了。</p>
+<h2 id="四、购房流程之认购："><a href="#四、购房流程之认购：" class="headerlink" title="四、购房流程之认购："></a>四、购房流程之认购：</h2><p>　　购房流程之认购：买房排号</p>
+<p>　　在排号这种认购方法出现之前，对现房和准现房的认购一般采用先来先选的原始方法。对于消费者来说，可以不受干扰地进行选择。选房没有时限，反复、比较着看，交房时的纠纷自然就少了。对于开发商来说，这种方法几乎没有使用激励机制和宣传策略，售房周期比较长。</p>
+<p>　　排号最早出现在经济适用房的认购中。经济适用房的价格低廉、需求量大，必须排队才能买上房。南京还出现过提前三天排队购房的现象，雇用民工排号也不是什么新鲜事。目前，很多楼盘都采用了排号的认购方式。排队“抢”房会给消费者造成供不应求的假象，从而促使消费者尽快选择。</p>
+<p>　　更为常见的认购方式是先排号再摇号。如果某一户型或楼层的房号有限，就从已经缴纳订金的消费者中随机抽取一部分。这种营销方法用竞争机制刺激消费者，你不买后边还有那么多人等着呢。</p>
+<p>　　在商品房交易中，所说的订金与定金在法律上是有明显区别的。定金是一个规范的法律概念，是合同当事人为确保合同的履行而自愿约定的一种担保形式。商品房交易中，买家履行合同后，定金应当抵作价款或者收回;若买家不履行合同，无权要求返还定金，发展商不履行合同的，应双倍返还定金。我国《担保法》还规定：定金应以书面形式约定，不得超过主合同标准额的20%。当事人一旦以书面形式对定金作了约定并实际支付了定金，即产生相应的法律后果。</p>
+<p>　　另一方面，定金作为合同履行的一种担保，《担保法》中规定：担保合同(即定金条款)是主合同的从合同，若主合同无效，定金条款无效(另有约定的，按约定)。换言之，若合同无效，定金条款亦无效，收受定金的一方应返还定金。如一方过错造成主合同无效，过错方应承担相应的民事责任，而不是没收或双倍返还定金了。</p>
+<p>　　订金并非一个规范的法律概念，实际上它具有预付款的性质，是当事人的一种支付手段，并不具备担保性质。商品房交易中，如买家不履行合同义务，并不表示他丧失了请求返还订金的权利;反之，若发展商不履行义务亦不须双倍返还订金，但这并不意味着合同违约方无须承担违约责任。</p>
+<p>　　值得一提的是，签订正式的房屋预售契约之前，买卖双方签订的有关认购书(或称意向书)并不是房屋买卖契约，不具备房屋预售契约的法律效力，只是一份广义的合同。若认购书中有定金条款，则若购房者在签订认购书后反悔，发展商有权没收购房者的定金;若发展商违约，不与购房者签订正式的预售合同，则购房者有权要求发展商双倍返还定金。如果认购书中约定的只是订金，那么就不具备定金的法律后果了。</p>
+<p>　　由此可见，定金与订金无论是从内容上还是法律后果上都有明显不同，在签订购房合同时，购房者应对此有充分的理解，并根据自己的实际情况慎重行事。</p>
+<p>　　购房流程之认购：定金与订金到底有什么区别</p>
+<p>　　在商品房交易中，所说的订金与定金在法律上是有明显区别的。定金是一个规范的法律概念，是合同当事人为确保合同的履行而自愿约定的一种担保形式。商品房交易中，买家履行合同后，定金应当抵作价款或者收回;若买家不履行合同，无权要求返还定金，发展商不履行合同的，应双倍返还定金。我国《担保法》还规定：定金应以书面形式约定，不得超过主合同标准额的20%。当事人一旦以书面形式对定金作了约定并实际支付了定金，即产生相应的法律后果。</p>
+<p>　　另一方面，定金作为合同履行的一种担保，《担保法》中规定：担保合同(即定金条款)是主合同的从合同，若主合同无效，定金条款无效(另有约定的，按约定)。换言之，若合同无效，定金条款亦无效，收受定金的一方应返还定金。如一方过错造成主合同无效，过错方应承担相应的民事责任，而不是没收或双倍返还定金了。</p>
+<p>　　订金并非一个规范的法律概念，实际上它具有预付款的性质，是当事人的一种支付手段，并不具备担保性质。商品房交易中，如买家不履行合同义务，并不表示他丧失了请求返还订金的权利;反之，若发展商不履行义务亦不须双倍返还订金，但这并不意味着合同违约方无须承担违约责任。</p>
+<p>　　值得一提的是，签订正式的房屋预售契约之前，买卖双方签订的有关认购书(或称意向书)并不是房屋买卖契约，不具备房屋预售契约的法律效力，只是一份广义的合同。若认购书中有定金条款，则若购房者在签订认购书后反悔，发展商有权没收购房者的定金;若发展商违约，不与购房者签订正式的预售合同，则购房者有权要求发展商双倍返还定金。如果认购书中约定的只是订金，那么就不具备定金的法律后果了。</p>
+<p>　　由此可见，定金与订金无论是从内容上还是法律后果上都有明显不同，在签订购房合同时，购房者应对此有充分的理解，并根据自己的实际情况慎重行事。</p>
+<p>　　购房流程之认购：定金如何处理</p>
+<p>　　1.区分定金与订金。在购买商品房的过程中，买受人(购房者)与出卖者(开发商)未订立《商品房买卖合同》前，一般出卖人会要求买受人与之签订《房屋认购书》并按房款的一定比例向其交纳“订金”或“定金”。但是，“订金”和“定金”的法律意义是决然不同的。</p>
+<p>　　2.在房屋买卖认购书中约定的“定金”。</p>
+<p>　　《最高人民法院关于审理商品房头卖合同纠纷案件适用法律若干问题的解释》(2003年6月1日起施行)第4条规定：出卖人通过认购、订购、预订等方式向买受人收受定金作为订立商品房买卖合同担保的，如果因当事人一方的原因未能订立商品房买卖合同，应当按照法律关于定金的规定处理;因不可归责于当事人双方的事由，导致商品房买卖合同未能订立的，出卖人应当将定金返还买受人。也就是说，买房人签订认购书、正式签订《商品房买卖合同》前，如果因为买受人—方的原因“未能订立商品房买卖合同”的，出卖人可以不退还定金。但是，如果因为买卖双方的原因，比如合同不能协商一致，出卖人应当将定金返还买受人。</p>
+<p>　　3.注意认购书签订后的定金处理</p>
+<p>　　在认购书中经常会出现金、抵押金等说法，这样的约定不能一概的认为就是定金约定，而应该仔细分析。如果双方签定的认购书中约定。当事人买受方—方能签定正式合同的，其交付的订金不退还，而如果出卖人不签定合同的应该双倍返还买受人已经交付的订金，那么这样的约定应是关于定金的约定。但如果没有双倍返还的约定，那么就应该认为是一种预付款或者是订金的约定，而不适用定金规则。</p>
+<p>　　认购书中的定金，实际上具有立约定金和违约定金的双重功能。认购书是一种预约，是为将来订立正式的销售合同而预先签定的独立的合同，根据预约，开发商的义务是在将来与买受人签定销售合同，将房屋出售给买受人;而买受人的义务则是签定合同购买该房屋。为了平衡当事人的利益，法律规定，购房人在交付定金后，如果没有正当理由而不签定买卖合同的就丧失该定金;出售人如果没有正当理由而不签定销售合同的则应双倍返还。由于定金具有担保性质，如果一方违约则会发生不予返还或双倍返还的结果。因此，买卖双方应在认购协议书中就签订正式合同过程可能发生的种种情形分别进行约定，以保护双方权益。</p>
+<p>　　(1)如果买方没有在认购协议书规定的期限内去签约，属买方违约，定金不予返还;如果卖方在认购协议书规定的期限内将认购房屋转售第三人或与第三人再次签订认购协议书，从而导致双方未能正式签约，属卖方违约，卖方应向买方双倍返还定金。</p>
+<p>　　(2)如果任何一方在正式签约时对认购协议书中确认的条件，如房号、价格、面积等进行修改，从而导致签约未成，改动一方视为违约方履约金。如果买方违约的，定金不予返还;如果卖方违约的，应双倍返还定金。</p>
+<p>　　(3)如果买卖双方在规定的期限内，正式签订合同，则定金在买方履约后，可抵作房款或退回买方;双方履行正式合同过程中，一方违约的，适用“不予返还”或者“双倍返还”。</p>
+<p>　　(4)如果由于卖方本身不具备房屋销售(预售)条件而导致认购协议书无效，由卖方向买方返还定金并承担缔约过失责任。</p>
+<p>　　(5)如果由厂卖方向买方提供的证明文件不真实而导致未能签订正式合同，卖方应把定金全数返还买方。</p>
+<p>　　(6)如果双方都不存在上述第—项的违约行为，仅对预售(销售)合同及补充协议内容难以达成—致，而未能签约的，卖方应把定金全数返还买方。</p>
+<h2 id="五、购房流程之合同：如何签订购房合同"><a href="#五、购房流程之合同：如何签订购房合同" class="headerlink" title="五、购房流程之合同：如何签订购房合同"></a>五、购房流程之合同：如何签订购房合同</h2><p>　　签定正式的购房合同，在拟定的时间地点，购房者备齐所有凭证，与开发商或代理商正式签定购房合同。预售合同(期房)和出售合同(现房)区别：</p>
+<p>　　购房合同一般包括商品房预售契约(期房)和商品房买卖契约(现房)两种。</p>
+<p>　　购房合同的主要内容包括以下几方面：</p>
+<p>　　1、甲方土地使用依据及商品房状况，包括位置、面积、现房、期房等;</p>
+<p>　　2、房价，包括税费、面积差异的处理、价格与费用调整的特殊约定等;</p>
+<p>　　3、付款约定，包括优惠条件、付款时间、付款额、违约责任等;</p>
+<p>　　4、交付约定，包括期限、逾期违约责任、设计变更的约定、房屋交接与违约方责任等;</p>
+<p>　　5、质量标准，包括装饰、设备的标准、承诺及违约责任和基础设施、公共配套建筑正常运转的承诺、质量争议的处理等;</p>
+<p>　　6、产权登记和物业管理的约定;</p>
+<p>　　7、保修责任;</p>
+<p>　　8、乙方使用权限;</p>
+<p>　　9、双方认定的争议仲裁机构;</p>
+<p>　　10、违约赔偿责任;</p>
+<p>　　11、其他相关事项及附件，包括房屋平面图、装饰、设备标准等。</p>
+<p>　　在签订上述各项条款时，购房者尤其需要关注以下几项基本问题：</p>
+<p>　　1、购房合同的各项内容要尽可能全面、详细、各项规定之间要避免相互冲突，尤其是不能与国家的政策法规相冲突;文字表述要清晰、准确;签订合同的买卖双方身份、责任要明确，如合同中的甲方(卖方)不能是代理商或律师楼，而应是项目立项批准文件的投资建设单位，也不能以上级主管单位或下属机构的名义签订合同，签字人应是法人代表本人，或公司章程上授权的主要负责人。</p>
+<p>　　2、合同上的项目名称，一定要与项目位置联系在一起，以免日后有出入。标明项目位置时，一定要具体、明确，如××市××区××街××号××花园××号楼××层××房。</p>
+<p>　　房屋的户型、面积一定要标示清楚，建筑面积、使用面积及公用面积分摊原则等要明确说明，如以建筑面积计价还要标明使用率。</p>
+<p>　　3、房屋的档次和装修标准一般采用附件形式附在购房合同之后，这一内容的表述一定要详细、具体。如技术的等级、材料的品牌、内部设施的种类、负荷标准、供应能力等一一予以说明。水、暖、电、通讯等设施要说明安装到什么程度。</p>
+<p>　　4、其他如付款方式、产权保证等都应详细、具体的加以说明。同时合同中一定要确定物业管理单位的产生办法或具体的物业管理单位以及物业的收费标准，并对房屋整体结构、各部位配套设施及其部件的保修期给予明确规定。</p>
+<p>　　5、违约责任的约定一定要对等，否则最终吃亏的是消费者。一般承担违约责任的违约事项包括：</p>
+<p>　　(1)签订认购书后，购房者不买房或要求换房，开发商不卖房或要求换房;</p>
+<p>　　(2)购房者不按期付款;</p>
+<p>　　(3)开发商不按期交房;</p>
+<p>　　(4)面积变动超过约定幅度;</p>
+<p>　　(5)房屋装修标准、质量不合要求，保修不到位;</p>
+<p>　　(6)产权过户手续不全或不能按期办理。</p>
+<p>　　购房流程之贷款：商业贷款</p>
+<p>　　商业房贷是指在购买普通商品住房时，您可以您所购住房抵押，或以您自己或者第三人所有的其他财产作为抵押物(质物)，或者由第三人为贷款提供连带保证责任，向银行申请个人住房贷款。</p>
+<p>　　购房流程之贷款：住房公积金贷款</p>
+<p>　　住房公积金贷款是指由各地住房公积金管理中心运用个人以其所在单位所缴纳的住房公积金，委托商业银行向购买、建造、翻建、大修自住住房的住房公积金缴存人和在职期间缴存住房公积金的离退休职工发放的房屋抵押贷款。</p>
+<p>　　相对于商业住房贷款，住房公积金贷款具有利率较低，还款方式灵活，首付比例低的优点，缺点在于手续繁琐，审批时间长。</p>
+<p>　　住房公积金贷款的具体贷款政策由各地区的住房公积金管理中心制定，因此，各地的住房公积金贷款的贷款条件、贷款期限、贷款金额等都各不相同，因此，借款人在申请时最好先到当地的住房公积金管理中心网站查询相关政策或致电咨询。</p>
+<h2 id="六、验收房屋"><a href="#六、验收房屋" class="headerlink" title="六、验收房屋"></a>六、验收房屋</h2><p>　　1、验收房屋</p>
+<p>　　购房者接收房产时必须要求卖方再次陪同实地察验，看是否有所变动，是否按合同要求进行过维修改造，维修改造质量和水平是否满意，有关文件是否符合、齐全等，都应仔细察验。只有购房人对房屋进行验收并签署房屋交接单、领取房屋钥匙，开发商的交付义务才算履行完毕。</p>
+<p>　　即使您掌握不了上述专业的验房方法，没关系，因为在您入住小区前，您所在小区的物业管理公司与开发商签订委托物业管理协议前，为了减少将来自身的麻烦或纠纷，他们已代您对小区所有房子进行了质量验收，在此您不妨了解一下物业管理公司有关《验收与接管物业的事项》另外，我还要提醒您别忘了国家对房屋交易的新规定，即：商品房交付使用时，预售人必须向预购人提供《商品房住宅质量保证书》和《住宅使用说明书》，其与合同具有同等法律效力。</p>
+<p>　　2、入住过程中需交费用</p>
+<p>　　3、物业管理费及供暖费</p>
+<h2 id="七、购房流程之收房：房屋注意事项"><a href="#七、购房流程之收房：房屋注意事项" class="headerlink" title="七、购房流程之收房：房屋注意事项"></a>七、购房流程之收房：房屋注意事项</h2><p>　　1、在检查完整栋楼座的外墙瓷砖牢固性、单元门是否完好，楼道楼梯安全性和公用设备完好性后，开启户门。</p>
+<p>　　2、检查防盗门有无划痕，门边是否变形，门与框的密封是否严密，门和锁开关应灵活。检查入户门门铃，装上自带的电池，检查是否正常工作。观察猫眼是否有松动、不清晰、视野不全或因有异物无法看清楚等现象。</p>
+<p>　　3、检查户内门窗、阳台等部位有无开裂现象(阳台裂缝危险最大)，油漆是否刷全。注意用镜子放到门顶部和门底部，检查这些地方是否也刷过油漆。检查门窗的密封是否良好，可用一长纸条放在密封点上，关门压住纸条用力抽出，多点试验看密封条的压力是否均匀。推拉窗上的纱窗和窗扇，确认是否推动灵活，相互无碰撞。窗户外窗框上应有防堵帽，防止异物堵塞影响排水，导致下雨时窗户进水。双层玻璃里外都擦不干净时应提出拆换玻璃清洁，否则以后不易解决。</p>
+<p>　　4、检查层高是否符合合同。最好把水表、电表数字、楼高、马桶坑距、浴缸长度和宽度、冲淋房尺寸、吊顶高度都记下。检查房顶是否倾斜，可在房顶取4-5个点用盒尺进行测量，若数值一致说明没有倾斜。</p>
+<p>　　5、检查墙壁是否平整，是否有渗水，是否有划痕裂纹，是否有爆点(生石灰在发成熟石灰时因搅拌不匀，抹在墙上干后会形成爆点)。检查地面是否平整，是否有渗水和空壳开裂情况。如有空鼓，要责成陪同物业人员尽快修复，否则在装修中会很容易打穿楼板。</p>
+<p>　　6、如是精装房，还要检查厨卫吊顶是否安装牢固。墙砖、地砖、地板是否平整，是否有空鼓(以小锤敲击)，是否有色差，缝隙是否符合规范。木地板要检查木龙骨安装是否牢固。橱柜开启是否灵活顺畅，配件是否齐全。</p>
+<p>　　7、检查上下水。尽量开大上水龙头，检查是否正常工作。用盆盛水向各个下水处灌水，如台盆下水、浴缸下水、马桶下水、厨房和卫生及阳台地漏等，每个下水口应灌入两盆水左右，听到咕噜咕噜的声音表明通畅，确定表面没有积水。确认没问题后要尽快将这些突出下水(如台盆下水、浴缸下水、马桶下水)用塑料袋罩着水口，加以捆实。地漏等下水则需要塞实并留下可拉扯的位置。</p>
+<p>　　8、检查卫生间地面坡度是否能让积水顺利往地漏方向流，而不至于流入其他房间。将水倒在卫生间地面上(高度约2厘米)，通知楼下的业主24小时后查看其房间内厕卫的天花板是否有渗水。全部用完水后打开水表，记录下水表的数字。同时也要记录电表数字。</p>
+<p>　　9、检查电气开关箱内的各开关是否有明显标示，是否安装牢固，检查各个分闸是否完全控制各分支线路。检查插座，如自备有插排(带有指示灯的五孔插座)，可根据指示灯明灭测定是否正常通电。如有可能配备摇表，可测试插座对地绝缘情况是否良好。</p>
+<p>　　10、检查有线电视插座、宽带插座，插进去有无松动或插不进现象。检查可视对讲、紧急呼叫按钮是否工作正常。</p>
+<p>　　11、检查管道通风。厨房烟道可用冒烟的纸卷放在烟道口下方十厘米左右，看烟是否上升到烟道口能立即吸走。卫生间应在吊顶下留通风口。留在吊顶上面时要用手电查看是否具备安装性，同时用与测厨房烟道同样的办法测抽力。用手电查看烟道、通风口中是否存有建筑垃圾。</p>
+<p>　　12、用冒烟的纸卷放到管道煤气报警装置附近，看报警装置是否灵敏动作，报警声光提示应同时关闭进气阀。</p>
+<p>　　13、检查暖气管道安装是否通畅和密封。使劲晃动暖气管和上水管确定是否牢固。打开水阀看排水是否流畅，放水同时用卫生纸擦拭上下管道底部有无渗漏。确认暖气片上方的排气孔是否可以拧动。</p>
+<p>　　14、核对买卖合同上注明的设施、设备等是否有遗漏，品牌、数量是否相符。验房过程发现问题及时记录，并与物业人员确定解决方案和解决日期。如果验房后认为质量问题较多且需较大整改，则业主可要求开发商签收“关于房屋存在质量问题要求限期整改的确认函”后中止办理手续。</p>
+<h2 id="八、购房流程之房产证：新房如何自己办理房产证"><a href="#八、购房流程之房产证：新房如何自己办理房产证" class="headerlink" title="八、购房流程之房产证：新房如何自己办理房产证"></a>八、购房流程之房产证：新房如何自己办理房产证</h2><p>　　(1)登记收件。产权登记的第一程序就是登记收件。登记收件表示主管机关接受产权人主张权利的申请。因此，产权人必须填写申请书，并交验有关证明、证件;经审查符合登记条件的，予以收件。即接受申请书，收存需要进一步审查的有关证明、证件。</p>
+<p>　　(2)勘丈绘图。它是对已申请产权登记的房地产逐户、逐处进行实地勘察，查清房地现状，丈量计算面积，核实墙体归属，绘制分丘平面图，补测或修测房屋分幅平面图，为产权全面审查和制图发证提供依据。</p>
+<p>　　(3)产权审查。对申请登记的房屋，经过认真细致的实地勘察和丈量制图，掌握了房屋全部实况资料以后，即可转入产权审查。</p>
+<p>　　产权审查是以产权档案的历史资料和实地调查勘察的现实资料为基础，以国家现行的政策、法律和有关的行政法规为依据，对照申请人提交的申请书、墙界表、产权证件、证明，逐户、逐栋认真审查其申请登记的房屋产权来源是否清楚，产权转移和房屋变动是否合法等整个复杂细致的工作过程。</p>
+<p>　　需要说明的是，这里的产权审查是全面的、更为细致的产权审查，是经过了登记收件勘丈绘图后的产权审查。</p>
+<p>　　(4)绘制权证。对申请人申请的房地产，经过审查确认可以颁发产权证后，应及时转入制权证阶段。这个阶段的主要工作是绘制应颁发的产权证件。</p>
+<p>　　(5)收费发证。它是产权登记发证工作的最后程序，要求把应收的登记费收缴入库，把应发出的权证发放到所有权人手中。</p>
+<p>　　发放产权证前，必须全面检查应发放的权证有无差错，是否已交纳契税。</p>
+<p>　　个人购买商品房，办理房产证应当向登记机关提交：</p>
+<p>　　1、购房合同(正本);</p>
+<p>　　2、购买发票(原件);</p>
+<p>　　3、竣工决算书(原件);</p>
+<p>　　4、个人身份证及复印件。</p>
+<p>　　必须本人亲自到场办理，如果委托他人办理必须提供经过公正的委托书。</p>
+<p>　　二、单位购买商品房，办理房产证需持：</p>
+<p>　　1、购房合同(正本);</p>
+<p>　　2、购买发票(复印件);</p>
+<p>　　3、竣工决算书(原件);</p>
+<p>　　4、单位介绍信(同时还需注明单位性质、委托何人前来办理);</p>
+<p>　　5、《住房质量保证书》、《住房使用说明书》。</p>
+<h1 id="购房小常识"><a href="#购房小常识" class="headerlink" title="购房小常识"></a>购房小常识</h1><pre><code>1、购房小常识：什么是商品房
+</code></pre>
+<p>　　商品房是指具有经营资格的房地产开发公司(包括外商投资企业)开发、经营、销售的房产。</p>
+<p>　　2、 购房小常识：什么是集资房</p>
+<p>　　集资房是改变住房建设由国家和单位承包的制度，实行政府、单位、个人三方面共同承担，通过筹集资金，进行住房建设的一种房屋。职工个人可按房价全额或部分出资，政府及相关部门用地、信贷、建材供应、税费等方面给予部分减免。集资所建住房的权属，按出资比例确定。个人按房价全额出资的，拥有全部产权，个人部分出资的，拥有部分产权。</p>
+<p>　　3、 购房小常识：什么是安居房</p>
+<p>　　安居房指实施国家“安居(或康居)工程”而建设的住房(属于经济适用房的一类)。是国家安排贷款及地方自筹资金建设的面向广大中低收入家庭，特别是对人均住房面积在4平方米以下特困户提供的、销售价格低于成本、由政府补贴的非盈利性住房。</p>
+<p>　　4、 购房小常识：什么是毛坯房</p>
+<p>　　是指交房时，地面、墙面水泥裸露，厨卫不含洁具、灶具，只预留管道接口的房屋，买家入住前需要自己装修。</p>
+<p>　　5、 购房小常识：什么是期房</p>
+<p>　　习惯上把在建的、尚未完成建设、不能交付使用的房屋称为期房。房屋的全面建成包括：建筑工程、设备安装工程及内外装修工程结束，通过竣工验收;达到“七通一平”，即上水通、下水通、排污通、配电通、气通(煤气、天然气或液化气)、电话通、道路通、场地平整。</p>
+<p>　　6、 购房小常识：什么是现房</p>
+<p>　　现房是指通过竣工验收，可以交付使用的房屋。开发商完成房屋全部建筑工程、配套工程，使房屋具备正常使用功能，还要通过建筑工程质量验收、规划竣工验收、消防验收，并取得新建住宅交付使用许可证明。</p>
+<p>　　7、 购房小常识：什么是低层、多层、中高层、高层、小高层住宅</p>
+<p>　　低层住宅：1~3层的住宅。</p>
+<p>　　多层住宅：4~6层的住宅。</p>
+<p>　　中高层住宅：7~9层的住宅。</p>
+<p>　　高层住宅：12层及12层以上的住宅。</p>
+<p>　　小高层：10~12层的住宅。</p>
+<p>　　8、 购房小常识：什么是建筑容积率</p>
+<p>　　是指项目规划建设用地范围内全部建筑与规划建设用地面积之比。附属建筑物也计算在内，但应注明不计算面积的附属建筑物除外。</p>
+<p>　　9、 购房小常识：什么是建筑密度</p>
+<p>　　指在居住区用地内各类建筑的基底总面积与居住区用地的比率(%)，它可以反映出一定用地范围内的空地率和建筑密集程</p>
+<p>　　10、 购房小常识：什么是绿化率</p>
+<p>　　是指项目规划建设用地范围内的绿化面积与规划建设用地面积之比。对购房者而言，绿化率高为好。</p>
+<p>　　11、 购房小常识：什么是公用面积</p>
+<p>　　公用面积是指住宅内保障正常生活所设置的公共走廊、楼梯、楼层间厅、水箱间、电梯间等所占面积的总和。消费者在购买商品房时，售楼单位将把公用面积分摊给用户，计入用户的建筑面积。</p>
+<p>　　12、 购房小常识：什么是使用面积</p>
+<p>　　使用面积是指住宅各层平面中为生活起居所使用的净面积之和，即住宅中分户门内全部可供使用的净面积，包括日常生活起居使用的卧室、起居室、客厅、厨房、厕所、室内通道、壁橱、阳台等面积。</p>
+<p>　　13、购房小常识：什么是建筑面积</p>
+<p>　　建筑面积也称建筑展开面积，是指住宅建筑外墙外围线测定的各层平面面积之和。包括两项：套内建筑面积和公摊建筑面积。</p>
+<p>　　14、购房小常识：什么是砖混住宅</p>
+<p>　　砖混结构住宅中的“砖”，指的是一种统一尺寸的建筑材料。也有其他尺寸的异型黏土砖，如空心砖等。“混”指的是包括楼板、过梁、楼梯、阳台、挑檐，这些配件与砖作的承重墙相结合，可以称为砖混结构式住宅。由于抗震的要求，砖混住宅一般在五六层以下。</p>
+<p>　　15、购房小常识：什么是跃层式住宅</p>
+<p>　　跃层式住宅是近年来推广的一种新颖的住宅建筑形式。这类特点是住宅占有上下两层楼房，卧室、起居室、客厅、卫生间、厨房及其他辅助用房可以分层布置，上下层之间的交通不通过公共楼梯而采用户内独用小楼梯连接。跃层式住宅的优点是每户都有较大的采光面，通风较好，户内居住面积和辅助面积较大，布局紧凑，功能明确，相互干扰较小。</p>
+<p>　　16、购房小常识：什么是点式住宅</p>
+<p>　　又称塔式住宅，其特点是若干户围绕一个楼梯或电梯枢纽布置，分户灵活，每户一般能够获得两面朝向，具有转角、通风良好、地形处理较灵活、自由、占地面积小等优点。但点式住宅外墙较多，造价较高，一些住房的居室易出现朝向不好的问题。</p>
+<p>　　17、购房小常识：什么是错层式住宅</p>
+<p>　　是一套房子不处于同一平面，即房内的厅、卧、卫、厨、阳台处于几个高度不同的平面上。错层住宅的面积计算方法参照平面住宅面积计算。</p>
+<p>　　18、购房小常识：什么是层高</p>
+<p>　　层高是指住宅高度以“层”为单位计量，每一层的高度国家在设计上有要求，这个高度就叫层高。它通常包括下层地板面或楼板面到上层楼板面之间的距离。</p>
+<p>　　19、购房小常识：什么是净高</p>
+<p>　　净高是指层高减去楼板厚度的净剩值。</p>
+<p>　　20、购房小常识：什么是进深</p>
+<p>　　进深是指一间独立的房屋或一幢居住建筑从前墙皮到后墙皮之间的实际长度。</p>
+<p>　　21、购房小常识：什么是开间</p>
+<p>　　开间即住宅的宽度。指一间房屋内一面墙皮到另一面墙皮之间的实际距离，因为是就一个自然的宽度而言，故又称为开间。</p>
+<p>　　22、购房小常识：什么是公积金贷款</p>
+<p>　　具有当地城镇常住户口、单位建立住房公积金制2年以上并按规定缴存住房公积金的职工，为购建住房或翻建、大修自有住房资金不足时，即可享受公积金贷款。</p>
+<p>　　23、购房小常识：公积金的贷款的条件</p>
+<p>　　1)借款人及其家属亲属缴存的公积金总额至少达到新购建(大修)住房支出的30%;</p>
+<p>　　2)借款人有稳定的经济收入和偿还本息的能力;</p>
+<p>　　3)借款人同意办理住房抵押登记和保险;</p>
+<p>　　4)提供当地住房资金管理中心及所属分中心同意的担保方式;</p>
+<p>　　5)同时提交银行要求的相关文件，如购房合同或房屋预售合同、房屋产权证、土地使用证、公积金缴存的证明等。</p>
+<p>　　24、购房小常识：什么是按揭贷款</p>
+<p>　　“按揭”具有房地产抵押及分期还款两层含义。它是指按揭人将物业的产权转让于按揭收益人(银行)作为还款保证，还款后，按揭收益人将物业的产权转让回给按揭人。具体地说，按揭贷款是指购房者以所购得的楼宇作为抵押品而从银行获得贷款，购房者按照按揭契约中规定的归还方式和期限分期付款给银行，银行按一定的利率收取利息。如贷款人违约，银行有权收走房屋。</p>
+<h1 id="签约指南"><a href="#签约指南" class="headerlink" title="签约指南"></a>签约指南</h1><p>一、一次性付款客户―签署《武汉市商品房买卖合同》</p>
+<p>　　按揭付款客户―办理按揭初审后，签署《武汉市商品房买卖合同》</p>
+<p>　　签署时间：《武汉市商品房认购书》签署后7日内</p>
+<p>　　签署地点：各项目客服中心</p>
+<p>　　签署人：须为买受人本人。其他情况详见下面列表：</p>
+<p>　　1 以企业名义购买，则签署人须为企业的法人代表。</p>
+<p>　　2 委托他人代为办理，则被委托人须持有委托人的身份证原件、被委托人的身份证原件及经公证有效的委托书。</p>
+<p>　　3 如买受人未年满18周岁，须到提供当地公证处开具的监护人公证书。</p>
+<p>　　签约所需准备资料：《武汉市商品房认购书》客户联、定金发票原件、各类优惠证明原件、买受人身份证 原件及复印件2份。</p>
+<p>　　二、签署《武汉市商品房买卖合同》时，请您仔细阅读合同，并详细查看合同中如下内容：</p>
+<p>　　买受人姓名、住所(址)、身份证号码、联系电话是否正确无误;</p>
+<p>　　所购房屋的房号、面积、单价、总价、付款方式是否正确无误;</p>
+<p>　　买受人逾期付款应承担的违约责任与开发商逾期交房须承担的违约责任是否合理、对等;</p>
+<p>　　产权登记面积和合同约定面积出现差异时如何处理;</p>
+<p>　　合同中是否明确房屋交付时间及各项基础设施、公共配套建筑交付日期(水、电、燃气、绿化等);房屋交接程序，物业管理费计收时间，物业管理收费明细及物业管理公司的确定;</p>
+<p>　　房屋产权登记办理时间的约定;所购房屋的房屋平面图;</p>
+<p>　　装饰、设备标准。</p>
+<p>　　三、签署《武汉市商品房买卖合同》时需注意事项：</p>
+<p>　　由于合同一经网上备案便不可更改，为了避免给您带来的不便，请您在签约时务必确定合同签署的各个要素：</p>
+<p>　　“两证”的姓名将以购房合同的买受人为准，请您在签约前谨慎考虑，签约后，将不再接受更名申请(其中包括增加或减少共有人);</p>
+<p>　　如有产权共有人，请先确定好各自的产权份额;涉及购房落户的问题，请先向公安局办证中心咨询;</p>
+<p>　　如共同买受人未满18周岁，须到提供当地公证处开具的监护人公证书;</p>
+<p>　　如需在武汉住房公积金管理中心提取公积金支付房款，应在签约前查询您可提取的公积金金额，以方便合同的签订。</p>
+<p>　　四、合同领取：</p>
+<p>　　根据武汉市商品房预售合同登记备案的规定，商品房为预售的，买受人与武汉鼎正房地产开发有限公司所签署的《武汉市商品房买卖合同》必须在合同生效之日起30日内</p>
+<p>　　1.一次性付款客户：《武汉市商品房买卖合同》签署后30日左右，由武汉鼎正房地产开发有限公司客服中心签约组通知领取，须本人前往通知地点，若本人无法亲自前往领取，被委托人须持买受人身份证原件代为领取。</p>
+<p>　　2.按揭(商业、公积金、组合贷款)客户：签署《武汉市商品房买卖合同》，在按揭银行完成所有贷款手续(包括审批、放款、抵押等)后，由武汉鼎正房地产客服中心签约组及按揭银行信贷人员通知领取。你将领取到的资料具体包括：《武汉市商品房买卖合同》原件二份及签署的相关附件原件，借款抵押合同原件一份。</p>
+<h1 id="按揭计算"><a href="#按揭计算" class="headerlink" title="按揭计算"></a>按揭计算</h1><p>为了方便您签约，根据您选择的付款方式不同，您需要提供如下资料：</p>
+<p>　　一、一次性付款</p>
+<p>　　1.签约当日需携带认购书、定金收据原件及全部房价款，房款必须在签订《商品房买卖合同》后规定时间内一次性付清;</p>
+<p>　　2.个人购买需携带本人身份证原件;</p>
+<p>　　3.公司购买需携带公司营业执照原件、法定代表人身份证原件;如委托办理则还需出具加盖公章、法人章的委托书。</p>
+<p>　　二、商业贷款</p>
+<p>　　1.签约当日需携带认购书、定金收据原件、本人身份证原件、首付房款和贷款银行要求提供的贷款资料，在签订《商品房买 卖合同》时支付不少于贷款银行规定的首付比例的房款;</p>
+<p>　　2.申请人非本市户口的，除银行要求其它贷款资料以外，还需提供二年以上个税纳税证明或社保缴交证明。</p>
+<p>　　3.办理贷款时，还需现金支付：抵押登记费85元(住宅)，550元(商铺)。</p>
+<p>　　三、公积金贷款及组合贷款(住宅)</p>
+<p>　　1.签约当日需携带认购书、定金收据原件、本人身份证原件、首付房款和贷款银行要求提供的贷款资料，在签订《商品房买 卖合同》时支付不少于总房价30%的房款;</p>
+<p>　　2.公积金申请条件：申请人户口不限，但必须在武汉市公积金中心连续缴交公积金满6个月以上，其中公积金贷款最高上限 金额为50万(具体申请金额以个人月缴交额高低而异)。</p>
+<p>　　3.办理贷款时，还需现金支付：抵押登记费85元。</p>
+<p>　　提醒事项</p>
+<p>　　1.办理银行按揭必须借款人和(共有人)配偶同时到场签字;</p>
+<p>　　2.买受人中任何一人未满18周岁不能办理公积金贷款手续，未满18周岁的买受人申请商业贷款必须在购房合同中增加其法定监护人的姓名，由法定监护人与银行签订借款合同;</p>
+<p>　　3.买受人不能亲自前来办理签约手续而需委托代理人代办的，委托代理人还需携带买受人身份证原件及经公证过的委托书;</p>
+<p>　　4.金融政策如有变动，按揭贷款的相关事宜以签约当日银行执行的审批政策为准。</p>
+<h1 id="两证办理"><a href="#两证办理" class="headerlink" title="两证办理"></a>两证办理</h1><p>1、按《商品房买卖合同》约定办理完毕收房手续。</p>
+<p>　　2、办证(房屋所有权证、国有土地使用证)相关资料准备如下：</p>
+<p>　　● 购房合同买受人身份证复印件(2份)新证正反复印</p>
+<p>　　● 维修基金缴款单原件2份(2011年8月后新购住房)</p>
+<p>　　● 购房发票客户联复印件(1份)</p>
+<p>　　● 购房发票办证联原件(交办证窗口原件不退)</p>
+<p>　　● 购房合同</p>
+<p>　　一次性付款(原件2份)</p>
+<p>　　非一次性付款(原件一份，复印件一份)</p>
+<p>　　● 需要户口本复印件(1份)</p>
+<p>　　● 买受人非武汉市户口开具：流动人口计划生育证明(计生部门)</p>
+<p>　　● 合同买受人为夫妻关系：结婚证复印件(1份)</p>
+<p>　　● 非一次性付款：向银行办理期房抵押换发房屋他项权证申请及银行委托书</p>
+<p>　　● 权属证明书(客服部领取)</p>
+<p>　　● 土地分割转让证明(客服部领取)</p>
+<p>　　● 相关表格(客服部领取)</p>
+<p>　　● 办证相关费用</p>
+<p>　　注释1：</p>
+<p>　　2008年11月1日(含)以后，凡个人购买住房申请转移登记的,暂免征交易印花税。</p>
+<p>　　注释2：契税征收以购房合同签订的时间为依据：</p>
+<p>　　(1)1997年10月1日前签订合同的，按产价的6%征收契税;</p>
+<p>　　(2)1997年10月1日至1999年7月31日签订合同的，按产价的4%征收契税。(购买别墅类(含单体和联体别墅)、非住宅的按产价4%征收契税政策延用至今)。</p>
+<p>　　(3)1999年8月1日至2004年2月29日，签订合同的普通住房按产价的2%征收契税，非普通住房按4%征收。普通住房的认定条件：房屋单价≤4000元/㎡;非普通住房认定条件：别墅、单价﹥4000元/㎡。</p>
+<p>　　(4)2004年3月1日至2008年10月31日签订合同的，个人购买非普通住宅的按照产价的4%征收契税;个人购买普通住宅的按产价的2%征收。普通住房的认定条件：单价≤5500元/㎡且总价≤70万元;非普通住房认定条件：别墅类(含联体)、单价﹥5500元/㎡或总价﹥70万元。</p>
+<p>　　(5)2008年11月1日至2010年9月30日签订合同的，别墅类(含单体、联体)按产价的4%征收契税;非普通住房按3%征收;普通住房按1.5%征收;个人首次购买90平方米及以下的普通住房按1%征收。</p>
+<p>　　七个中心城区、东湖生态旅游风景区、东湖高新技术开发区、武汉经济技术开发区的普通住房标准是同时满足三个条件：住宅小区建筑容积率≥1.5、单套建筑面积≤140平方米、单价≤7000元/平方米且总价≤100万元。</p>
+<p>　　东西湖区、汉南区、蔡甸区、江夏区、黄陂区、新洲区的普通住房标准是同时满足三个条件：</p>
+<p>　　住宅小区建筑容积率≥1.0;单套建筑面积≤140平方米;单价≤5700/平方米且总价≤80万元。</p>
+<p>　　(6)2010年10月1日起签订合同的，个人购买90平方米及以下普通住宅，且是家庭唯一住宅的，按产价的1%征收契税;个人购买90平方米以上的普通住宅，且是家庭唯一住宅的，按1.5%征收契税;不满足以上2条的(非普通住房或非家庭唯一住房)，按3%征收契税;别墅类(含单体、联体)按产价的4%征收。普通住房认定标准同上。</p>
+<p>　　注释3：</p>
+<p>　　维修基金交存标准以购房合同签订的时间为依据。</p>
+<p>　　2008年11月1日前签订合同的，住宅维修基金按产价的2%交存，</p>
+<p>　　非住宅维修基金按1%交存。</p>
+<p>　　2008年11月1日起签订合同的，商品住宅(含经济适用房和住</p>
+<p>　　宅小区内的非住宅及住宅小区外与单栋住宅结构相连的非住宅)维修基金交存标准为：</p>
+<p>　　砖混结构住宅49元/平方米;</p>
+<p>　　无电梯框架结构住宅55元/平方米;</p>
+<p>　　有电梯14层以下(含14层)框架结构住宅61元/平方米;</p>
+<p>　　有电梯15层以上(含15层)框架结构住宅73元/平方米;</p>
+]]></content>
+      <categories>
+        <category>cycle zone</category>
+      </categories>
+      <tags>
+        <tag>cycle 2021</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>A dynamic link library (DLL) initialization routine failed</title>
+    <url>/2021/12/19/8-A-dynamic-link-library-DLL-initialization-routine-failed/</url>
+    <content><![CDATA[<h1 id="8-A-dynamic-link-library-DLL-initialization-routine-failed"><a href="#8-A-dynamic-link-library-DLL-initialization-routine-failed" class="headerlink" title="8. A dynamic link library (DLL) initialization routine failed"></a>8. A dynamic link library (DLL) initialization routine failed</h1><p><img src="./img/8_initialization_routine_failed.png" alt="initialization routine failed"></p>
+<p>use IntelliJ IDEA to debug some program, when load some dynamic link library (*.dll),<br>throw out some error infomation: “A dynamic link library (DLL) initialization routine failed” ;</p>
+<p>when check the dll file ,the file exist and the located path has been set in the Computer PATH ENV,<br>besides this,use the dependency tool(dependency walker), we get the full complete dependent file list in the table view;</p>
+<p>the method to solve this situation:</p>
+<ol>
+<li>cmd —&gt;regedit </li>
+<li>locate the target program node;<br>eg: HKEY_CURRENT_USER\Software\MapCycle\AppProduct\Developer</li>
+<li>delete the java node which set the java infomation,<br>and node name make consist of the HEX code;</li>
+</ol>
+<p> regedit path<br><img src="./img/8_initialization_routine_failed_regedit.png" alt="HKEY_CURRENT_USER_Software_MapCycle"></p>
+]]></content>
+      <categories>
+        <category>cycle zone</category>
+      </categories>
+      <tags>
+        <tag>cycle 2021</tag>
+        <tag>library</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>hello 2022</title>
+    <url>/2022/01/01/7-hello-2022/</url>
+    <content><![CDATA[<h2 id="Hello-2022"><a href="#Hello-2022" class="headerlink" title="Hello 2022"></a>Hello 2022</h2><h2 id="To-do-list"><a href="#To-do-list" class="headerlink" title="To do list"></a>To do list</h2><h2 id="Bye-2011"><a href="#Bye-2011" class="headerlink" title="Bye 2011"></a>Bye 2011</h2>]]></content>
+      <categories>
+        <category>cycle zone</category>
+      </categories>
+      <tags>
+        <tag>cycle 2022</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>9. Debug cpp module in Android studio</title>
+    <url>/2021/12/19/9-Debug-cpp-module-in-Android-studio/</url>
+    <content><![CDATA[<h1 id="9-Debug-cpp-module-in-Android-studio"><a href="#9-Debug-cpp-module-in-Android-studio" class="headerlink" title="9. Debug cpp module in Android studio"></a>9. Debug cpp module in Android studio</h1><p><img src="./img/9_debug_cpp_in_androidstudio.png" alt="Debug cpp module in Android studio"></p>
+<p>STEPS:</p>
+<ol>
+<li>open project in android studio;</li>
+<li>select Android Node,not Project Node,</li>
+<li>select app tree root node,and click the mouse right button,<br>get the menu lists;</li>
+<li>click ‘Link c++ project with Gradle’ from the menu<br>the show the configure window</li>
+<li>if the *.mk file is Ok,choose ndk-build for Build system;<br>then choose the file ‘Android.mk’ in the project path;</li>
+<li>press ok,add the mk config into the build.gradle;<pre class="line-numbers language-none"><code class="language-none">android &#123;
+
+  compileSdkVersion 26
+  defaultConfig &#123;
+    applicationId &quot;com.map.cycle&quot;
+    minSdkVersion 21
+    targetSdkVersion 26
+    versionCode 1
+    versionName &quot;1.0&quot;
+    testInstrumentationRunner &quot;android.support.test.runner.AndroidJUnitRunner&quot;
+    multiDexEnabled true
+    ndk &#123;
+      abiFilters &quot;armeabi-v7a&quot;
+    &#125;
+  &#125;
+  externalNativeBuild &#123;
+    ndkBuild &#123;
+      path file(&#39;..&#x2F;..&#x2F;code&#x2F;build&#x2F;map&#x2F;jni&#x2F;Android.mk&#39;)
+    &#125;
+  &#125;
+&#125;
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></li>
+</ol>
+]]></content>
+      <categories>
+        <category>cycle zone</category>
+      </categories>
+      <tags>
+        <tag>cycle 2021</tag>
+        <tag>Android</tag>
+        <tag>debug</tag>
+      </tags>
+  </entry>
+</search>

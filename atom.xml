@@ -1,0 +1,538 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>赛客</title>
+  
+  <subtitle>相信美好的事情即将发生</subtitle>
+  <link href="https://cyclezone.github.io/atom.xml" rel="self"/>
+  
+  <link href="https://cyclezone.github.io/"/>
+  <updated>2022-01-09T09:11:15.324Z</updated>
+  <id>https://cyclezone.github.io/</id>
+  
+  <author>
+    <name>cyclezone</name>
+    
+  </author>
+  
+  <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>40. 不能连接到吊销服务器，或者未能获得最终响应</title>
+    <link href="https://cyclezone.github.io/2022/01/09/40-CInternetSession-12057-%E4%B8%8D%E8%83%BD%E8%BF%9E%E6%8E%A5%E5%88%B0%E5%90%8A%E9%94%80%E6%9C%8D%E5%8A%A1%E5%99%A8%EF%BC%8C%E6%88%96%E8%80%85%E6%9C%AA%E8%83%BD%E8%8E%B7%E5%BE%97%E6%9C%80%E7%BB%88%E5%93%8D%E5%BA%94/"/>
+    <id>https://cyclezone.github.io/2022/01/09/40-CInternetSession-12057-%E4%B8%8D%E8%83%BD%E8%BF%9E%E6%8E%A5%E5%88%B0%E5%90%8A%E9%94%80%E6%9C%8D%E5%8A%A1%E5%99%A8%EF%BC%8C%E6%88%96%E8%80%85%E6%9C%AA%E8%83%BD%E8%8E%B7%E5%BE%97%E6%9C%80%E7%BB%88%E5%93%8D%E5%BA%94/</id>
+    <published>2022-01-09T08:36:03.000Z</published>
+    <updated>2022-01-09T09:11:15.324Z</updated>
+    
+    <content type="html"><![CDATA[<h2 id="40-不能连接到吊销服务器，或者未能获得最终响应"><a href="#40-不能连接到吊销服务器，或者未能获得最终响应" class="headerlink" title="40. 不能连接到吊销服务器，或者未能获得最终响应"></a>40. 不能连接到吊销服务器，或者未能获得最终响应</h2><h3 id="40-1-ERROR-WINHTTP-SECURE-CERT-REV-FAILED-12057"><a href="#40-1-ERROR-WINHTTP-SECURE-CERT-REV-FAILED-12057" class="headerlink" title="40.1 ERROR_WINHTTP_SECURE_CERT_REV_FAILED [12057]"></a>40.1 ERROR_WINHTTP_SECURE_CERT_REV_FAILED [12057]</h3><pre class="line-numbers language-none"><code class="language-none">ERROR_WINHTTP_SECURE_CERT_REV_FAILED12057Indicates that revocation cannot be checked because the revocation server was offline (equivalent to CRYPT_E_REVOCATION_OFFLINE).<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre><p>use the following function<br><strong>CInternetSession::OpenURL()</strong>;</p><p><em>CInternetSession</em> is a part of the Microsoft Foundation Classes C++ library.</p><p>some options is related with ‘Internet Explore’;</p><p>compare with windows 10 , windows server has different options;</p><p><strong>Method:</strong></p><ol><li>open Internet Explore,find Tools button</li><li>locate ‘Advandced Tab’ in Internet options Window;</li><li>in node ‘Security Options’, unselect ‘Check for server certificate revocation’</li></ol><pre class="line-numbers language-none"><code class="language-none">打开 IE-&gt;Tools-&gt;Internet Options-&gt;Advanced Tab-&gt;Security Options-&gt;”Check for server certificate revocation(Requires Restart)”<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre><p><img src="./img/40-internet_options_security.png" alt="Internet Security Options"></p><p>这个选项当前为选中状态（IE8默认是选中的）。取消这个选项，Bug 症状消失。经过测试发现只有 Windows Server 2003 Standard Edition 的 IE 默认选中该项，而且在其他平台即时此选项选中亦不会发生 Error 12057 (Microsoft’s Bug ? or with other options?)。决定通过编码解决这个问题。<br>其实编码解决这个问题倒是很简单， 在 HttpOpenRequest 后增加如下代码，设置当前 Http 连接选项取消这个检查</p><pre class="line-numbers language-none"><code class="language-none">DWORD dwFlags &#x3D; 0;DWORD dwError &#x3D; 0;DWORD dwBuffLen &#x3D; sizeof(dwFlags);InternetQueryOption(m_hRequest, INTERNET_OPTION_SECURITY_FLAGS,(LPVOID)&amp;dwFlags, &amp;dwBuffLen);dwFlags |&#x3D; SECURITY_FLAG_IGNORE_REVOCATION;InternetSetOption(m_hRequest, INTERNET_OPTION_SECURITY_FLAGS, (LPVOID)&amp;dwFlags, sizeof(dwFlags)) ;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre><h3 id="40-2-How-to-Request-URI"><a href="#40-2-How-to-Request-URI" class="headerlink" title="40.2 How to Request URI"></a>40.2 How to Request URI</h3><p><strong>1. with CHttpConnection::OpenRequest</strong></p><pre class="line-numbers language-none"><code class="language-none">long Request(string strUri, byte** ppbuf, long&amp; len)&#123;&#x2F;&#x2F; MSDN：CInternetSession第一个参数标识调用Internet功能的应用程序或实体的名称（例如，“Microsoft Internet Browser”）。&#x2F;&#x2F;如果pstrAgent为NULL（缺省值），则框架将调用全局函数AfxGetAppName，该函数返回包含应用程序名称的以null结尾的字符串。&#x2F;&#x2F; 某些协议使用此字符串来标识服务器应用程序。CInternetSession    session(&quot;BUTTER&quot;);CHttpFile*        pHttpFile &#x3D; NULL;long                ret &#x3D; 0;len &#x3D; 0;try&#123;Log(&quot;OpenURL_ERROR&quot;, &quot;pHttpFile: %p , Begin OpenRequest&quot;, pHttpFile);DWORD dwFlags;DWORD dwServerType;CString strServer, strObject;INTERNET_PORT nport;AfxParseURL(strUri.c_str(), dwServerType, strServer, strObject, nport);CHttpConnection* pHttpConnect &#x3D; session.GetHttpConnection(strServer, INTERNET_FLAG_SECURE, nport, NULL, NULL);if (pHttpConnect)&#123;pHttpFile &#x3D; (CHttpFile*)pHttpConnect-&gt;OpenRequest(CHttpConnection::HTTP_VERB_POST, strObject, NULL, 1,NULL, NULL,INTERNET_FLAG_RELOAD | INTERNET_FLAG_NO_CACHE_WRITE | INTERNET_FLAG_KEEP_CONNECTION |INTERNET_FLAG_SECURE | INTERNET_FLAG_IGNORE_CERT_CN_INVALID | INTERNET_FLAG_IGNORE_CERT_DATE_INVALID&#x2F;&#x2F;SECURITY_FLAG_IGNORE_REVOCATION);if (pHttpFile)&#123;&#x2F;&#x2F;get web server optionpHttpFile-&gt;QueryOption(INTERNET_OPTION_SECURITY_FLAGS, dwFlags);dwFlags |&#x3D; SECURITY_FLAG_IGNORE_UNKNOWN_CA;  &#x2F;&#x2F;忽略错误与未知的证书颁发机构dwFlags |&#x3D; SECURITY_FLAG_IGNORE_REVOCATION;  &#x2F;&#x2F;忽略错误与撤销相关证书&#x2F;&#x2F;set web server optionpHttpFile-&gt;SetOption(INTERNET_OPTION_SECURITY_FLAGS, dwFlags);if (pHttpFile-&gt;SendRequest())&#123;&#x2F;&#x2F;get response status if success, return 200DWORD dwStatus &#x3D; 0;DWORD dwStatusLen &#x3D; sizeof(dwStatus);pHttpFile-&gt;QueryInfo(HTTP_QUERY_FLAG_NUMBER | HTTP_QUERY_STATUS_CODE, &amp;dwStatus, &amp;dwStatusLen, 0);Log(&quot;URL_Query&quot;, &quot;STATUS_CODE : %d &quot;, dwStatus);if (dwStatus &#x3D;&#x3D; 200 )&#123;QByteArray buffer;char tmpBuf[1024];UINT nReadLen &#x3D; 0;while (nReadLen &#x3D; pHttpFile-&gt;Read((void*)tmpBuf, 1024))&#123;buffer.append(tmpBuf, nReadLen);&#125;pHttpFile-&gt;Close();delete pHttpFile;if (!buffer.isEmpty())&#123;len &#x3D; buffer.length();*ppbuf &#x3D; new byte[len];memcpy(*ppbuf, buffer.data(), len);&#125;ret &#x3D; 1;&#125;else    ret &#x3D; -1;&#125;else&#123;    ret &#x3D; -2;&#125;&#125;else&#123;ret &#x3D; -3;&#125;&#125;elseret &#x3D; -4;&#125;catch (CInternetException* e)&#123;char szMsg[MAX_PATH] &#x3D; &#123; &quot;&#x2F;0&quot; &#125;;e-&gt;GetErrorMessage(szMsg, MAX_PATH);Log(&quot;URL_ERROR&quot;, &quot;error: [%d , %s ; pHttpFile: %p , url:  %s ] &quot;, e-&gt;m_dwError, szMsg, pHttpFile,strUri.c_str());e-&gt;Delete();if (pHttpFile)&#123;pHttpFile-&gt;Close();delete pHttpFile;pHttpFile &#x3D; NULL;&#125;&#125;if (!pHttpFile)Log(&quot;URL_ERROR&quot;, &quot;pHttpFile: %p &quot;, pHttpFile);session.Close();return ret;&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre><p><strong>2. with CInternetSession::OpenURL</strong></p><pre class="line-numbers language-none"><code class="language-none">long Request(string strUri, byte** ppbuf, long&amp; len)&#123;len &#x3D; 0;CInternetSession    session(&quot;BUTTER&quot;);CHttpFile*        pHttpFile &#x3D; NULL;long                ret &#x3D; 0;try&#123;LPCTSTR pheader &#x3D; &quot;Mozilla&#x2F;5.0 (Windows NT 6.1) AppleWebKit&#x2F;537.36 (KHTML, like Gecko) Chrome&#x2F;31.0.1650.63 Safari&#x2F;537.36&quot;;session.SetOption(INTERNET_OPTION_USER_AGENT, (LPVOID)pheader, strlen(pheader));session.SetOption(INTERNET_OPTION_CONNECT_TIMEOUT, 5000);    DWORD dwFlag &#x3D; INTERNET_FLAG_TRANSFER_BINARY | INTERNET_FLAG_DONT_CACHE | INTERNET_FLAG_RELOAD;pHttpFile &#x3D; (CHttpFile*)session.OpenURL(strUri.c_str(), 1, dwFlag, pheader);if(pHttpFile)&#123;&#x2F;&#x2F;get response status if success, return 200DWORD dwStatus &#x3D; 0;DWORD dwStatusLen &#x3D; sizeof(dwStatus);pHttpFile-&gt;QueryInfo(HTTP_QUERY_FLAG_NUMBER | HTTP_QUERY_STATUS_CODE, &amp;dwStatus, &amp;dwStatusLen, 0);Log(&quot;URL_Query&quot;, &quot;STATUS_CODE : %d &quot;, dwStatus);if (dwStatus &#x3D;&#x3D; 200 )&#123;QByteArray buffer;char tmpBuf[1024];UINT nReadLen &#x3D; 0;while (nReadLen &#x3D; pHttpFile-&gt;Read((void*)tmpBuf, 1024))&#123;buffer.append(tmpBuf, nReadLen);&#125;pHttpFile-&gt;Close();delete pHttpFile;if (!buffer.isEmpty())&#123;len &#x3D; buffer.length();*ppbuf &#x3D; new byte[len];memcpy(*ppbuf, buffer.data(), len);&#125;ret &#x3D; 1;&#125;&#125;else    ret &#x3D; -1;&#125;catch (CInternetException* e)&#123;char szMsg[MAX_PATH] &#x3D; &#123; &quot;&#x2F;0&quot; &#125;;e-&gt;GetErrorMessage(szMsg, MAX_PATH);Log(&quot;URL_ERROR&quot;, &quot;error: [%d , %s ; pHttpFile: %p , url:  %s ] &quot;, e-&gt;m_dwError, szMsg, pHttpFile, strUri.c_str());e-&gt;Delete();if (pHttpFile)&#123;pHttpFile-&gt;Close();delete pHttpFile;pHttpFile &#x3D; NULL;&#125;&#125;if (!pHttpFile)&#123;Log(&quot;URL_ERROR&quot;, &quot;pHttpFile: %p &quot;, pHttpFile);ret &#x3D; -2;&#125;session.Close();return ret;&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>]]></content>
+    
+    
+      
+      
+    <summary type="html">&lt;h2 id=&quot;40-不能连接到吊销服务器，或者未能获得最终响应&quot;&gt;&lt;a href=&quot;#40-不能连接到吊销服务器，或者未能获得最终响应&quot; class=&quot;headerlink&quot; title=&quot;40. 不能连接到吊销服务器，或者未能获得最终响应&quot;&gt;&lt;/a&gt;40. 不能连接到吊销服务</summary>
+      
+    
+    
+    
+    <category term="cycle zone" scheme="https://cyclezone.github.io/categories/cycle-zone/"/>
+    
+    
+    <category term="cycle 2022" scheme="https://cyclezone.github.io/tags/cycle-2022/"/>
+    
+    <category term="CInternetSession" scheme="https://cyclezone.github.io/tags/CInternetSession/"/>
+    
+    <category term="internet" scheme="https://cyclezone.github.io/tags/internet/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>38.1.configue host build target</title>
+    <link href="https://cyclezone.github.io/2022/01/09/38-1-configue-host-build-target/"/>
+    <id>https://cyclezone.github.io/2022/01/09/38-1-configue-host-build-target/</id>
+    <published>2022-01-09T08:34:50.000Z</published>
+    <updated>2022-01-09T09:06:44.430Z</updated>
+    
+    <content type="html"><![CDATA[<h2 id="38-1-configue-host-build-target"><a href="#38-1-configue-host-build-target" class="headerlink" title="38.1.configue host build target"></a>38.1.configue host build target</h2> <pre class="line-numbers language-none"><code class="language-none">.&#x2F;configure --host&#x3D;arm-linux-androideabi --prefix&#x3D;&#x2F;install.&#x2F;configure --host&#x3D;aarch64-linux-android --prefix&#x3D;&#x2F;install&#x2F;configure --prefix&#x3D;&#x2F;mingw --enable-win32thread \--host&#x3D;x86_64-w64-mingw32 --enable-static --enable-shared <span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre> <pre class="line-numbers language-none"><code class="language-none">--build&#x3D;BUILD指定软件包安装的系统平台。如果没有指定，默认值将是&#39;--host&#39;选项的值。--host&#x3D;HOST指定软件运行的系统平台。如果没有指定。将会运行&#96;config.guess&#39;来检测。--target&#x3D;GARGET指定软件面向(target to)的系统平台。这主要在程序语言工具如编译器和汇编器上下文中起作用。如果没有指定，默认将使用&#39;--host&#39;选项的值。--disable-FEATURE一些软件包可以选择这个选项来提供为大型选项的编译时配置，例如使用Kerberos认证系统或者一个实验性的编译器最优配置。如果默认是提供这些特性，可以使用&#39;--disable-FEATURE&#39;来禁用它，这里&#39;FEATURE&#39;是特性的名字，例如：$ .&#x2F;configure --disable-gui-enable-FEATURE[&#x3D;ARG]相反的，一些软件包可能提供了一些默认被禁止的特性,可以使用&#39;--enable-FEATURE&#39;来起用它。这里&#39;FEATURE&#39;是特性的名字。一个特性可能会接受一个可选的参数。例如：$ .&#x2F;configure --enable-buffers&#x3D;128&#96;--enable-FEATURE&#x3D;no&#39;与上面提到的&#39;--disable-FEATURE&#39;是同义的。--with-PACKAGE[&#x3D;ARG]在自由软件社区里，有使用已有软件包和库的优秀传统。当用&#39;configure&#39;来配置一个源码树时，可以提供其他已经安装的软件包的信息。例如，倚赖于Tcl和Tk的BLT器件工具包。要配置BLT，可能需要给&#39;configure&#39;提供一些关于我们把Tcl和Tk装的何处的信息：<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>]]></content>
+    
+    
+      
+      
+    <summary type="html">&lt;h2 id=&quot;38-1-configue-host-build-target&quot;&gt;&lt;a href=&quot;#38-1-configue-host-build-target&quot; class=&quot;headerlink&quot; title=&quot;38.1.configue host build targe</summary>
+      
+    
+    
+    
+    <category term="cycle zone" scheme="https://cyclezone.github.io/categories/cycle-zone/"/>
+    
+    
+    <category term="cycle 2022" scheme="https://cyclezone.github.io/tags/cycle-2022/"/>
+    
+    <category term="linux" scheme="https://cyclezone.github.io/tags/linux/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>39. Rotate marker</title>
+    <link href="https://cyclezone.github.io/2022/01/08/39-rotate-marker/"/>
+    <id>https://cyclezone.github.io/2022/01/08/39-rotate-marker/</id>
+    <published>2022-01-08T08:35:16.000Z</published>
+    <updated>2022-01-09T09:11:08.444Z</updated>
+    
+    <content type="html"><![CDATA[<h1 id="39-Rotate-Marker"><a href="#39-Rotate-Marker" class="headerlink" title="39. Rotate Marker"></a>39. Rotate Marker</h1> <pre class="line-numbers language-none"><code class="language-none"> &#x2F;&#x2F; double x, y    the point before rotate; &#x2F;&#x2F; double dx, dy  the base point rotate around; &#x2F;&#x2F; double angle   roate angle in degree; &#x2F;&#x2F; double xO, yO  the point after rotate;void RotateMarker(double x, double y, double dx, double dy, double angle, double&amp; xO, double&amp; yO)&#123;double dRad &#x3D; angle*PI &#x2F; 180.0;double dCos &#x3D; cos(dRad);double dSin &#x3D; sin(dRad);xO &#x3D; x*dCos - y*dSin + (1 - dCos)*dx + dSin*dy;yO &#x3D; x*dSin + y*dCos + (1 - dCos)*dy - dSin*dx;&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>]]></content>
+    
+    
+      
+      
+    <summary type="html">&lt;h1 id=&quot;39-Rotate-Marker&quot;&gt;&lt;a href=&quot;#39-Rotate-Marker&quot; class=&quot;headerlink&quot; title=&quot;39. Rotate Marker&quot;&gt;&lt;/a&gt;39. Rotate Marker&lt;/h1&gt; &lt;pre class=&quot;li</summary>
+      
+    
+    
+    
+    <category term="cycle zone" scheme="https://cyclezone.github.io/categories/cycle-zone/"/>
+    
+    
+    <category term="cycle 2022" scheme="https://cyclezone.github.io/tags/cycle-2022/"/>
+    
+    <category term="Rotate" scheme="https://cyclezone.github.io/tags/Rotate/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>38.Defines.h</title>
+    <link href="https://cyclezone.github.io/2022/01/08/38-defines-h/"/>
+    <id>https://cyclezone.github.io/2022/01/08/38-defines-h/</id>
+    <published>2022-01-08T05:44:16.000Z</published>
+    <updated>2022-01-09T09:11:01.823Z</updated>
+    
+    <content type="html"><![CDATA[<h1 id="38-Defines-h"><a href="#38-Defines-h" class="headerlink" title="38. Defines.h"></a>38. Defines.h</h1><pre class="line-numbers language-none"><code class="language-none">&#x2F;************************************************************************ Software License Agreement (BSD License)** Copyright 2020-2021  cheldon (program68@126.com). All rights reserved.** Redistribution and use in source and binary forms, with or without* modification, are permitted provided that the following conditions* are met:** 1. Redistributions of source code must retain the above copyright*    notice, this list of conditions and the following disclaimer.* 2. Redistributions in binary form must reproduce the above copyright*    notice, this list of conditions and the following disclaimer in the*    documentation and&#x2F;or other materials provided with the distribution.** THIS SOFTWARE IS PROVIDED BY THE AUTHOR &#96;&#96;AS IS&#39;&#39; AND ANY EXPRESS OR* IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES* OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.* IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,* INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT* NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,* DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY* THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT* (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF* THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.*************************************************************************&#x2F;#ifndef BUTTER_DEFINES_H_#define BUTTER_DEFINES_H_#ifdef BUTTER_VERSION_#undef BUTTER_VERSION_#endif#define BUTTER_VERSION_ &quot;1.2.5&quot;#ifdef BUTTER_EXPORT#undef BUTTER_EXPORT#endif#ifdef WIN32&#x2F;* win32 dll export&#x2F;import directives *&#x2F;#ifdef BUTTER_EXPORTS#define BUTTER_EXPORT __declspec(dllexport)#elif defined(BUTTER_STATIC)#define BUTTER_EXPORT#else#define BUTTER_EXPORT __declspec(dllimport)#endif#else&#x2F;* unix needs nothing *&#x2F;#define BUTTER_EXPORT#endif#ifdef BUTTER_DEPRECATED#undef BUTTER_DEPRECATED#endif#ifdef __GNUC__#define BUTTER_DEPRECATED __attribute__ ((deprecated))#elif defined(_MSC_VER)#define BUTTER_DEPRECATED __declspec(deprecated)#else#pragma message(&quot;WARNING: You need to implement BUTTER_DEPRECATED for this compiler&quot;)#define BUTTER_DEPRECATED#endif#undef BUTTER_PLATFORM_64_BIT#undef BUTTER_PLATFORM_32_BIT#if __amd64__ || __x86_64__ || _WIN64 || _M_X64#define BUTTER_PLATFORM_64_BIT#else#define BUTTER_PLATFORM_32_BIT#endif#undef BUTTER_ARRAY_LEN#define BUTTER_ARRAY_LEN(a) (sizeof(a)&#x2F;sizeof(a[0]))#ifdef __cplusplusnamespace butter &#123;#endifenum butter_log_level&#123;  BUTTER_LOG_NONE &#x3D; 0,  BUTTER_LOG_FATAL &#x3D; 1,  BUTTER_LOG_ERROR &#x3D; 2,  BUTTER_LOG_WARN &#x3D; 3,  BUTTER_LOG_INFO &#x3D; 4,  BUTTER_LOG_DEBUG &#x3D; 5&#125;;#ifdef __cplusplus&#125;#endif#endif &#x2F;* BUTTER_DEFINES_H_ *&#x2F;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>]]></content>
+    
+    
+      
+      
+    <summary type="html">&lt;h1 id=&quot;38-Defines-h&quot;&gt;&lt;a href=&quot;#38-Defines-h&quot; class=&quot;headerlink&quot; title=&quot;38. Defines.h&quot;&gt;&lt;/a&gt;38. Defines.h&lt;/h1&gt;&lt;pre class=&quot;line-numbers langua</summary>
+      
+    
+    
+    
+    <category term="cycle zone" scheme="https://cyclezone.github.io/categories/cycle-zone/"/>
+    
+    
+    <category term="cycle 2022" scheme="https://cyclezone.github.io/tags/cycle-2022/"/>
+    
+    <category term="BUTTER_DEPRECATED" scheme="https://cyclezone.github.io/tags/BUTTER-DEPRECATED/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>37. no member named &#39;int64_t&#39; in the global namespace using::int64_t</title>
+    <link href="https://cyclezone.github.io/2022/01/05/37-no-member-named-int64-t-in-the-global-namespace-using-int64-t/"/>
+    <id>https://cyclezone.github.io/2022/01/05/37-no-member-named-int64-t-in-the-global-namespace-using-int64-t/</id>
+    <published>2022-01-05T05:46:17.000Z</published>
+    <updated>2022-01-09T09:10:54.482Z</updated>
+    
+    <content type="html"><![CDATA[<h1 id="37-no-member-named-‘int64-t’-in-the-global-namespace-using-int64-t"><a href="#37-no-member-named-‘int64-t’-in-the-global-namespace-using-int64-t" class="headerlink" title="37. no member named ‘int64_t’ in the global namespace using::int64_t"></a>37. no member named ‘int64_t’ in the global namespace using::int64_t</h1><p>when compile android,</p><pre class="line-numbers language-none"><code class="language-none">7. #include &lt;string&gt;8. #include &lt;algorithm&gt; <span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre><p>compile the lines above,get the error below:</p><pre class="line-numbers language-none"><code class="language-none">Compile++ arm  : butterbase &lt;&#x3D; basetemplate.cppIn file included from jni&#x2F;..&#x2F;..&#x2F;..&#x2F;..&#x2F;base&#x2F;basebutter.cpp:7:D:&#x2F;android&#x2F;ndk_r16b&#x2F;build&#x2F;&#x2F;..&#x2F;sources&#x2F;cxx-stl&#x2F;llvm-libc++&#x2F;include\cstdint:156:8: error: no member named &#39;int64_t&#39; in the global namespaceusing::int64_t;  ~~^In file included from jni&#x2F;..&#x2F;..&#x2F;..&#x2F;..&#x2F;base&#x2F;basebutter.cpp:8:In file included from D:&#x2F;android&#x2F;ndk_r16b&#x2F;build&#x2F;&#x2F;..&#x2F;sources&#x2F;cxx-stl&#x2F;llvm-libc++&#x2F;include\string:470:In file included from D:&#x2F;android&#x2F;ndk_r16b&#x2F;build&#x2F;&#x2F;..&#x2F;sources&#x2F;cxx-stl&#x2F;llvm-libc++&#x2F;include\string_view:169:In file included from D:&#x2F;android&#x2F;ndk_r16b&#x2F;build&#x2F;&#x2F;..&#x2F;sources&#x2F;cxx-stl&#x2F;llvm-libc++&#x2F;include\__string:56:In file included from D:&#x2F;android&#x2F;ndk_r16b&#x2F;build&#x2F;&#x2F;..&#x2F;sources&#x2F;cxx-stl&#x2F;llvm-libc++&#x2F;include\algorithm:643:In file included from D:&#x2F;android&#x2F;ndk_r16b&#x2F;build&#x2F;&#x2F;..&#x2F;sources&#x2F;cxx-stl&#x2F;llvm-libc++&#x2F;include\memory:658:D:&#x2F;android&#x2F;ndk_r16b&#x2F;build&#x2F;&#x2F;..&#x2F;sources&#x2F;cxx-stl&#x2F;llvm-libc++&#x2F;include\atomic:1873:17: error: use of undeclared identifier &#39;int64_t&#39;typedef atomic&lt; int64_t&gt; atomic_int64_t;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre><h2 id="Method"><a href="#Method" class="headerlink" title="Method:"></a>Method:</h2><p>From</p><pre class="line-numbers language-none"><code class="language-none">#include &lt;string&gt;#include &lt;algorithm&gt;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre><p>change to</p><pre class="line-numbers language-none"><code class="language-none">typedef long long                int64_t;#include &lt;string&gt;#include &lt;algorithm&gt;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>]]></content>
+    
+    
+      
+      
+    <summary type="html">&lt;h1 id=&quot;37-no-member-named-‘int64-t’-in-the-global-namespace-using-int64-t&quot;&gt;&lt;a href=&quot;#37-no-member-named-‘int64-t’-in-the-global-namespace-u</summary>
+      
+    
+    
+    
+    <category term="cycle zone" scheme="https://cyclezone.github.io/categories/cycle-zone/"/>
+    
+    
+    <category term="cycle 2022" scheme="https://cyclezone.github.io/tags/cycle-2022/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>36. process character</title>
+    <link href="https://cyclezone.github.io/2022/01/05/36-process-character/"/>
+    <id>https://cyclezone.github.io/2022/01/05/36-process-character/</id>
+    <published>2022-01-05T05:45:43.000Z</published>
+    <updated>2022-01-09T09:10:47.476Z</updated>
+    
+    <content type="html"><![CDATA[<h1 id="36-process-character"><a href="#36-process-character" class="headerlink" title="36. process character"></a>36. process character</h1><pre class="line-numbers language-none"><code class="language-none">void process(const char* lpszString)&#123;  const char*lpszBegin&#x3D; lpszString;  const char*lpszEnd&#x3D; NULL;  &#x2F;&#x2F; skip space   while(::isspace(*lpszBegin))    lpszBegin &#x3D; ::_tcsinc(lpszBegin);  &#x2F;&#x2F; begine with &#39;&lt;&#39; ?  if(*lpszBegin !&#x3D; _T(&#39;&lt;&#39;))    return 0;  &#x2F;&#x2F; skip&#39;&lt;&#39;  lpszBegin &#x3D; ::_tcsinc(lpszBegin);  &#x2F;&#x2F; if empty ,return  if(*lpszBegin &#x3D;&#x3D; _T(&#39;&gt;&#39;))      return;        bool bClosingTag &#x3D;false;  &#x2F;&#x2F; check label is character or not  if(!::isalpha(*lpszBegin))  &#123;    bClosingTag &#x3D; (*lpszBegin&#x3D;&#x3D;_T(&#39;&#x2F;&#39;));    if(bClosingTag)      lpszBegin &#x3D; ::_tcsinc(lpszBegin);    else      return 0;  &#125;  bOpeningTag &#x3D; !bClosingTag;  lpszEnd &#x3D; lpszBegin;  do  &#123;    &#x2F;&#x2F; include (a-z, A-Z) \(0-9) \&#39;-&#39; \&#39;-&#39; \&#39;:&#39; \&#39;.&#39;    if((!::isalnum(*lpszEnd)) &amp;&amp;       (*lpszEnd!&#x3D;_T(&#39;-&#39;)) &amp;&amp; (*lpszEnd!&#x3D;_T(&#39;:&#39;)) &amp;&amp;       (*lpszEnd!&#x3D;_T(&#39;_&#39;)) &amp;&amp; (*lpszEnd!&#x3D;_T(&#39;.&#39;)))    &#123;      &#x2F;&#x2F; if illegal      ASSERT(lpszEnd !&#x3D; lpszBegin);      &#x2F;&#x2F; check state      if(*lpszEnd&#x3D;&#x3D;NULL || ::isspace(*lpszEnd) ||         *lpszEnd &#x3D;&#x3D; _T(&#39;&gt;&#39;) || (*lpszEnd &#x3D;&#x3D; _T(&#39;&#x2F;&#39;) &amp;&amp;         (!bClosingTag)))      &#123;        break;      &#125;      return 0;    &#125;    &#x2F;&#x2F; contine process next    lpszEnd &#x3D; ::_tcsinc(lpszEnd);  &#125; while(true);&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>]]></content>
+    
+    
+      
+      
+    <summary type="html">&lt;h1 id=&quot;36-process-character&quot;&gt;&lt;a href=&quot;#36-process-character&quot; class=&quot;headerlink&quot; title=&quot;36. process character&quot;&gt;&lt;/a&gt;36. process character&lt;/h1</summary>
+      
+    
+    
+    
+    <category term="cycle zone" scheme="https://cyclezone.github.io/categories/cycle-zone/"/>
+    
+    
+    <category term="string" scheme="https://cyclezone.github.io/tags/string/"/>
+    
+    <category term="cycle 2022" scheme="https://cyclezone.github.io/tags/cycle-2022/"/>
+    
+    <category term="tcsinc" scheme="https://cyclezone.github.io/tags/tcsinc/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Hexo增加搜索功能</title>
+    <link href="https://cyclezone.github.io/2022/01/04/5-Hexo%E5%A2%9E%E5%8A%A0%E6%90%9C%E7%B4%A2%E5%8A%9F%E8%83%BD/"/>
+    <id>https://cyclezone.github.io/2022/01/04/5-Hexo%E5%A2%9E%E5%8A%A0%E6%90%9C%E7%B4%A2%E5%8A%9F%E8%83%BD/</id>
+    <published>2022-01-04T15:20:22.000Z</published>
+    <updated>2022-01-09T08:56:32.900Z</updated>
+    
+    <content type="html"><![CDATA[<h2 id="Hexo增加搜索功能具体操作"><a href="#Hexo增加搜索功能具体操作" class="headerlink" title="Hexo增加搜索功能具体操作"></a>Hexo增加搜索功能具体操作</h2><h3 id="1-安装搜索"><a href="#1-安装搜索" class="headerlink" title="1.安装搜索"></a>1.安装搜索</h3><p>  在Hexo的根目录下，打开命令可执行窗口，执行如下命令：</p><pre class="line-numbers language-none"><code class="language-none">npm install hexo-generator-searchdb --save<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre><h3 id="2-全局配置文件-config-yml，"><a href="#2-全局配置文件-config-yml，" class="headerlink" title="2.全局配置文件_config.yml，"></a>2.全局配置文件<code>_config.yml</code>，</h3><p>  新增如下内容：</p><pre class="line-numbers language-none"><code class="language-none">search:  path: search.xml  field: post  format: html  limit: 10000<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre><h3 id="3-hexo主题配置文件（-themes-next-config-yml）"><a href="#3-hexo主题配置文件（-themes-next-config-yml）" class="headerlink" title="3.hexo主题配置文件（\themes\next_config.yml）"></a>3.hexo主题配置文件（<code>\themes\next_config.yml</code>）</h3><p>修改<code>local_search</code> 的<strong>enable</strong> 为 <strong>true</strong>：</p><pre class="line-numbers language-none"><code class="language-none"># Local search# Dependencies: https:&#x2F;&#x2F;github.com&#x2F;flashlab&#x2F;hexo-generator-searchlocal_search:  enable: true  # if auto, trigger search by changing input  # if manual, trigger search by pressing enter key or search button  trigger: auto  # show top n results per article, show all results by setting to -1  top_n_per_article: 1<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>]]></content>
+    
+    
+      
+      
+    <summary type="html">&lt;h2 id=&quot;Hexo增加搜索功能具体操作&quot;&gt;&lt;a href=&quot;#Hexo增加搜索功能具体操作&quot; class=&quot;headerlink&quot; title=&quot;Hexo增加搜索功能具体操作&quot;&gt;&lt;/a&gt;Hexo增加搜索功能具体操作&lt;/h2&gt;&lt;h3 id=&quot;1-安装搜索&quot;&gt;&lt;a href=&quot;</summary>
+      
+    
+    
+    
+    <category term="cycle zone" scheme="https://cyclezone.github.io/categories/cycle-zone/"/>
+    
+    
+    <category term="Hexo" scheme="https://cyclezone.github.io/tags/Hexo/"/>
+    
+    <category term="cycle 2022" scheme="https://cyclezone.github.io/tags/cycle-2022/"/>
+    
+    <category term="search" scheme="https://cyclezone.github.io/tags/search/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>35. Predefined MACROS from compiler、HardWare、OS</title>
+    <link href="https://cyclezone.github.io/2022/01/03/35-Predefined-MACROS-from-compiler%E3%80%81HardWare%E3%80%81OS/"/>
+    <id>https://cyclezone.github.io/2022/01/03/35-Predefined-MACROS-from-compiler%E3%80%81HardWare%E3%80%81OS/</id>
+    <published>2022-01-03T05:46:41.000Z</published>
+    <updated>2022-01-09T09:10:41.367Z</updated>
+    
+    <content type="html"><![CDATA[<h1 id="35-Predefined-MACROS-from-compiler、HardWare、OS"><a href="#35-Predefined-MACROS-from-compiler、HardWare、OS" class="headerlink" title="35. Predefined MACROS from compiler、HardWare、OS"></a>35. Predefined MACROS from compiler、HardWare、OS</h1><h2 id="《Calling-conventions-for-different-C-compilers-and-operating-systems》"><a href="#《Calling-conventions-for-different-C-compilers-and-operating-systems》" class="headerlink" title="《Calling conventions for different C++ compilers and operating systems》"></a>《Calling conventions for different C++ compilers and operating systems》</h2><p>for more information ,</p><p>please visit <a href="https://www.agner.org/optimize/calling_conventions.pdf">https://www.agner.org/optimize/calling_conventions.pdf</a>  [page 56]</p><p>or</p><p>search key words “《Calling conventions for different C++ compilers and operating systems》”</p><p>Most C++ compilers have a predefined macro containing the version number of the<br>compiler. Programmers can use preprocessing directives to check for the existence of these<br>macros in order to detect which compiler the program is compiled on and thereby fix<br>problems with incompatible compilers.</p><h2 id="Table-1-Compiler-version-predefined-macros"><a href="#Table-1-Compiler-version-predefined-macros" class="headerlink" title="Table 1. Compiler version predefined macros"></a>Table 1. Compiler version predefined macros</h2><pre class="line-numbers language-none"><code class="language-none">Compiler             |        Predefined macroBorland              |        __BORLANDC__Codeplay VectorC     |        __VECTORC__Digital Mars         |        __DMC__Gnu                  |        __GNUC__Intel                |        __INTEL_COMPILERMicrosoft            |        _MSC_VERPathscale            |        __PATHSCALE__Symantec             |        __SYMANTECC__Watcom               |        __WATCOMC__<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre><p>Unfortunately, not all compilers have well - documented macros telling which hardware<br>platform and operating system they are compiling for.The following macros may or may not<br>be defined :</p><h2 id="Table-2-Hardware-platform-predefined-macros"><a href="#Table-2-Hardware-platform-predefined-macros" class="headerlink" title="Table 2. Hardware platform predefined macros"></a>Table 2. Hardware platform predefined macros</h2><pre class="line-numbers language-none"><code class="language-none">platform              |       Predefined macrox86                   |      _M_IX86  __INTEL__  __i386__x86-64                |      _M_X64   __x86_64__  __amd64IA64                  |      __IA64__DEC Alpha             |      __ALPHA__Motorola Power PC     |      __POWERPC__Any little endian     |      __LITTLE_ENDIAN__Any big endian        |      __BIG_ENDIAN__<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre><h2 id="Table-3-Operating-system-predefined-macros"><a href="#Table-3-Operating-system-predefined-macros" class="headerlink" title="Table 3. Operating system predefined macros"></a>Table 3. Operating system predefined macros</h2><pre class="line-numbers language-none"><code class="language-none">Operating system       |    Predefined macroDOS 16 bit             |    __MSDOS__   _MSDOSWindows 16 bit         |    _WIN16Windows 32 bit         |    _WIN32      __WINDOWS__Windows 64 bit         |    _WIN64      _WIN32Linux 32 bit           |    __unix__    __linux__Linux 64 bit           |    __unix__    __linux__ __LP64__ __amd64BSD                    |    __unix__    __BSD__   __FREEBSD__Mac OS                 |    __APPLE__   __DARWIN__ __MACH__OS &#x2F; 2                 |    __OS2__<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>]]></content>
+    
+    
+      
+      
+    <summary type="html">&lt;h1 id=&quot;35-Predefined-MACROS-from-compiler、HardWare、OS&quot;&gt;&lt;a href=&quot;#35-Predefined-MACROS-from-compiler、HardWare、OS&quot; class=&quot;headerlink&quot; title=&quot;</summary>
+      
+    
+    
+    
+    <category term="cycle zone" scheme="https://cyclezone.github.io/categories/cycle-zone/"/>
+    
+    
+    <category term="cycle 2022" scheme="https://cyclezone.github.io/tags/cycle-2022/"/>
+    
+    <category term="Predefined MACROS" scheme="https://cyclezone.github.io/tags/Predefined-MACROS/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>34.error: invalid token at start of a preprocessor expression</title>
+    <link href="https://cyclezone.github.io/2022/01/03/34-error-invalid-token-at-start-of-a-preprocessor-expression/"/>
+    <id>https://cyclezone.github.io/2022/01/03/34-error-invalid-token-at-start-of-a-preprocessor-expression/</id>
+    <published>2022-01-03T05:44:47.000Z</published>
+    <updated>2022-01-09T09:10:35.383Z</updated>
+    
+    <content type="html"><![CDATA[<h2 id="34-error-invalid-token-at-start-of-a-preprocessor-expression"><a href="#34-error-invalid-token-at-start-of-a-preprocessor-expression" class="headerlink" title="34. error: invalid token at start of a preprocessor expression"></a>34. error: invalid token at start of a preprocessor expression</h2><p>for more information,visit</p><p> <a href="https://stackoverflow.com/questions/36317145/macro-in-objective-c-calling-isequaltostring-produces-error-about-invalid-token">https://stackoverflow.com/questions/36317145/macro-in-objective-c-calling-isequaltostring-produces-error-about-invalid-token</a></p><pre class="line-numbers language-none"><code class="language-none">error: invalid token at start of a preprocessor expression#if __amd64__ || __x86_64__ || _WIN64 || _M_X64#endif<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre><p>in some place; define _WIN64</p><pre class="line-numbers language-none"><code class="language-none">#define _WIN64<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre><p>Remove this line ;</p><p>or change to</p><pre class="line-numbers language-none"><code class="language-none">#ifdef __amd64__ || __x86_64__ || _WIN64 || _M_X64#endif <span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>]]></content>
+    
+    
+      
+      
+    <summary type="html">&lt;h2 id=&quot;34-error-invalid-token-at-start-of-a-preprocessor-expression&quot;&gt;&lt;a href=&quot;#34-error-invalid-token-at-start-of-a-preprocessor-expression</summary>
+      
+    
+    
+    
+    <category term="cycle zone" scheme="https://cyclezone.github.io/categories/cycle-zone/"/>
+    
+    
+    <category term="cycle 2022" scheme="https://cyclezone.github.io/tags/cycle-2022/"/>
+    
+    <category term="preprocessor expression" scheme="https://cyclezone.github.io/tags/preprocessor-expression/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>hello 2022</title>
+    <link href="https://cyclezone.github.io/2022/01/01/7-hello-2022/"/>
+    <id>https://cyclezone.github.io/2022/01/01/7-hello-2022/</id>
+    <published>2022-01-01T02:34:08.000Z</published>
+    <updated>2022-01-09T08:54:09.044Z</updated>
+    
+    <content type="html"><![CDATA[<h2 id="Hello-2022"><a href="#Hello-2022" class="headerlink" title="Hello 2022"></a>Hello 2022</h2><h2 id="To-do-list"><a href="#To-do-list" class="headerlink" title="To do list"></a>To do list</h2><h2 id="Bye-2011"><a href="#Bye-2011" class="headerlink" title="Bye 2011"></a>Bye 2011</h2>]]></content>
+    
+    
+      
+      
+    <summary type="html">&lt;h2 id=&quot;Hello-2022&quot;&gt;&lt;a href=&quot;#Hello-2022&quot; class=&quot;headerlink&quot; title=&quot;Hello 2022&quot;&gt;&lt;/a&gt;Hello 2022&lt;/h2&gt;&lt;h2 id=&quot;To-do-list&quot;&gt;&lt;a href=&quot;#To-do-list&quot;</summary>
+      
+    
+    
+    
+    <category term="cycle zone" scheme="https://cyclezone.github.io/categories/cycle-zone/"/>
+    
+    
+    <category term="cycle 2022" scheme="https://cyclezone.github.io/tags/cycle-2022/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>33. Permission to github.io.git denied to another user</title>
+    <link href="https://cyclezone.github.io/2021/12/24/33-multiple%20user%20for%20github/"/>
+    <id>https://cyclezone.github.io/2021/12/24/33-multiple%20user%20for%20github/</id>
+    <published>2021-12-24T15:21:32.000Z</published>
+    <updated>2022-01-09T08:48:17.031Z</updated>
+    
+    <content type="html"><![CDATA[<h1 id="33-Permission-to-username-github-io-git-denied-to-another-username"><a href="#33-Permission-to-username-github-io-git-denied-to-another-username" class="headerlink" title="33.Permission to username/github.io.git denied to another username"></a>33.Permission to username/github.io.git denied to another username</h1><p>ERROR: Permission to cyclezone/cyclezone.github.io.git denied to cycle.<br>fatal: Could not read from remote repository.</p><pre class="line-numbers language-none"><code class="language-none">root@user MINGW64 &#x2F;e&#x2F;git&#x2F;cyclezone.github.io (hexo)$ git push origin hexoERROR: Permission to cyclezone&#x2F;cyclezone.github.io.git denied to cycle.fatal: Could not read from remote repository.Please make sure you have the correct access rightsand the repository exists.root@user MINGW64 &#x2F;e&#x2F;git&#x2F;cyclezone.github.io (hexo)$ git logcommit 7f6cb6c3ca90241362045ddc47fdd31995a32eec (HEAD -&gt; hexo)Author: cycle &lt;ycae#outlook.com&gt;Date:   Thu Dec 23 22:15:35 2021 +0800    empty branchroot@user MINGW64 &#x2F;e&#x2F;git&#x2F;cyclezone.github.io (hexo)$ git push origin hexoERROR: Permission to cyclezone&#x2F;cyclezone.github.io.git denied to cycle.fatal: Could not read from remote repository.root@user MINGW64 &#x2F;e&#x2F;git&#x2F;cyclezone.github.io (hexo)$ git config -ldiff.astextplain.textconv&#x3D;astextplainfilter.lfs.clean&#x3D;git-lfs clean -- %ffilter.lfs.smudge&#x3D;git-lfs smudge -- %ffilter.lfs.process&#x3D;git-lfs filter-processfilter.lfs.required&#x3D;truehttp.sslbackend&#x3D;opensslhttp.sslcainfo&#x3D;D:&#x2F;Application&#x2F;program&#x2F;Git&#x2F;mingw64&#x2F;ssl&#x2F;certs&#x2F;ca-bundle.crtcore.autocrlf&#x3D;truecore.fscache&#x3D;truecore.symlinks&#x3D;falsecore.editor&#x3D;notepadpull.rebase&#x3D;falsecredential.helper&#x3D;manager-corecredential.https:&#x2F;&#x2F;dev.azure.com.usehttppath&#x3D;trueinit.defaultbranch&#x3D;masteruser.name&#x3D;cycleuser.email&#x3D;ycae#outlook.comcore.repositoryformatversion&#x3D;0core.filemode&#x3D;falsecore.bare&#x3D;falsecore.logallrefupdates&#x3D;truecore.symlinks&#x3D;falsecore.ignorecase&#x3D;trueremote.origin.url&#x3D;git@github.com:cyclezone&#x2F;cyclezone.github.io.gitremote.origin.fetch&#x3D;+refs&#x2F;heads&#x2F;*:refs&#x2F;remotes&#x2F;origin&#x2F;*branch.main.remote&#x3D;originbranch.main.merge&#x3D;refs&#x2F;heads&#x2F;mainuser.name&#x3D;cyclezoneuser.email&#x3D;ycae#outlook.comroot@user MINGW64 &#x2F;e&#x2F;git&#x2F;cyclezone.github.io (hexo)$ git remote rm originroot@user MINGW64 &#x2F;e&#x2F;git&#x2F;cyclezone.github.io (hexo)$ git remote add origin git@cycle.github.com:cyclezone&#x2F;cyclezone.github.io.gitroot@user MINGW64 &#x2F;e&#x2F;git&#x2F;cyclezone.github.io (hexo)$ git config -ldiff.astextplain.textconv&#x3D;astextplainfilter.lfs.clean&#x3D;git-lfs clean -- %ffilter.lfs.smudge&#x3D;git-lfs smudge -- %ffilter.lfs.process&#x3D;git-lfs filter-processfilter.lfs.required&#x3D;truehttp.sslbackend&#x3D;opensslhttp.sslcainfo&#x3D;D:&#x2F;Application&#x2F;program&#x2F;Git&#x2F;mingw64&#x2F;ssl&#x2F;certs&#x2F;ca-bundle.crtcore.autocrlf&#x3D;truecore.fscache&#x3D;truecore.symlinks&#x3D;falsecore.editor&#x3D;notepadpull.rebase&#x3D;falsecredential.helper&#x3D;manager-corecredential.https:&#x2F;&#x2F;dev.azure.com.usehttppath&#x3D;trueinit.defaultbranch&#x3D;masteruser.name&#x3D;cycleuser.email&#x3D;ycae#outlook.comcore.repositoryformatversion&#x3D;0core.filemode&#x3D;falsecore.bare&#x3D;falsecore.logallrefupdates&#x3D;truecore.symlinks&#x3D;falsecore.ignorecase&#x3D;trueuser.name&#x3D;cyclezoneuser.email&#x3D;ycae#outlook.comremote.origin.url&#x3D;git@cycle.github.com:cyclezone&#x2F;cyclezone.github.io.gitremote.origin.fetch&#x3D;+refs&#x2F;heads&#x2F;*:refs&#x2F;remotes&#x2F;origin&#x2F;*root@user MINGW64 &#x2F;e&#x2F;git&#x2F;cyclezone.github.io (hexo)$ git statusOn branch hexonothing to commit, working tree cleanroot@user MINGW64 &#x2F;e&#x2F;git&#x2F;cyclezone.github.io (hexo)$ git push origin hexoEnumerating objects: 3, done.Counting objects: 100% (3&#x2F;3), done.Delta compression using up to 8 threadsCompressing objects: 100% (1&#x2F;1), done.Writing objects: 100% (2&#x2F;2), 227 bytes | 227.00 KiB&#x2F;s, done.Total 2 (delta 0), reused 0 (delta 0), pack-reused 0remote:remote: Create a pull request for &#39;hexo&#39; on GitHub by visiting:remote:      https:&#x2F;&#x2F;github.com&#x2F;cyclezone&#x2F;cyclezone.github.io&#x2F;pull&#x2F;new&#x2F;hexoremote:To cycle.github.com:cyclezone&#x2F;cyclezone.github.io.git * [new branch]      hexo -&gt; hexo<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>]]></content>
+    
+    
+      
+      
+    <summary type="html">&lt;h1 id=&quot;33-Permission-to-username-github-io-git-denied-to-another-username&quot;&gt;&lt;a href=&quot;#33-Permission-to-username-github-io-git-denied-to-anot</summary>
+      
+    
+    
+    
+    <category term="cycle zone" scheme="https://cyclezone.github.io/categories/cycle-zone/"/>
+    
+    
+    <category term="cycle 2021" scheme="https://cyclezone.github.io/tags/cycle-2021/"/>
+    
+    <category term="github" scheme="https://cyclezone.github.io/tags/github/"/>
+    
+    <category term="Permission denied" scheme="https://cyclezone.github.io/tags/Permission-denied/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>32.How to Install Gitlab for linux</title>
+    <link href="https://cyclezone.github.io/2021/12/23/32-Install-Gitlab-for-linux/"/>
+    <id>https://cyclezone.github.io/2021/12/23/32-Install-Gitlab-for-linux/</id>
+    <published>2021-12-23T15:21:32.000Z</published>
+    <updated>2022-01-09T08:48:44.727Z</updated>
+    
+    <content type="html"><![CDATA[<h1 id="32-Install-Gitlab-for-linux"><a href="#32-Install-Gitlab-for-linux" class="headerlink" title="32.Install Gitlab for linux"></a>32.Install Gitlab for linux</h1><h2 id="About-gitlab"><a href="#About-gitlab" class="headerlink" title="About gitlab"></a>About gitlab</h2><pre class="line-numbers language-none"><code class="language-none">&#x2F;etc&#x2F;gitlab&#x2F;gitlab.rb          #gitlab配置文件&#x2F;opt&#x2F;gitlab                    #gitlab的程序安装目录&#x2F;var&#x2F;opt&#x2F;gitlab                #gitlab目录数据目录&#x2F;var&#x2F;opt&#x2F;gitlab&#x2F;git-data       #存放仓库数据gitlab-ctl reconfigure         #重新加载配置gitlab-ctl status              #查看当前gitlab所有服务运行状态gitlab-ctl stop                #停止gitlab服务gitlab-ctl stop nginx          #单独停止某个服务gitlab-ctl tail                #查看所有服务的日志Gitlab的服务构成：nginx：                        静态web服务器gitlab-workhorse               轻量级反向代理服务器logrotate                      日志文件管理工具postgresql                     数据库redis                          缓存数据库sidekiq                        用于在后台执行队列任务（异步执行）<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre><h2 id="Install-steps"><a href="#Install-steps" class="headerlink" title="Install steps"></a>Install steps</h2><ol><li><p>prepare </p><ul><li>centos 7 , 4G memory</li><li>gitlab-ce-10.2.2-ce</li><li>xftp ,xshell</li></ul></li><li><p>visit <a href="https://mirrors.tuna.tsinghua.edu.cn/gitlab-ee/yum/el7/">https://mirrors.tuna.tsinghua.edu.cn/gitlab-ee/yum/el7/</a> ,</p><p>  get the install package gitlab-ee-14.5.1-ee.0.el7.x86_64.rpm</p><p>  then copy package to the target folder /user/gitlab in centos7 ;</p></li><li><p>install dependency and package </p> <pre class="line-numbers language-none"><code class="language-none">yum install -y postfix sshd policycoreutils-pythoncd &#x2F;user&#x2F;gitlabrpm -ivh gitlab-ee-14.5.1-ee.0.el7.x86_64.rpm<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre></li><li><p>configure</p> <pre class="line-numbers language-none"><code class="language-none">[root@gitlab ~]# vim &#x2F;etc&#x2F;gitlab&#x2F;gitlab.rb     external_url &#39;http:&#x2F;&#x2F;192.168.1.21&#39;        [root@gitlab ~]# gitlab-ctl reconfigure <span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre></li><li><p>visit gitlab </p> <pre class="line-numbers language-none"><code class="language-none">in remote machine visit the ip configured in step 4;http:&#x2F;&#x2F;192.168.1.21<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre></li><li><p>change ui chinese</p><p> 1、dowload the service pack </p> <pre class="line-numbers language-none"><code class="language-none">[root@gitlab ~]# git clone https:&#x2F;&#x2F;gitlab.com&#x2F;xhang&#x2F;gitlab.git[root@gitlab ~]# cd gitlab    <span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre><p> 2、find the branch version</p> <pre class="line-numbers language-none"><code class="language-none">[root@gitlab ~]# git branch -a<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre><p> 3、compare version ,generate the service pack</p> <pre class="line-numbers language-none"><code class="language-none">[root@gitlab ~]# git diff remotes&#x2F;origin&#x2F;10-2-stable remotes&#x2F;origin&#x2F;10-2-stable-zh &gt; &#x2F;tmp&#x2F;10.2.2-zh.diff<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre><p> 4、stop gitlab service</p> <pre class="line-numbers language-none"><code class="language-none">[root@gitlab ~]# gitlab-ctl stop<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre><p> 5、patch the service pack</p> <pre class="line-numbers language-none"><code class="language-none">[root@gitlab ~]# patch -d &#x2F;opt&#x2F;gitlab&#x2F;embedded&#x2F;service&#x2F;gitlab-rails -p1 &lt; &#x2F;tmp&#x2F;10.2.2-zh.diff<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre><p> 6、start and reconfigure</p> <pre class="line-numbers language-none"><code class="language-none">[root@gitlab ~]# gitlab-ctl start[root@gitlab ~]# gitlab-ctl reconfigure<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre></li><li><p>fire wall</p><p>   if cannot visit gitlab,please close fire wall or open port 80;</p> <pre class="line-numbers language-none"><code class="language-none">service iptables stopvi &#x2F;etc&#x2F;sysconfig&#x2F;iptables-A INPUT -m state --state NEW -m tcp -p tcp --dport 80 -j ACCEPTservice iptables restart<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></li><li><p>config email</p> <pre class="line-numbers language-none"><code class="language-none">vim &#x2F;etc&#x2F;gitlab&#x2F;gitlab.rb  external_url &#39;http:&#x2F;&#x2F;192.168.1.21&#39; ### Email Settingsgitlab_rails[&#39;gitlab_email_enabled&#39;] &#x3D; truegitlab_rails[&#39;gitlab_email_from&#39;] &#x3D; &#39;huawei@qq.com&#39;gitlab_rails[&#39;gitlab_email_display_name&#39;] &#x3D; &#39;huawei&#39;### GitLab email server settings### here use the qq email,if use other email server,modify the smtp addressgitlab_rails[&#39;smtp_enable&#39;] &#x3D; truegitlab_rails[&#39;smtp_address&#39;] &#x3D; &quot;smtp.exmail.qq.com&quot;gitlab_rails[&#39;smtp_port&#39;] &#x3D; 465gitlab_rails[&#39;smtp_user_name&#39;] &#x3D; &quot;huawei@qq.com&quot;gitlab_rails[&#39;smtp_password&#39;] &#x3D; &quot;123456&quot;gitlab_rails[&#39;smtp_authentication&#39;] &#x3D; &quot;login&quot;gitlab_rails[&#39;smtp_enable_starttls_auto&#39;] &#x3D; truegitlab_rails[&#39;smtp_tls&#39;] &#x3D; true<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></li><li><p>login with root</p></li></ol><pre class="line-numbers language-none"><code class="language-none">username: rootpassword: QjD1J3CZW3XOnJnWX5ieUt7V6GoSJjskvQiBNPnxBDc&#x3D;password get from file &#39;initial_root_password&#39; which located in &#39; &#x2F;etc&#x2F;gitlab&#39;[root@localhost gitlab]# pwd&#x2F;etc&#x2F;gitlab[root@localhost gitlab]# lsgitlab.rb  gitlab-secrets.json  initial_root_password  trusted-certs[root@localhost gitlab]# cat initial_root_password # WARNING: This value is valid only in the following conditions#          1. If provided manually (either via &#96;GITLAB_ROOT_PASSWORD&#96; environment variable or via &#96;gitlab_rails[&#39;initial_root_password&#39;]&#96; setting in &#96;gitlab.rb&#96;, it was provided before database was seeded for the first time (usually, the first reconfigure run).#          2. Password hasn&#39;t been changed manually, either via UI or via command line.##          If the password shown here doesn&#39;t work, you must reset the admin password following https:&#x2F;&#x2F;docs.gitlab.com&#x2F;ee&#x2F;security&#x2F;reset_user_password.html#reset-your-root-password.Password: QjD1J3CZW3XOnJnWX5ieUt7V6GoSJjskvQiBNPnxBDc&#x3D;# NOTE: This file will be automatically deleted in the first reconfigure run after 24 hours.[root@localhost gitlab]#<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>]]></content>
+    
+    
+      
+      
+    <summary type="html">&lt;h1 id=&quot;32-Install-Gitlab-for-linux&quot;&gt;&lt;a href=&quot;#32-Install-Gitlab-for-linux&quot; class=&quot;headerlink&quot; title=&quot;32.Install Gitlab for linux&quot;&gt;&lt;/a&gt;32.In</summary>
+      
+    
+    
+    
+    <category term="Gitlab" scheme="https://cyclezone.github.io/categories/Gitlab/"/>
+    
+    
+    <category term="cycle 2021" scheme="https://cyclezone.github.io/tags/cycle-2021/"/>
+    
+    <category term="gitlab" scheme="https://cyclezone.github.io/tags/gitlab/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>31.How to Install Zentao for linux</title>
+    <link href="https://cyclezone.github.io/2021/12/23/31-Install-Zentao-for-linux/"/>
+    <id>https://cyclezone.github.io/2021/12/23/31-Install-Zentao-for-linux/</id>
+    <published>2021-12-23T15:20:16.000Z</published>
+    <updated>2022-01-09T08:48:29.773Z</updated>
+    
+    <content type="html"><![CDATA[<h1 id="31-Install-Zentao-for-linux"><a href="#31-Install-Zentao-for-linux" class="headerlink" title="31.Install Zentao for linux"></a>31.Install Zentao for linux</h1><h2 id="Install-steps"><a href="#Install-steps" class="headerlink" title="Install steps"></a>Install steps</h2><ul><li><ol><li><p>visit <a href="https://www.zentao.net/dynamic/zentaopms.pro10.3.1-80434.html">https://www.zentao.net/dynamic/zentaopms.pro10.3.1-80434.html</a> ,</p><p> get the linux install package,eg. ‘ZenTaoPMS.15.7.1.zbox_64.tar.gz ‘</p></li></ol></li><li><ol start="2"><li>copy the package file into linux file folder,such as ‘ /user/zen ‘</li></ol></li><li><ol start="3"><li>open folder where package located, ‘cd /user/zen ‘</li></ol></li><li><ol start="4"><li><p>unzip the file to target folder  ‘/opt/‘; </p><pre><code>    sudo tar -zxvf  ZenTaoPMS.15.7.1.zbox_64.tar.gz -C /opt</code></pre><p> then in folder ‘ /opt/zbox ‘,we find ./zbox entry;</p></li></ol></li><li><ol start="5"><li>set port number for mysql and apache;<pre><code>   cd /opt/zbox    ./zbox  -mp 3307    ./zbox  -ap 9091 </code></pre>mp for mysql port;  ap for apache port</li></ol></li><li><ol start="6"><li><p>add user into DataBase</p><pre><code>cd /opt/zbox/authsh adduser.sh This tool is used to add user to access adminerAccount: rootPassword: Adding password for user root</code></pre></li></ol></li><li><ol start="7"><li>start mysql and apache<pre><code>cd /opt/zbox./zbox start</code></pre></li></ol></li><li><ol start="8"><li><p>visit ‘localhost:9091 ‘ in local machine or</p><p>visit ‘192.168.10.50:9091 ‘ in remote machine;</p><p>then login and use it;</p><p>default user :   admin </p><p>default key :    123456</p></li></ol></li><li><ol start="9"><li><p>when no longer use it,stop it;<br>when reboot,restart it;</p><pre><code>cd /opt/zbox./zbox stop./zbox restart     </code></pre></li></ol></li><li><ol start="10"><li><p>if cannot visit，add port into firewall,if the firewall is active</p><pre><code>  [root@localhost zbox]# systemctl status firewalld  ● firewalld.service - firewalld - dynamic firewall daemon     Loaded: loaded (/usr/lib/systemd/system/firewalld.service; enabled; vendor preset: enabled)     Active: active (running) since 日 2021-12-05 11:36:48 CST; 1h 47min ago       Docs: man:firewalld(1)   Main PID: 846 (firewalld)      Tasks: 2     CGroup: /system.slice/firewalld.service             └─846 /usr/bin/python2 -Es /usr/sbin/firewalld --nofork --nopid  12月 05 11:36:46 localhost.localdomain systemd[1]: Starting firewalld - dynam...  12月 05 11:36:48 localhost.localdomain systemd[1]: Started firewalld - dynami...  Hint: Some lines were ellipsized, use -l to show in full.  [root@localhost zbox]# firewall-cmd --list-ports  80/tcp 8081/tcp  [root@localhost zbox]# firewall-cmd --zone=public --add-port=9091/tcp --permanentsuccess  [root@localhost zbox]# firewall-cmd --list-ports  80/tcp 8081/tcp  [root@localhost zbox]# reboot  </code></pre></li></ol></li></ul>]]></content>
+    
+    
+      
+      
+    <summary type="html">&lt;h1 id=&quot;31-Install-Zentao-for-linux&quot;&gt;&lt;a href=&quot;#31-Install-Zentao-for-linux&quot; class=&quot;headerlink&quot; title=&quot;31.Install Zentao for linux&quot;&gt;&lt;/a&gt;31.In</summary>
+      
+    
+    
+    
+    <category term="Zentao" scheme="https://cyclezone.github.io/categories/Zentao/"/>
+    
+    
+    <category term="cycle 2021" scheme="https://cyclezone.github.io/tags/cycle-2021/"/>
+    
+    <category term="Zentao" scheme="https://cyclezone.github.io/tags/Zentao/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>30.Tianditu-GetCapabilities</title>
+    <link href="https://cyclezone.github.io/2021/12/22/30-tianditu-GetCapabilities/"/>
+    <id>https://cyclezone.github.io/2021/12/22/30-tianditu-GetCapabilities/</id>
+    <published>2021-12-22T15:19:46.000Z</published>
+    <updated>2022-01-09T08:48:39.396Z</updated>
+    
+    <content type="html"><![CDATA[<h1 id="30-Tianditu-GetCapabilities"><a href="#30-Tianditu-GetCapabilities" class="headerlink" title="30.Tianditu-GetCapabilities"></a>30.Tianditu-GetCapabilities</h1><p>   <a href="http://t0.tianditu.gov.cn/vec_c/wmts?tk=9a02b3cdd29cd346de4df04229797710&amp;request=GetCapabilities&amp;service=wmts">http://t0.tianditu.gov.cn/vec_c/wmts?tk=9a02b3cdd29cd346de4df04229797710&amp;request=GetCapabilities&amp;service=wmts</a></p>]]></content>
+    
+    
+      
+      
+    <summary type="html">&lt;h1 id=&quot;30-Tianditu-GetCapabilities&quot;&gt;&lt;a href=&quot;#30-Tianditu-GetCapabilities&quot; class=&quot;headerlink&quot; title=&quot;30.Tianditu-GetCapabilities&quot;&gt;&lt;/a&gt;30.Ti</summary>
+      
+    
+    
+    
+    <category term="cycle zone" scheme="https://cyclezone.github.io/categories/cycle-zone/"/>
+    
+    
+    <category term="cycle 2021" scheme="https://cyclezone.github.io/tags/cycle-2021/"/>
+    
+    <category term="Tianditu" scheme="https://cyclezone.github.io/tags/Tianditu/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>29.lib-config.cmake</title>
+    <link href="https://cyclezone.github.io/2021/12/22/29-lib-config-cmake/"/>
+    <id>https://cyclezone.github.io/2021/12/22/29-lib-config-cmake/</id>
+    <published>2021-12-22T15:18:39.000Z</published>
+    <updated>2022-01-09T08:49:07.256Z</updated>
+    
+    <content type="html"><![CDATA[<h1 id="29-lib-config-cmake"><a href="#29-lib-config-cmake" class="headerlink" title="29.lib-config.cmake"></a>29.lib-config.cmake</h1><ul><li> set(xxx_FOUND TRUE)</li><li> use xxx_INCLUDE_DIRS and xxx_LIBRARIES in CMakeLists.txt</li><li> set(xxx_INCLUDE_DIRS ${MYSQLCPPCONN_INCLUDE_DIR} )</li><li> set(xxx_LIBRARIES ${MYSQLCPPCONN_LIBRARY} )</li></ul><h2 id="pslib-config-cmake"><a href="#pslib-config-cmake" class="headerlink" title="pslib-config.cmake"></a>pslib-config.cmake</h2><pre class="line-numbers language-none"><code class="language-none">get_filename_component(_DIR &quot;$&#123;CMAKE_CURRENT_LIST_FILE&#125;&quot; PATH)if(NOT PSLIB_FIND_COMPONENTS)    set(PSLIB_FIND_COMPONENTS pslib pslib)    if(PSLIB_FIND_REQUIRED)        set(PSLIB_FIND_REQUIRED_pslib TRUE)    endif()    set(PSLIB_FOUND TRUE)endif()set(PSLIB_INCLUDE_DIRS $&#123;_DIR&#125;&#x2F;..&#x2F;..&#x2F;include)set(PSLIB_LIBRARIES)if (EXISTS $&#123;_DIR&#125;&#x2F;..&#x2F;..&#x2F;lib&#x2F;pslib.a)    list(APPEND PSLIB_LIBRARIES optimized $&#123;_DIR&#125;&#x2F;..&#x2F;..&#x2F;lib&#x2F;pslib.a)endif()if (EXISTS $&#123;_DIR&#125;&#x2F;..&#x2F;..&#x2F;debug&#x2F;lib&#x2F;pslib.a)    list(APPEND PSLIB_LIBRARIES debug $&#123;_DIR&#125;&#x2F;..&#x2F;..&#x2F;debug&#x2F;lib&#x2F;pslib.a)endif()if (EXISTS $&#123;_DIR&#125;&#x2F;..&#x2F;..&#x2F;lib&#x2F;pslib.lib)    list(APPEND PSLIB_LIBRARIES optimized $&#123;_DIR&#125;&#x2F;..&#x2F;..&#x2F;lib&#x2F;pslib.lib)endif()if (EXISTS $&#123;_DIR&#125;&#x2F;..&#x2F;..&#x2F;debug&#x2F;lib&#x2F;pslib.lib)    list(APPEND PSLIB_LIBRARIES debug $&#123;_DIR&#125;&#x2F;..&#x2F;..&#x2F;debug&#x2F;lib&#x2F;pslib.lib)endif()<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre><h2 id="mysqlcppconn-config-cmake"><a href="#mysqlcppconn-config-cmake" class="headerlink" title="mysqlcppconn-config.cmake"></a>mysqlcppconn-config.cmake</h2><pre class="line-numbers language-none"><code class="language-none"># Name: &lt;Name&gt;Config.cmake  or &lt;lower name&gt;-config.cmake# mysqlcppconn-config.cmake or MYSQLCPPCONNConfig.cmake  # similar to OpenCVConfig.cmake   # Tips for MYSQLCPPCONN_ROOT_DIR# use &quot;C:&#x2F;Program Files&#x2F;MySQL&#x2F;Connector.C++ 1.1&quot;, otherwise cmake-gui can not auto find include and libraryset(MYSQLCPPCONN_FOUND TRUE) # auto set(MYSQLCPPCONN_ROOT_DIR &quot;C:&#x2F;Program Files&#x2F;MySQL&#x2F;Connector.C++ 1.1&quot;)find_path(MYSQLCPPCONN_INCLUDE_DIR NAMES cppconn&#x2F;driver.h PATHS &quot;$&#123;MYSQLCPPCONN_ROOT_DIR&#125;&#x2F;include&quot;) mark_as_advanced(MYSQLCPPCONN_INCLUDE_DIR) # show entry in cmake-guifind_library(MYSQLCPPCONN_LIBRARY NAMES mysqlcppconn.lib PATHS &quot;$&#123;MYSQLCPPCONN_ROOT_DIR&#125;&#x2F;lib&#x2F;opt&quot;) mark_as_advanced(MYSQLCPPCONN_LIBRARY) # show entry in cmake-gui# use xxx_INCLUDE_DIRS and xxx_LIBRARIES in CMakeLists.txtset(MYSQLCPPCONN_INCLUDE_DIRS $&#123;MYSQLCPPCONN_INCLUDE_DIR&#125; )set(MYSQLCPPCONN_LIBRARIES $&#123;MYSQLCPPCONN_LIBRARY&#125; )# cmake entry will be saved to build&#x2F;CMakeCache.txt message( &quot;mysqlcppconn-config.cmake &quot; $&#123;MYSQLCPPCONN_ROOT_DIR&#125;)<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre><h2 id="halcon-config-cmake"><a href="#halcon-config-cmake" class="headerlink" title="halcon-config.cmake"></a>halcon-config.cmake</h2><pre class="line-numbers language-none"><code class="language-none"># halcon-config.cmake or HALCONConfig.cmake  set(HALCON_FOUND TRUE) # auto set(HALCON_ROOT_DIR E:&#x2F;git&#x2F;car&#x2F;windows&#x2F;lib&#x2F;halcon)find_path(HALCON_INCLUDE_DIR NAMES halconcpp&#x2F;HalconCpp.h PATHS &quot;$&#123;HALCON_ROOT_DIR&#125;&#x2F;include&quot;) mark_as_advanced(HALCON_INCLUDE_DIR) # show entry in cmake-guifind_library(HALCON_LIBRARY NAMES halconcpp.lib PATHS &quot;$&#123;HALCON_ROOT_DIR&#125;&#x2F;lib&#x2F;x64-win64&quot;) mark_as_advanced(HALCON_LIBRARY) # show entry in cmake-gui# use xxx_INCLUDE_DIRS and xxx_LIBRARIES in CMakeLists.txtset(HALCON_INCLUDE_DIRS $&#123;HALCON_INCLUDE_DIR&#125; )set(HALCON_LIBRARIES $&#123;HALCON_LIBRARY&#125; )message( &quot;halcon-config.cmake &quot; $&#123;HALCON_ROOT_DIR&#125;)<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre><h2 id="usage"><a href="#usage" class="headerlink" title="usage"></a>usage</h2><pre class="line-numbers language-none"><code class="language-none">find_package(HALCON REQUIRED) # user-definedinclude_directories($&#123;HALCON_INCLUDE_DIRS&#125;)find_package(MYSQLCPPCONN REQUIRED) # user-definedinclude_directories($&#123;MYSQLCPPCONN_INCLUDE_DIRS&#125;)target_link_libraries(demo $&#123;HALCON_LIBRARIES&#125; $&#123;MYSQLCPPCONN_LIBRARIES&#125;)<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre><h2 id="cmake-gui-entry"><a href="#cmake-gui-entry" class="headerlink" title="cmake-gui entry"></a>cmake-gui entry</h2><ol><li> start cmake-gui, and at first,we should set</li></ol><ul><li>HALCON_DIR = E:/git/car/share/cmake-3.10/Modules</li><li>MYSQLCPPCONN_DIR = E:/git/car/share/cmake-3.10/Modules</li></ul><ol start="2"><li> then configure</li></ol><ul><li>HALCON_INCLUDE_DIR and HALCON_LIBRARY will be found.</li><li>MYSQLCPPCONN_INCLUDE_DIR and MYSQLCPPCONN_LIBRARY will be found.</li></ul>]]></content>
+    
+    
+      
+      
+    <summary type="html">&lt;h1 id=&quot;29-lib-config-cmake&quot;&gt;&lt;a href=&quot;#29-lib-config-cmake&quot; class=&quot;headerlink&quot; title=&quot;29.lib-config.cmake&quot;&gt;&lt;/a&gt;29.lib-config.cmake&lt;/h1&gt;&lt;ul&gt;
+</summary>
+      
+    
+    
+    
+    <category term="cycle zone" scheme="https://cyclezone.github.io/categories/cycle-zone/"/>
+    
+    
+    <category term="cycle 2021" scheme="https://cyclezone.github.io/tags/cycle-2021/"/>
+    
+    <category term="cmake" scheme="https://cyclezone.github.io/tags/cmake/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>28.QGuiApplication(int &amp;argc, char **argv)</title>
+    <link href="https://cyclezone.github.io/2021/12/22/28-QGuiApplication-int-argc-char-argv/"/>
+    <id>https://cyclezone.github.io/2021/12/22/28-QGuiApplication-int-argc-char-argv/</id>
+    <published>2021-12-22T15:17:50.000Z</published>
+    <updated>2022-01-09T08:49:27.240Z</updated>
+    
+    <content type="html"><![CDATA[<h1 id="28-QGuiApplication-int-amp-argc-char-argv"><a href="#28-QGuiApplication-int-amp-argc-char-argv" class="headerlink" title="28.QGuiApplication(int &amp;argc, char **argv)"></a>28.QGuiApplication(int &amp;argc, char **argv)</h1><p> for more information, please visit </p><p>   <a href="https://doc.qt.io/qt-5/qguiapplication.html#QGuiApplication">https://doc.qt.io/qt-5/qguiapplication.html#QGuiApplication</a></p><p>   <a href="https://stackoverflow.com/questions/17979185/qt-5-1-qapplication-without-display-qxcbconnection-could-not-connect-to-displ">https://stackoverflow.com/questions/17979185/qt-5-1-qapplication-without-display-qxcbconnection-could-not-connect-to-displ</a></p><p>Initializes the window system and constructs an application object with argc command line arguments in argv.</p><p>Warning: The data referred to by argc and argv must stay valid for the entire lifetime of the QGuiApplication object. In addition, argc must be greater than zero and argv must contain at least one valid character string.</p><p>The global qApp pointer refers to this application object. Only one application object should be created.</p><p>This application object must be constructed before any paint devices (including pixmaps, bitmaps etc.).</p><p>Note: argc and argv might be changed as Qt removes command line arguments that it recognizes.</p><h2 id="Supported-Command-Line-Options"><a href="#Supported-Command-Line-Options" class="headerlink" title="Supported Command Line Options"></a>Supported Command Line Options</h2><p>All Qt programs automatically support a set of command-line options that allow modifying the way Qt will interact with the windowing system. Some of the options are also accessible via environment variables, which are the preferred form if the application can launch GUI sub-processes or other applications (environment variables will be inherited by child processes). When in doubt, use the environment variables.</p><h3 id="The-options-currently-supported-are-the-following"><a href="#The-options-currently-supported-are-the-following" class="headerlink" title="The options currently supported are the following:"></a>The options currently supported are the following:</h3><pre class="line-numbers language-none"><code class="language-none">-platform platformName[:options], specifies the Qt Platform Abstraction (QPA) plugin.Overrides the QT_QPA_PLATFORM environment variable.<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre><pre class="line-numbers language-none"><code class="language-none">-platformpluginpath path, specifies the path to platform plugins.Overrides the QT_QPA_PLATFORM_PLUGIN_PATH environment variable.-platformtheme platformTheme, specifies the platform theme.Overrides the QT_QPA_PLATFORMTHEME environment variable.-plugin plugin, specifies additional plugins to load. The argument may appear multiple times.Concatenated with the plugins in the QT_QPA_GENERIC_PLUGINS environment variable.-qmljsdebugger&#x3D;, activates the QML&#x2F;JS debugger with a specified port. The value must be of format port:1234[,block], where block is optional and will make the application wait until a debugger connects to it.-qwindowgeometry geometry, specifies window geometry for the main window using the X11-syntax. For example: -qwindowgeometry 100x100+50+50-qwindowicon, sets the default window icon-qwindowtitle, sets the title of the first window-reverse, sets the application&#39;s layout direction to Qt::RightToLeft. This option is intended to aid debugging and should not be used in production. The default value is automatically detected from the user&#39;s locale (see also QLocale::textDirection()).-session session, restores the application from an earlier session.The following standard command line options are available for X11:-display hostname:screen_number, switches displays on X11.Overrides the DISPLAY environment variable.-geometry geometry, same as -qwindowgeometry.Platform-Specific ArgumentsYou can specify platform-specific arguments for the -platform option. Place them after the platform plugin name following a colon as a comma-separated list. For example, -platform windows:dialogs&#x3D;xp,fontengine&#x3D;freetype.<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre><h3 id="platformName-const-QString"><a href="#platformName-const-QString" class="headerlink" title="platformName : const QString"></a>platformName : const QString</h3><p>This property holds the name of the underlying platform plugin.</p><p>The QPA platform plugins are located in qtbase\src\plugins\platforms. At the time of writing, the following platform plugin names are supported:</p><pre class="line-numbers language-none"><code class="language-none">androidcocoa is a platform plugin for macOS.directfbeglfs is a platform plugin for running Qt5 applications on top of EGL and OpenGL ES 2.0 without an actual windowing system (like X11 or Wayland). For more information, see EGLFS.ios (also used for tvOS)kms is an experimental platform plugin using kernel modesetting and DRM (Direct Rendering Manager).linuxfb writes directly to the framebuffer. For more information, see LinuxFB.minimal is provided as an examples for developers who want to write their own platform plugins. However, you can use the plugin to run GUI applications in environments without a GUI, such as servers.minimalegl is an example plugin.offscreenopenwfdqnxwindowswayland is a platform plugin for modern Linux desktops and some embedded systems.xcb is the X11 plugin used on regular desktop Linux platforms.For more information about the platform plugins for embedded Linux devices, see Qt for Embedded Linux.Access functions:QStringplatformName()<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre><h3 id="The-following-parameters-are-available-for-platform-windows"><a href="#The-following-parameters-are-available-for-platform-windows" class="headerlink" title="The following parameters are available for -platform windows:"></a>The following parameters are available for -platform windows:</h3><pre class="line-numbers language-none"><code class="language-none">altgr, detect the key AltGr found on some keyboards as Qt::GroupSwitchModifier (since Qt 5.12).darkmode&#x3D;[1|2] controls how Qt responds to the activation of the Dark Mode for applications introduced in Windows 10 1903 (since Qt 5.15).A value of 1 causes Qt to switch the window borders to black when Dark Mode for applications is activated and no High Contrast Theme is in use. This is intended for applications that implement their own theming.A value of 2 will in addition cause the Windows Vista style to be deactivated and switch to the Windows style using a simplified palette in dark mode. This is currently experimental pending the introduction of new style that properly adapts to dark mode.dialogs&#x3D;[xp|none], xp uses XP-style native dialogs and none disables them.dpiawareness&#x3D;[0|1|2] Sets the DPI awareness of the process (see High DPI Displays, since Qt 5.4).fontengine&#x3D;freetype, uses the FreeType font engine.menus&#x3D;[native|none], controls the use of native menus.Native menus are implemented using Win32 API and are simpler than QMenu-based menus in for example that they do allow for placing widgets on them or changing properties like fonts and do not provide hover signals. They are mainly intended for Qt Quick. By default, they will be used if the application is not an instance of QApplication or for Qt Quick Controls 2 applications (since Qt 5.10).nocolorfonts Turn off DirectWrite Color fonts (since Qt 5.8).nodirectwrite Turn off DirectWrite fonts (since Qt 5.8).nomousefromtouch Ignores mouse events synthesized from touch events by the operating system.nowmpointer Switches from Pointer Input Messages handling to legacy mouse handling (since Qt 5.12).reverse Activates Right-to-left mode (experimental). Windows title bars will be shown accordingly in Right-to-left locales (since Qt 5.13).tabletabsoluterange&#x3D;&lt;value&gt; Sets a value for mouse mode detection of WinTab tablets (Legacy, since Qt 5.3).The following parameter is available for -platform cocoa (on macOS):fontengine&#x3D;freetype, uses the FreeType font engine.For more information about the platform-specific arguments available for embedded Linux platforms, see Qt for Embedded Linux.<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>]]></content>
+    
+    
+      
+      
+    <summary type="html">&lt;h1 id=&quot;28-QGuiApplication-int-amp-argc-char-argv&quot;&gt;&lt;a href=&quot;#28-QGuiApplication-int-amp-argc-char-argv&quot; class=&quot;headerlink&quot; title=&quot;28.QGuiApp</summary>
+      
+    
+    
+    
+    <category term="cycle zone" scheme="https://cyclezone.github.io/categories/cycle-zone/"/>
+    
+    
+    <category term="cycle 2021" scheme="https://cyclezone.github.io/tags/cycle-2021/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>27. How to compile cario</title>
+    <link href="https://cyclezone.github.io/2021/12/21/27-compile-cario/"/>
+    <id>https://cyclezone.github.io/2021/12/21/27-compile-cario/</id>
+    <published>2021-12-21T15:16:53.000Z</published>
+    <updated>2022-01-09T08:49:37.220Z</updated>
+    
+    <content type="html"><![CDATA[<h1 id="27-How-to-compile-cario"><a href="#27-How-to-compile-cario" class="headerlink" title="27. How to compile cario"></a>27. How to compile cario</h1><h2 id="For-linux-Steps"><a href="#For-linux-Steps" class="headerlink" title="For linux, Steps:"></a>For linux, Steps:</h2><ol><li><p>get source codes </p> <pre class="line-numbers language-none"><code class="language-none">from http:&#x2F;&#x2F;www.cairographics.org&#x2F;releases&#x2F;pixman-0.40.0.tar.gz  get pixman library;from https:&#x2F;&#x2F;cairographics.org&#x2F;snapshots&#x2F;cairo-1.17.2.tar.xzget cario library;or visit url: https:&#x2F;&#x2F;www.cairographics.org&#x2F;releases&#x2F; select the latest version;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></li><li><p>then copy the source codes into some folder,<br>like: /home/src/code/ ;</p><p>in shell terminal,use commands below to decompress the tar file; </p> <pre class="line-numbers language-none"><code class="language-none">tar zxvf pixman-0.40.0.tar.gz tar zxvf cairo-1.17.2.tar.xz <span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre></li><li><p>compile pixman</p><p>   open the pixman source code root folder,then configure、 make、install</p> <pre class="line-numbers language-none"><code class="language-none">cd &#x2F;home&#x2F;src&#x2F;code&#x2F;pixman-0.40.0.&#x2F;configure --prefix&#x3D;&#x2F;home&#x2F;src&#x2F;code&#x2F;pixman makemake install<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></li><li><p>compile cario</p><p> 4.1 open the cario source code root folder, then configure、 make、install</p> <pre class="line-numbers language-none"><code class="language-none">cd &#x2F;home&#x2F;src&#x2F;code&#x2F;cairo-1.17.2.&#x2F;configure --prefix&#x3D;&#x2F;home&#x2F;src&#x2F;code&#x2F;cario --enable-ps pixman_CFLAGS&#x3D;&#39;-I&#x2F;home&#x2F;src&#x2F;code&#x2F;pixman&#x2F;include&#x2F;pixman-1&#39; pixman_LIBS&#x3D;&#39;-L&#x2F;home&#x2F;src&#x2F;code&#x2F;pixman&#x2F;lib -lpixman-1&#39;makemake install<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre><p> 4.2 how to get the dependent librarys information</p><pre><code> use &#39; ./configure --help &#39; get some environment variables，like below;</code></pre> <pre class="line-numbers language-none"><code class="language-none">png_CFLAGS  C compiler flags for png, overriding pkg-configpng_LIBS    linker flags for png, overriding pkg-config gl_CFLAGS   C compiler flags for gl, overriding pkg-configgl_LIBS     linker flags for gl, overriding pkg-configFREETYPE_CFLAGSC compiler flags for FREETYPE, overriding pkg-configFREETYPE_LIBSlinker flags for FREETYPE, overriding pkg-configFONTCONFIG_CFLAGSC compiler flags for FONTCONFIG, overriding pkg-configFONTCONFIG_LIBSlinker flags for FONTCONFIG, overriding pkg-configLIBRSVG_CFLAGSC compiler flags for LIBRSVG, overriding pkg-configLIBRSVG_LIBSlinker flags for LIBRSVG, overriding pkg-configpixman_CFLAGSC compiler flags for pixman, overriding pkg-configpixman_LIBS linker flags for pixman, overriding pkg-config<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre><p> set the environment variables:</p> <pre class="line-numbers language-none"><code class="language-none">pixman_CFLAGS&#x3D;&#39;-I&#x2F;home&#x2F;src&#x2F;code&#x2F;pixman&#x2F;include&#x2F;pixman-1&#39; pixman_LIBS&#x3D;&#39;-L&#x2F;home&#x2F;src&#x2F;code&#x2F;pixman&#x2F;lib -lpixman-1&#39;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre></li><li><p>get cario library</p> <pre class="line-numbers language-none"><code class="language-none">open folder &#x2F;home&#x2F;src&#x2F;code&#x2F;cario ,get libs<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre><h2 id="For-Android-Steps"><a href="#For-Android-Steps" class="headerlink" title="For Android, Steps:"></a>For Android, Steps:</h2><pre class="line-numbers language-none"><code class="language-none">export CPPFLAGS&#x3D;--sysroot&#x3D;&quot;&#x2F;opt&#x2F;android-ndk-r13b&#x2F;platforms&#x2F;android-23&#x2F;arch-arm&#x2F; &quot;export CFLAGS&#x3D;--sysroot&#x3D;&quot;&#x2F;opt&#x2F;android-ndk-r13b&#x2F;platforms&#x2F;android-23&#x2F;arch-arm&#x2F; &quot;export CXXFLAGS&#x3D;--sysroot&#x3D;&quot;&#x2F;opt&#x2F;android-ndk-r13b&#x2F;platforms&#x2F;android-23&#x2F;arch-arm&#x2F; &quot;export LDFLAGS&#x3D;--sysroot&#x3D;&quot;&#x2F;opt&#x2F;android-ndk-r13b&#x2F;platforms&#x2F;android-23&#x2F;arch-arm&#x2F; &quot;export CC&#x3D;&quot;&#x2F;opt&#x2F;android-ndk-r13b&#x2F;toolchains&#x2F;arm-linux-androideabi-4.9&#x2F;prebuilt&#x2F;linux-x86_64&#x2F;bin&#x2F;arm-linux-androideabi-gcc &quot;export CXX&#x3D;&quot;&#x2F;opt&#x2F;android-ndk-r13b&#x2F;toolchains&#x2F;arm-linux-androideabi-4.9&#x2F;prebuilt&#x2F;linux-x86_64&#x2F;bin&#x2F;arm-linux-androideabi-g++ &quot;.&#x2F;configure --host&#x3D;arm --prefix&#x3D;&#x2F;opt&#x2F;cairo&#x2F;cairo --with-sysroot&#x3D;&quot;&#x2F;opt&#x2F;android-ndk-r13b&#x2F;platforms&#x2F;android-23&#x2F;arch-arm&#x2F;&quot; --enable-png&#x3D;yes --disable-xlib --disable-xlib-xrender --enable-directfb&#x3D;no --enable-ft&#x3D;yes  --enable-fc&#x3D;no --disable-win32 --disable-svg --enable-pdf&#x3D;yes  FREETYPE_CFLAGS&#x3D;&#39;-I&#x2F;opt&#x2F;cairo&#x2F;freetype&#x2F;include&#x2F;freetype2&#39; FREETYPE_LIBS&#x3D;&#39;-L&#x2F;opt&#x2F;cairo&#x2F;freetype&#x2F;lib -lfreetype&#39; png_CFLAGS&#x3D;&#39;-I&#x2F;opt&#x2F;cairo&#x2F;png&#x2F;include&#39; png_LIBS&#x3D;&#39;-L&#x2F;opt&#x2F;cairo&#x2F;png&#x2F;lib -lpng16&#39; pixman_CFLAGS&#x3D;&#39;-I&#x2F;opt&#x2F;cairo&#x2F;pix_man&#x2F;include&#x2F;pixman-1&#39; pixman_LIBS&#x3D;&#39;-L&#x2F;opt&#x2F;cairo&#x2F;pix_man&#x2F;lib -lpixman-1&#39; --enable-xcb&#x3D;no <span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre><h2 id="For-IOS-Steps"><a href="#For-IOS-Steps" class="headerlink" title="For IOS, Steps:"></a>For IOS, Steps:</h2></li></ol><pre class="line-numbers language-none"><code class="language-none">#export PKG_CONFIG_PATH&#x3D;&#x2F;usr&#x2F;lib&#x2F;pkgconfig&#x2F;export BUILD_ARCHS&#x3D;armv7 armv7s arm64 i386 x86_64#IOS_LINK_FLAG&#x3D; -arch x86_64export IOS_BUILD_TOOLS_DIR&#x3D;&#x2F;Applications&#x2F;Xcode.app&#x2F;Contents&#x2F;Developer&#x2F;Toolchains&#x2F;XcodeDefault.xctoolchain&#x2F;usr&#x2F;bin&#x2F;export IOS_SYSROOT_DIR&#x3D;&quot;&#x2F;Applications&#x2F;Xcode.app&#x2F;Contents&#x2F;Developer&#x2F;Platforms&#x2F;iPhoneSimulator.platform&#x2F;Developer&#x2F;SDKs&#x2F;iPhoneSimulator.sdk&quot;#export CC&#x3D;&quot;&#x2F;Applications&#x2F;Xcode.app&#x2F;Contents&#x2F;Developer&#x2F;usr&#x2F;bin&#x2F;gcc &quot;#export CXX&#x3D;&quot;&#x2F;Applications&#x2F;Xcode.app&#x2F;Contents&#x2F;Developer&#x2F;usr&#x2F;bin&#x2F;g++ &quot;#export CC&#x3D;&quot;&#x2F;Applications&#x2F;Xcode.app&#x2F;Contents&#x2F;Developer&#x2F;Toolchains&#x2F;XcodeDefault.xctoolchain&#x2F;usr&#x2F;bin&#x2F;clang &quot;#export CXX&#x3D;&quot;&#x2F;Applications&#x2F;Xcode.app&#x2F;Contents&#x2F;Developer&#x2F;Toolchains&#x2F;XcodeDefault.xctoolchain&#x2F;usr&#x2F;bin&#x2F;clang++ &quot;.&#x2F;configure --prefix&#x3D;&#x2F;opt&#x2F;simulator_cairo_lib&#x2F;cairo CC&#x3D;&quot;&#x2F;Applications&#x2F;Xcode.app&#x2F;Contents&#x2F;Developer&#x2F;usr&#x2F;bin&#x2F;gcc -arch x86_64&quot; --with-sysroot&#x3D;&quot;&#x2F;Applications&#x2F;Xcode.app&#x2F;Contents&#x2F;Developer&#x2F;Platforms&#x2F;iPhoneSimulator.platform&#x2F;Developer&#x2F;SDKs&#x2F;iPhoneSimulator.sdk&quot; AR&#x3D;&quot;&#x2F;Applications&#x2F;Xcode.app&#x2F;Contents&#x2F;Developer&#x2F;Toolchains&#x2F;XcodeDefault.xctoolchain&#x2F;usr&#x2F;bin&#x2F;ar&quot; --enable-xlib&#x3D;no --enable-xlib-xrender&#x3D;no --enable-ft&#x3D;no --enable-script&#x3D;no --enable-ps&#x3D;no --enable-pdf&#x3D;no --enable-svg&#x3D;no --enable-trace&#x3D;no --enable-interpreter&#x3D;no --enable-png&#x3D;no  pixman_CFLAGS&#x3D;&#39;-I&#x2F;opt&#x2F;simulator_cairo_lib&#x2F;pixmap&#x2F;include&#x2F;pixman-1&#39; pixman_LIBS&#x3D;&#39;-L&#x2F;opt&#x2F;simulator_cairo_lib&#x2F;pixmap&#x2F;lib -lpixman-1&#39; png_CFLAGS&#x3D;&#39;-I&#x2F;opt&#x2F;simulator_cairo_lib&#x2F;png&#x2F;include&#39; png_LIBS&#x3D;&#39;-L&#x2F;opt&#x2F;simulator_cairo_lib&#x2F;png&#x2F;lib&#x2F; -lpng16&#39; <span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>]]></content>
+    
+    
+      
+      
+    <summary type="html">&lt;h1 id=&quot;27-How-to-compile-cario&quot;&gt;&lt;a href=&quot;#27-How-to-compile-cario&quot; class=&quot;headerlink&quot; title=&quot;27. How to compile cario&quot;&gt;&lt;/a&gt;27. How to compi</summary>
+      
+    
+    
+    
+    <category term="cycle zone" scheme="https://cyclezone.github.io/categories/cycle-zone/"/>
+    
+    
+    <category term="cycle 2021" scheme="https://cyclezone.github.io/tags/cycle-2021/"/>
+    
+    <category term="cario" scheme="https://cyclezone.github.io/tags/cario/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>26. how to get tianditu token</title>
+    <link href="https://cyclezone.github.io/2021/12/21/26-how-to-get-tianditu-token/"/>
+    <id>https://cyclezone.github.io/2021/12/21/26-how-to-get-tianditu-token/</id>
+    <published>2021-12-21T15:15:59.000Z</published>
+    <updated>2022-01-09T08:49:47.857Z</updated>
+    
+    <content type="html"><![CDATA[<h1 id="26-how-to-get-tianditu-token"><a href="#26-how-to-get-tianditu-token" class="headerlink" title="26. how to get tianditu token"></a>26. how to get tianditu token</h1><p><img src="./img/26_tiandituToken.png" alt="get tianditu token"></p><p>STEPS:</p><ul><li><ol><li>visit ‘tianditu.gov.cn’ in chrome browser;</li></ol></li><li><ol start="2"><li>Press ‘F12’and show the right window;</li></ol></li><li><ol start="3"><li>click and drag or move or zoom in or zoom out the left map;<br>some information will list in the right window;</li></ol></li><li><ol start="4"><li>choose the ‘NetWork’ tab,in ‘Name’ window list the requests,choose any one;</li></ol></li><li><ol start="5"><li><p>in Headers tab, ‘General’ Node,we get the URL:</p><p><a href="https://t6.tianditu.gov.cn/vec_w/wmts?SERVICE=WMTS&amp;REQUEST=GetTile&amp;VERSION=1.0.0&amp;LAYER=vec&amp;STYLE=default&amp;TILEMATRIXSET=w&amp;FORMAT=tiles&amp;TILECOL=55&amp;TILEROW=24&amp;TILEMATRIX=6&amp;tk=9a02b3cdd29cd346de4df04229797710">https://t6.tianditu.gov.cn/vec_w/wmts?SERVICE=WMTS&amp;REQUEST=GetTile&amp;VERSION=1.0.0&amp;LAYER=vec&amp;STYLE=default&amp;TILEMATRIXSET=w&amp;FORMAT=tiles&amp;TILECOL=55&amp;TILEROW=24&amp;TILEMATRIX=6&amp;tk=9a02b3cdd29cd346de4df04229797710</a></p></li></ol></li><li><ol start="6"><li>in the above URL,get the value of the key ‘tk’ Ok, we get the tianditu token: 9a02b3cdd29cd346de4df04229797710</li></ol></li></ul>]]></content>
+    
+    
+      
+      
+    <summary type="html">&lt;h1 id=&quot;26-how-to-get-tianditu-token&quot;&gt;&lt;a href=&quot;#26-how-to-get-tianditu-token&quot; class=&quot;headerlink&quot; title=&quot;26. how to get tianditu token&quot;&gt;&lt;/a&gt;2</summary>
+      
+    
+    
+    
+    <category term="cycle zone" scheme="https://cyclezone.github.io/categories/cycle-zone/"/>
+    
+    
+    <category term="cycle 2021" scheme="https://cyclezone.github.io/tags/cycle-2021/"/>
+    
+    <category term="Tianditu" scheme="https://cyclezone.github.io/tags/Tianditu/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>25. Compute time cost</title>
+    <link href="https://cyclezone.github.io/2021/12/21/25-compute-time-cost/"/>
+    <id>https://cyclezone.github.io/2021/12/21/25-compute-time-cost/</id>
+    <published>2021-12-21T15:15:04.000Z</published>
+    <updated>2022-01-09T08:49:56.728Z</updated>
+    
+    <content type="html"><![CDATA[<h1 id="25-Compute-time-cost"><a href="#25-Compute-time-cost" class="headerlink" title="25. Compute time cost"></a>25. Compute time cost</h1><pre class="line-numbers language-none"><code class="language-none">int main()&#123;&#123;CHTime timecost;fun1();&#125;&#123;CHTime timecost;fun2();timecost.getTime();&#125;&#125;&#x2F;&#x2F;&#x2F;&#x2F;**********************CHTime.h************************#ifdef WIN32&#x2F;&#x2F;&#x2F; for windows#include &lt;windows.h&gt;　#else &#x2F;&#x2F;BUTTER_LINUX&#x2F;&#x2F;&#x2F;&#x2F; for linux#include &lt;sys&#x2F;time.h&gt;　#endifclass CHTime&#123;public:CHTime()&#123; Begin();&#125;~CHTime()&#123;End();&#125;void Begin()&#123;#ifdef WIN32       QueryPerformanceFrequency(&amp;m_freq);       QueryPerformanceCounter(&amp;m_queryBegin);#else       gettimeofday(&amp;m_begin,NULL);#endif&#125;void End()&#123;#ifdef WIN32          QueryPerformanceCounter(&amp;m_queryEnd);       m_timeuse&#x3D;(double)(m_queryEnd.QuadPart-m_queryBegin.QuadPart)&#x2F;(double)m_freq.QuadPart * 1000.0; #else       gettimeofday(&amp;m_end,NULL);       m_timeuse &#x3D; (m_end.tv_sec - m_begin.tv_sec) + (double)(m_end.tv_usec - m_begin.tv_usec)&#x2F;1000.0;#endif      cout&lt;&lt;&quot;timecost &#x3D; &quot;&lt;&lt;m_timeuse&lt;&lt;endl;  &#x2F;&#x2F;（unit：ms）&#125;double getTime()&#123;End(); return m_timeuse;&#125;protected:    double m_timeuse;&#x2F;&#x2F;&#x2F;ms#ifdef WIN32    LARGE_INTEGER m_queryBegin,m_queryEnd,m_freq;#elsestruct timeval m_begin,m_end;#endif&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>]]></content>
+    
+    
+      
+      
+    <summary type="html">&lt;h1 id=&quot;25-Compute-time-cost&quot;&gt;&lt;a href=&quot;#25-Compute-time-cost&quot; class=&quot;headerlink&quot; title=&quot;25. Compute time cost&quot;&gt;&lt;/a&gt;25. Compute time cost&lt;/h1</summary>
+      
+    
+    
+    
+    <category term="cycle zone" scheme="https://cyclezone.github.io/categories/cycle-zone/"/>
+    
+    
+    <category term="cycle 2021" scheme="https://cyclezone.github.io/tags/cycle-2021/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>24. Unable to open DISPLAY</title>
+    <link href="https://cyclezone.github.io/2021/12/20/24-Unable-to-open-DISPLAY/"/>
+    <id>https://cyclezone.github.io/2021/12/20/24-Unable-to-open-DISPLAY/</id>
+    <published>2021-12-20T15:14:11.000Z</published>
+    <updated>2022-01-09T08:50:02.003Z</updated>
+    
+    <content type="html"><![CDATA[<h1 id="24-Unable-to-open-DISPLAY"><a href="#24-Unable-to-open-DISPLAY" class="headerlink" title="24. Unable to open DISPLAY"></a>24. Unable to open DISPLAY</h1><pre class="line-numbers language-none"><code class="language-none">java.lang.reflect.InvocationTargetExceptionCasued by:java.lang.unsupportedOperationException:Unable to open DISPLAY<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre><h2 id="solution"><a href="#solution" class="headerlink" title="solution"></a>solution</h2><ul><li>echo $DISPLAY</li><li>export DISPLAY=:1</li><li>xhost +</li><li>run sh run.sh</li></ul>]]></content>
+    
+    
+      
+      
+    <summary type="html">&lt;h1 id=&quot;24-Unable-to-open-DISPLAY&quot;&gt;&lt;a href=&quot;#24-Unable-to-open-DISPLAY&quot; class=&quot;headerlink&quot; title=&quot;24. Unable to open DISPLAY&quot;&gt;&lt;/a&gt;24. Unable</summary>
+      
+    
+    
+    
+    <category term="cycle zone" scheme="https://cyclezone.github.io/categories/cycle-zone/"/>
+    
+    
+    <category term="cycle 2021" scheme="https://cyclezone.github.io/tags/cycle-2021/"/>
+    
+  </entry>
+  
+</feed>
