@@ -102,6 +102,46 @@ for(int m &#x3D; 0; m &lt; 16;m++)&#123;
       </tags>
   </entry>
   <entry>
+    <title>14. Makefile error make (e=2): The system cannot find the file specified</title>
+    <url>/2021/12/19/14-Makefile-error-make-e-2-The-system-cannot-find-the-file-specified/</url>
+    <content><![CDATA[<h1 id="14-Makefile-error-make-e-2-The-system-cannot-find-the-file-specified"><a href="#14-Makefile-error-make-e-2-The-system-cannot-find-the-file-specified" class="headerlink" title="14. Makefile error make (e=2): The system cannot find the file specified"></a>14. Makefile error make (e=2): The system cannot find the file specified</h1><ol>
+<li>when compile Qt for android in Windows Environment, crash the following case:</li>
+</ol>
+  <pre class="line-numbers language-none"><code class="language-none">cannot find E:\Qt\qtbase\src\android\jar\QtAndroid.jar
+jar cf QtAndroid.jar -C .classes .
+process_begin: CreateProcess(NULL, jar cf QtAndroid.jar -C .classes ., ...) failed.
+make (e&#x3D;2): The system cannot find the file specified<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+<ol start="2">
+<li><p>almost certainly complaining that Windows cannot find ‘jar’.</p>
+<p>This is almost certainly because the value of %PATH% (or whatever) is different when make spawns a shell/console then when you have it open manually.</p>
+<p>Compare the values to confirm that. Then either use the full path to ‘jar’ in the makefile recipe or ensure that the value of PATH is set correctly for make’s usage</p>
+</li>
+<li><p>in console , print ‘where java’,then show the full path of java.exe;</p>
+<p>but when print ‘where jar’,cannot show the full path of ‘jar.exe’;<br>in path %JAVA_HOME%\bin, we can find jar.exe  essentially, but now we cannot;</p>
+<p>when we check the JAVA folder in other PC ,we find that file ‘jar.exe’;<br>then copy the qt source code, compile java code,<br>run ‘jar cf QtAndroid.jar -C .classes .’;<br>that work OK;</p>
+<p>so  the java environment maybe has been broken sometimes when we install other program;</p>
+<p>copy the jar.exe into the target PC or reinstall JDK in the target PC,<br>then check,OK,we solve this problem;</p>
+</li>
+<li><p>besides this,when search this topic key words,we find the similar question;<br>almost certainly complaining that Windows cannot find some target process,</p>
+<p>what we should do is locate the target process path,make the compiler know the path,<br>find the target process in the path;</p>
+</li>
+<li><p>fro more information, please visit </p>
+<ul>
+<li><a href="https://stackoverflow.com/questions/33674973/makefile-error-make-e-2-the-system-cannot-find-the-file-specified">https://stackoverflow.com/questions/33674973/makefile-error-make-e-2-the-system-cannot-find-the-file-specified</a><br>or</li>
+<li><a href="https://stackoverflow.com/questions/7291442/error-cannot-run-program-jar-createprocess-error-2-the-system-cannot-find-t">https://stackoverflow.com/questions/7291442/error-cannot-run-program-jar-createprocess-error-2-the-system-cannot-find-t</a></li>
+</ul>
+</li>
+</ol>
+]]></content>
+      <categories>
+        <category>cycle zone</category>
+      </categories>
+      <tags>
+        <tag>cycle 2021</tag>
+        <tag>makefile</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>12. OGCWMTS</title>
     <url>/2021/12/19/12-OGCWMTS/</url>
     <content><![CDATA[<h1 id="12-OGCWMTS"><a href="#12-OGCWMTS" class="headerlink" title="12. OGCWMTS"></a>12. OGCWMTS</h1><ol>
@@ -186,46 +226,6 @@ then we want to get the tile image buffer stream, HOW?
       <tags>
         <tag>cycle 2021</tag>
         <tag>WMTS</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>14. Makefile error make (e=2): The system cannot find the file specified</title>
-    <url>/2021/12/19/14-Makefile-error-make-e-2-The-system-cannot-find-the-file-specified/</url>
-    <content><![CDATA[<h1 id="14-Makefile-error-make-e-2-The-system-cannot-find-the-file-specified"><a href="#14-Makefile-error-make-e-2-The-system-cannot-find-the-file-specified" class="headerlink" title="14. Makefile error make (e=2): The system cannot find the file specified"></a>14. Makefile error make (e=2): The system cannot find the file specified</h1><ol>
-<li>when compile Qt for android in Windows Environment, crash the following case:</li>
-</ol>
-  <pre class="line-numbers language-none"><code class="language-none">cannot find E:\Qt\qtbase\src\android\jar\QtAndroid.jar
-jar cf QtAndroid.jar -C .classes .
-process_begin: CreateProcess(NULL, jar cf QtAndroid.jar -C .classes ., ...) failed.
-make (e&#x3D;2): The system cannot find the file specified<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
-<ol start="2">
-<li><p>almost certainly complaining that Windows cannot find ‘jar’.</p>
-<p>This is almost certainly because the value of %PATH% (or whatever) is different when make spawns a shell/console then when you have it open manually.</p>
-<p>Compare the values to confirm that. Then either use the full path to ‘jar’ in the makefile recipe or ensure that the value of PATH is set correctly for make’s usage</p>
-</li>
-<li><p>in console , print ‘where java’,then show the full path of java.exe;</p>
-<p>but when print ‘where jar’,cannot show the full path of ‘jar.exe’;<br>in path %JAVA_HOME%\bin, we can find jar.exe  essentially, but now we cannot;</p>
-<p>when we check the JAVA folder in other PC ,we find that file ‘jar.exe’;<br>then copy the qt source code, compile java code,<br>run ‘jar cf QtAndroid.jar -C .classes .’;<br>that work OK;</p>
-<p>so  the java environment maybe has been broken sometimes when we install other program;</p>
-<p>copy the jar.exe into the target PC or reinstall JDK in the target PC,<br>then check,OK,we solve this problem;</p>
-</li>
-<li><p>besides this,when search this topic key words,we find the similar question;<br>almost certainly complaining that Windows cannot find some target process,</p>
-<p>what we should do is locate the target process path,make the compiler know the path,<br>find the target process in the path;</p>
-</li>
-<li><p>fro more information, please visit </p>
-<ul>
-<li><a href="https://stackoverflow.com/questions/33674973/makefile-error-make-e-2-the-system-cannot-find-the-file-specified">https://stackoverflow.com/questions/33674973/makefile-error-make-e-2-the-system-cannot-find-the-file-specified</a><br>or</li>
-<li><a href="https://stackoverflow.com/questions/7291442/error-cannot-run-program-jar-createprocess-error-2-the-system-cannot-find-t">https://stackoverflow.com/questions/7291442/error-cannot-run-program-jar-createprocess-error-2-the-system-cannot-find-t</a></li>
-</ul>
-</li>
-</ol>
-]]></content>
-      <categories>
-        <category>cycle zone</category>
-      </categories>
-      <tags>
-        <tag>cycle 2021</tag>
-        <tag>makefile</tag>
       </tags>
   </entry>
   <entry>
@@ -932,45 +932,6 @@ $
       </tags>
   </entry>
   <entry>
-    <title>21. Init Qt resource</title>
-    <url>/2021/12/19/21-init-Qt-resource/</url>
-    <content><![CDATA[<h1 id="21-Init-Qt-resource"><a href="#21-Init-Qt-resource" class="headerlink" title="21. Init Qt resource"></a>21. Init Qt resource</h1><pre><code>public class QtEnvironment &#123;
-    public static int Init(Activity activity) &#123;
-        String rootPath = android.os.Environment.getExternalStorageDirectory().getAbsolutePath();
-        String apkPath = activity.getApplicationInfo().publicSourceDir;
-
-        String nativeLibraryPrefix = activity.getApplicationInfo().nativeLibraryDir + &quot;/&quot;;
-
-        DexClassLoader classLoader = new DexClassLoader(&quot;&quot;, // .jar/.apk files
-                activity.getDir(&quot;outdex&quot;, Context.MODE_PRIVATE).getAbsolutePath(), // directory where optimized DEX files should be written.
-                null, // libs folder (if exists)
-                activity.getClassLoader());
-
-        QtNative.setClassLoader(classLoader);
-
-        String[] qtLibs = &#123;&quot;Qt5Core&quot;,&quot;Qt5Gui&quot;,&quot;Qt5Widgets&quot;,&quot;qtforandroid&quot;&#125;;
-        ArrayList&lt;String&gt; libraryList = new ArrayList&lt;String&gt;();
-
-        String libPrefix = nativeLibraryPrefix + &quot;lib&quot;;
-        for (int i = 0; i &lt; qtLibs.length; i++)
-            libraryList.add(libPrefix + qtLibs[i] + &quot;.so&quot;);
-        QtNative.loadQtLibraries(libraryList);
-
-        return 1;
-    &#125;
-
-&#125;
-</code></pre>
-]]></content>
-      <categories>
-        <category>cycle zone</category>
-      </categories>
-      <tags>
-        <tag>cycle 2021</tag>
-        <tag>Qt</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>20. How to debug with add-dsym in AS</title>
     <url>/2021/12/19/20-debug-with-add-dsym-in-AS/</url>
     <content><![CDATA[<h1 id="20-debug-with-add-dsym-in-AS"><a href="#20-debug-with-add-dsym-in-AS" class="headerlink" title="20. debug with add-dsym in AS"></a>20. debug with add-dsym in AS</h1><h2 id="20-1-detail-version"><a href="#20-1-detail-version" class="headerlink" title="20.1 detail version"></a>20.1 detail version</h2><ol>
@@ -1015,67 +976,42 @@ $
       </tags>
   </entry>
   <entry>
-    <title>23. Howt to access unaligned memory</title>
-    <url>/2021/12/20/23-Howt-to-access-unaligned-memory/</url>
-    <content><![CDATA[<h1 id="23-Howt-to-access-unaligned-memory"><a href="#23-Howt-to-access-unaligned-memory" class="headerlink" title="23. Howt to access unaligned memory"></a>23. Howt to access unaligned memory</h1><ul>
-<li><p>Unaligned memory accesses occur when you try to read N bytes of data starting from an address </p>
-<p>that is not evenly divisible by N (i.e. addr % N != 0).</p>
-<p>For example, reading 4 bytes of data from address 0x10004 is fine, </p>
-<p>but reading 4 bytes of data from address 0x10005 would be an unaligned memory access.</p>
-</li>
-<li><p>when access the unligned memory directly,OS may sent SIGBUS error;</p>
-</li>
-<li><p>if read the unligned memory, use function ‘get_unaligned(ptr)’</p>
-<p>if write the unligned  memory,use memcpy();</p>
-</li>
-<li><p>for more information ,please visit <a href="https://www.kernel.org/doc/html/latest/core-api/unaligned-memory-access.html">https://www.kernel.org/doc/html/latest/core-api/unaligned-memory-access.html</a></p>
-</li>
-</ul>
-<h2 id="case-1-both-dt-and-st-is-aligned"><a href="#case-1-both-dt-and-st-is-aligned" class="headerlink" title="case 1: both dt and st is aligned"></a>case 1: both dt and st is aligned</h2> <pre class="line-numbers language-none"><code class="language-none">## for case: both dt and st is aligned
-template&lt;typename T&gt; void i_AssignValue(T&amp; dt, T&amp; st)
-&#123;
-	i_FromString(dt, i_ToString(st));
-&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-<h2 id="case-2-either-dt-or-st-is-aligned-or-both-are-unligned"><a href="#case-2-either-dt-or-st-is-aligned-or-both-are-unligned" class="headerlink" title="case 2: either dt or st is aligned or both are unligned"></a>case 2: either dt or st is aligned or both are unligned</h2> <pre class="line-numbers language-none"><code class="language-none">&#x2F;************************************************************
- *  for case: either dt or st is unaligned;
- *  if read the unligned value, use function &#39;get_unaligned(ptr)&#39;
- *  if write the unligned value,use memcpy();
-*************************************************************&#x2F;
+    <title>21. Init Qt resource</title>
+    <url>/2021/12/19/21-init-Qt-resource/</url>
+    <content><![CDATA[<h1 id="21-Init-Qt-resource"><a href="#21-Init-Qt-resource" class="headerlink" title="21. Init Qt resource"></a>21. Init Qt resource</h1><pre><code>public class QtEnvironment &#123;
+    public static int Init(Activity activity) &#123;
+        String rootPath = android.os.Environment.getExternalStorageDirectory().getAbsolutePath();
+        String apkPath = activity.getApplicationInfo().publicSourceDir;
 
-#ifdef BUTTER_ANDROID
-#ifndef __GET_UNALIGNED_
-#define __GET_UNALIGNED_
+        String nativeLibraryPrefix = activity.getApplicationInfo().nativeLibraryDir + &quot;/&quot;;
 
-#define __get_unaligned_t(type, ptr) (&#123;						\
-	const struct &#123; type x; &#125; __packed *__pptr &#x3D; (__typeof(__pptr))(ptr);	\
-	__pptr-&gt;x;								\
-&#125;)
+        DexClassLoader classLoader = new DexClassLoader(&quot;&quot;, // .jar/.apk files
+                activity.getDir(&quot;outdex&quot;, Context.MODE_PRIVATE).getAbsolutePath(), // directory where optimized DEX files should be written.
+                null, // libs folder (if exists)
+                activity.getClassLoader());
 
-#define get_unaligned(ptr)	__get_unaligned_t(__typeof(*(ptr)), (ptr))
+        QtNative.setClassLoader(classLoader);
 
-#endif &#x2F;* __GET_UNALIGNED_ *&#x2F;
+        String[] qtLibs = &#123;&quot;Qt5Core&quot;,&quot;Qt5Gui&quot;,&quot;Qt5Widgets&quot;,&quot;qtforandroid&quot;&#125;;
+        ArrayList&lt;String&gt; libraryList = new ArrayList&lt;String&gt;();
 
-&#x2F;&#x2F;&#x2F; for case: Ether dt or st is unaligned
-template&lt;&gt; inline void i_AssignValue(float&amp; dt, float&amp; st)
-&#123;
-	float val;
-	const void* ptr &#x3D; (void*)&amp;st;
-	&#x2F;&#x2F;uint16_t temp16 &#x3D; get_unaligned((uint16_t *) ptr); &#x2F;&#x2F;OK
-	float temp16 &#x3D; get_unaligned((float *) ptr); &#x2F;&#x2F;&#x2F; read the unligned memory
-	std::string strVal &#x3D; i_ToString((double)temp16);
-	i_FromString&lt;float&gt;(val,strVal);
-	memcpy(&amp;dt, &amp;val, sizeof(float)); &#x2F;&#x2F;&#x2F; write the unligned memory
+        String libPrefix = nativeLibraryPrefix + &quot;lib&quot;;
+        for (int i = 0; i &lt; qtLibs.length; i++)
+            libraryList.add(libPrefix + qtLibs[i] + &quot;.so&quot;);
+        QtNative.loadQtLibraries(libraryList);
+
+        return 1;
+    &#125;
+
 &#125;
-
-#endif &#x2F;&#x2F;BUTTER_ANDROID
-<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+</code></pre>
 ]]></content>
       <categories>
         <category>cycle zone</category>
       </categories>
       <tags>
         <tag>cycle 2021</tag>
-        <tag>unaligned memory</tag>
+        <tag>Qt</tag>
       </tags>
   </entry>
   <entry>
@@ -1195,6 +1131,112 @@ template&lt;&gt; inline bool i_FromString(CString&amp; t, std::string str)
       </tags>
   </entry>
   <entry>
+    <title>26. how to get tianditu token</title>
+    <url>/2021/12/21/26-how-to-get-tianditu-token/</url>
+    <content><![CDATA[<h1 id="26-how-to-get-tianditu-token"><a href="#26-how-to-get-tianditu-token" class="headerlink" title="26. how to get tianditu token"></a>26. how to get tianditu token</h1><p><img src="./img/26_tiandituToken.png" alt="get tianditu token"></p>
+<p>STEPS:</p>
+<ul>
+<li><ol>
+<li>visit ‘tianditu.gov.cn’ in chrome browser;</li>
+</ol>
+</li>
+<li><ol start="2">
+<li>Press ‘F12’and show the right window;</li>
+</ol>
+</li>
+<li><ol start="3">
+<li>click and drag or move or zoom in or zoom out the left map;<br>some information will list in the right window;</li>
+</ol>
+</li>
+<li><ol start="4">
+<li>choose the ‘NetWork’ tab,in ‘Name’ window list the requests,choose any one;</li>
+</ol>
+</li>
+<li><ol start="5">
+<li><p>in Headers tab, ‘General’ Node,we get the URL:</p>
+<p><a href="https://t6.tianditu.gov.cn/vec_w/wmts?SERVICE=WMTS&amp;REQUEST=GetTile&amp;VERSION=1.0.0&amp;LAYER=vec&amp;STYLE=default&amp;TILEMATRIXSET=w&amp;FORMAT=tiles&amp;TILECOL=55&amp;TILEROW=24&amp;TILEMATRIX=6&amp;tk=9a02b3cdd29cd346de4df04229797710">https://t6.tianditu.gov.cn/vec_w/wmts?SERVICE=WMTS&amp;REQUEST=GetTile&amp;VERSION=1.0.0&amp;LAYER=vec&amp;STYLE=default&amp;TILEMATRIXSET=w&amp;FORMAT=tiles&amp;TILECOL=55&amp;TILEROW=24&amp;TILEMATRIX=6&amp;tk=9a02b3cdd29cd346de4df04229797710</a></p>
+</li>
+</ol>
+</li>
+<li><ol start="6">
+<li>in the above URL,get the value of the key ‘tk’ Ok, we get the tianditu token: 9a02b3cdd29cd346de4df04229797710</li>
+</ol>
+</li>
+</ul>
+]]></content>
+      <categories>
+        <category>cycle zone</category>
+      </categories>
+      <tags>
+        <tag>cycle 2021</tag>
+        <tag>Tianditu</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>23. Howt to access unaligned memory</title>
+    <url>/2021/12/20/23-Howt-to-access-unaligned-memory/</url>
+    <content><![CDATA[<h1 id="23-Howt-to-access-unaligned-memory"><a href="#23-Howt-to-access-unaligned-memory" class="headerlink" title="23. Howt to access unaligned memory"></a>23. Howt to access unaligned memory</h1><ul>
+<li><p>Unaligned memory accesses occur when you try to read N bytes of data starting from an address </p>
+<p>that is not evenly divisible by N (i.e. addr % N != 0).</p>
+<p>For example, reading 4 bytes of data from address 0x10004 is fine, </p>
+<p>but reading 4 bytes of data from address 0x10005 would be an unaligned memory access.</p>
+</li>
+<li><p>when access the unligned memory directly,OS may sent SIGBUS error;</p>
+</li>
+<li><p>if read the unligned memory, use function ‘get_unaligned(ptr)’</p>
+<p>if write the unligned  memory,use memcpy();</p>
+</li>
+<li><p>for more information ,please visit <a href="https://www.kernel.org/doc/html/latest/core-api/unaligned-memory-access.html">https://www.kernel.org/doc/html/latest/core-api/unaligned-memory-access.html</a></p>
+</li>
+</ul>
+<h2 id="case-1-both-dt-and-st-is-aligned"><a href="#case-1-both-dt-and-st-is-aligned" class="headerlink" title="case 1: both dt and st is aligned"></a>case 1: both dt and st is aligned</h2> <pre class="line-numbers language-none"><code class="language-none">## for case: both dt and st is aligned
+template&lt;typename T&gt; void i_AssignValue(T&amp; dt, T&amp; st)
+&#123;
+	i_FromString(dt, i_ToString(st));
+&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<h2 id="case-2-either-dt-or-st-is-aligned-or-both-are-unligned"><a href="#case-2-either-dt-or-st-is-aligned-or-both-are-unligned" class="headerlink" title="case 2: either dt or st is aligned or both are unligned"></a>case 2: either dt or st is aligned or both are unligned</h2> <pre class="line-numbers language-none"><code class="language-none">&#x2F;************************************************************
+ *  for case: either dt or st is unaligned;
+ *  if read the unligned value, use function &#39;get_unaligned(ptr)&#39;
+ *  if write the unligned value,use memcpy();
+*************************************************************&#x2F;
+
+#ifdef BUTTER_ANDROID
+#ifndef __GET_UNALIGNED_
+#define __GET_UNALIGNED_
+
+#define __get_unaligned_t(type, ptr) (&#123;						\
+	const struct &#123; type x; &#125; __packed *__pptr &#x3D; (__typeof(__pptr))(ptr);	\
+	__pptr-&gt;x;								\
+&#125;)
+
+#define get_unaligned(ptr)	__get_unaligned_t(__typeof(*(ptr)), (ptr))
+
+#endif &#x2F;* __GET_UNALIGNED_ *&#x2F;
+
+&#x2F;&#x2F;&#x2F; for case: Ether dt or st is unaligned
+template&lt;&gt; inline void i_AssignValue(float&amp; dt, float&amp; st)
+&#123;
+	float val;
+	const void* ptr &#x3D; (void*)&amp;st;
+	&#x2F;&#x2F;uint16_t temp16 &#x3D; get_unaligned((uint16_t *) ptr); &#x2F;&#x2F;OK
+	float temp16 &#x3D; get_unaligned((float *) ptr); &#x2F;&#x2F;&#x2F; read the unligned memory
+	std::string strVal &#x3D; i_ToString((double)temp16);
+	i_FromString&lt;float&gt;(val,strVal);
+	memcpy(&amp;dt, &amp;val, sizeof(float)); &#x2F;&#x2F;&#x2F; write the unligned memory
+&#125;
+
+#endif &#x2F;&#x2F;BUTTER_ANDROID
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+]]></content>
+      <categories>
+        <category>cycle zone</category>
+      </categories>
+      <tags>
+        <tag>cycle 2021</tag>
+        <tag>unaligned memory</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>25. Compute time cost</title>
     <url>/2021/12/21/25-compute-time-cost/</url>
     <content><![CDATA[<h1 id="25-Compute-time-cost"><a href="#25-Compute-time-cost" class="headerlink" title="25. Compute time cost"></a>25. Compute time cost</h1><pre class="line-numbers language-none"><code class="language-none">
@@ -1273,48 +1315,6 @@ protected:
       </categories>
       <tags>
         <tag>cycle 2021</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>26. how to get tianditu token</title>
-    <url>/2021/12/21/26-how-to-get-tianditu-token/</url>
-    <content><![CDATA[<h1 id="26-how-to-get-tianditu-token"><a href="#26-how-to-get-tianditu-token" class="headerlink" title="26. how to get tianditu token"></a>26. how to get tianditu token</h1><p><img src="./img/26_tiandituToken.png" alt="get tianditu token"></p>
-<p>STEPS:</p>
-<ul>
-<li><ol>
-<li>visit ‘tianditu.gov.cn’ in chrome browser;</li>
-</ol>
-</li>
-<li><ol start="2">
-<li>Press ‘F12’and show the right window;</li>
-</ol>
-</li>
-<li><ol start="3">
-<li>click and drag or move or zoom in or zoom out the left map;<br>some information will list in the right window;</li>
-</ol>
-</li>
-<li><ol start="4">
-<li>choose the ‘NetWork’ tab,in ‘Name’ window list the requests,choose any one;</li>
-</ol>
-</li>
-<li><ol start="5">
-<li><p>in Headers tab, ‘General’ Node,we get the URL:</p>
-<p><a href="https://t6.tianditu.gov.cn/vec_w/wmts?SERVICE=WMTS&amp;REQUEST=GetTile&amp;VERSION=1.0.0&amp;LAYER=vec&amp;STYLE=default&amp;TILEMATRIXSET=w&amp;FORMAT=tiles&amp;TILECOL=55&amp;TILEROW=24&amp;TILEMATRIX=6&amp;tk=9a02b3cdd29cd346de4df04229797710">https://t6.tianditu.gov.cn/vec_w/wmts?SERVICE=WMTS&amp;REQUEST=GetTile&amp;VERSION=1.0.0&amp;LAYER=vec&amp;STYLE=default&amp;TILEMATRIXSET=w&amp;FORMAT=tiles&amp;TILECOL=55&amp;TILEROW=24&amp;TILEMATRIX=6&amp;tk=9a02b3cdd29cd346de4df04229797710</a></p>
-</li>
-</ol>
-</li>
-<li><ol start="6">
-<li>in the above URL,get the value of the key ‘tk’ Ok, we get the tianditu token: 9a02b3cdd29cd346de4df04229797710</li>
-</ol>
-</li>
-</ul>
-]]></content>
-      <categories>
-        <category>cycle zone</category>
-      </categories>
-      <tags>
-        <tag>cycle 2021</tag>
-        <tag>Tianditu</tag>
       </tags>
   </entry>
   <entry>
@@ -1608,6 +1608,19 @@ For more information about the platform-specific arguments available for embedde
       </tags>
   </entry>
   <entry>
+    <title>30.Tianditu-GetCapabilities</title>
+    <url>/2021/12/22/30-tianditu-GetCapabilities/</url>
+    <content><![CDATA[<h1 id="30-Tianditu-GetCapabilities"><a href="#30-Tianditu-GetCapabilities" class="headerlink" title="30.Tianditu-GetCapabilities"></a>30.Tianditu-GetCapabilities</h1><p>   <a href="http://t0.tianditu.gov.cn/vec_c/wmts?tk=9a02b3cdd29cd346de4df04229797710&amp;request=GetCapabilities&amp;service=wmts">http://t0.tianditu.gov.cn/vec_c/wmts?tk=9a02b3cdd29cd346de4df04229797710&amp;request=GetCapabilities&amp;service=wmts</a></p>
+]]></content>
+      <categories>
+        <category>cycle zone</category>
+      </categories>
+      <tags>
+        <tag>cycle 2021</tag>
+        <tag>Tianditu</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>Arcgis online url</title>
     <url>/2021/12/19/3-Arcgis-online-url/</url>
     <content><![CDATA[<h1 id="3-Arcgis-online-url"><a href="#3-Arcgis-online-url" class="headerlink" title="3. Arcgis online url"></a>3. Arcgis online url</h1><p><a href="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/1/1/1">https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/1/1/1</a></p>
@@ -1658,112 +1671,6 @@ sources.append([&quot;connections-xyz&quot;,&quot;Bing VirtualEarth&quot;, &quot
       <tags>
         <tag>cycle 2021</tag>
         <tag>arcgis url</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>31.How to Install Zentao for linux</title>
-    <url>/2021/12/23/31-Install-Zentao-for-linux/</url>
-    <content><![CDATA[<h1 id="31-Install-Zentao-for-linux"><a href="#31-Install-Zentao-for-linux" class="headerlink" title="31.Install Zentao for linux"></a>31.Install Zentao for linux</h1><h2 id="Install-steps"><a href="#Install-steps" class="headerlink" title="Install steps"></a>Install steps</h2><ul>
-<li><ol>
-<li><p>visit <a href="https://www.zentao.net/dynamic/zentaopms.pro10.3.1-80434.html">https://www.zentao.net/dynamic/zentaopms.pro10.3.1-80434.html</a> ,</p>
-<p> get the linux install package,eg. ‘ZenTaoPMS.15.7.1.zbox_64.tar.gz ‘</p>
-</li>
-</ol>
-</li>
-<li><ol start="2">
-<li>copy the package file into linux file folder,such as ‘ /user/zen ‘</li>
-</ol>
-</li>
-<li><ol start="3">
-<li>open folder where package located, ‘cd /user/zen ‘</li>
-</ol>
-</li>
-<li><ol start="4">
-<li><p>unzip the file to target folder  ‘/opt/‘; </p>
-<pre><code>    sudo tar -zxvf  ZenTaoPMS.15.7.1.zbox_64.tar.gz -C /opt
-</code></pre>
-<p> then in folder ‘ /opt/zbox ‘,we find ./zbox entry;</p>
-</li>
-</ol>
-</li>
-<li><ol start="5">
-<li>set port number for mysql and apache;<pre><code>   cd /opt/zbox 
-   ./zbox  -mp 3307 
-   ./zbox  -ap 9091 
-</code></pre>
-mp for mysql port;  ap for apache port</li>
-</ol>
-</li>
-<li><ol start="6">
-<li><p>add user into DataBase</p>
-<pre><code>cd /opt/zbox/auth
-sh adduser.sh 
-
-This tool is used to add user to access adminer
-Account: root
-Password: Adding password for user root
-</code></pre>
-</li>
-</ol>
-</li>
-<li><ol start="7">
-<li>start mysql and apache<pre><code>cd /opt/zbox
-./zbox start
-</code></pre>
-</li>
-</ol>
-</li>
-<li><ol start="8">
-<li><p>visit ‘localhost:9091 ‘ in local machine or</p>
-<p>visit ‘192.168.10.50:9091 ‘ in remote machine;</p>
-<p>then login and use it;</p>
-<p>default user :   admin </p>
-<p>default key :    123456</p>
-</li>
-</ol>
-</li>
-<li><ol start="9">
-<li><p>when no longer use it,stop it;<br>when reboot,restart it;</p>
-<pre><code>cd /opt/zbox
-./zbox stop
-./zbox restart     
-</code></pre>
-</li>
-</ol>
-</li>
-<li><ol start="10">
-<li><p>if cannot visit，add port into firewall,if the firewall is active</p>
-<pre><code>  [root@localhost zbox]# systemctl status firewalld
-  ● firewalld.service - firewalld - dynamic firewall daemon
-     Loaded: loaded (/usr/lib/systemd/system/firewalld.service; enabled; vendor preset: enabled)
-     Active: active (running) since 日 2021-12-05 11:36:48 CST; 1h 47min ago
-       Docs: man:firewalld(1)
-   Main PID: 846 (firewalld)
-      Tasks: 2
-     CGroup: /system.slice/firewalld.service
-             └─846 /usr/bin/python2 -Es /usr/sbin/firewalld --nofork --nopid
-
-  12月 05 11:36:46 localhost.localdomain systemd[1]: Starting firewalld - dynam...
-  12月 05 11:36:48 localhost.localdomain systemd[1]: Started firewalld - dynami...
-  Hint: Some lines were ellipsized, use -l to show in full.
-  [root@localhost zbox]# firewall-cmd --list-ports
-  80/tcp 8081/tcp
-  [root@localhost zbox]# firewall-cmd --zone=public --add-port=9091/tcp --permanentsuccess
-  [root@localhost zbox]# firewall-cmd --list-ports
-  80/tcp 8081/tcp
-  [root@localhost zbox]# reboot  
-</code></pre>
-</li>
-</ol>
-</li>
-</ul>
-]]></content>
-      <categories>
-        <category>Zentao</category>
-      </categories>
-      <tags>
-        <tag>cycle 2021</tag>
-        <tag>Zentao</tag>
       </tags>
   </entry>
   <entry>
@@ -1884,19 +1791,6 @@ Password: QjD1J3CZW3XOnJnWX5ieUt7V6GoSJjskvQiBNPnxBDc&#x3D;
       <tags>
         <tag>cycle 2021</tag>
         <tag>gitlab</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>30.Tianditu-GetCapabilities</title>
-    <url>/2021/12/22/30-tianditu-GetCapabilities/</url>
-    <content><![CDATA[<h1 id="30-Tianditu-GetCapabilities"><a href="#30-Tianditu-GetCapabilities" class="headerlink" title="30.Tianditu-GetCapabilities"></a>30.Tianditu-GetCapabilities</h1><p>   <a href="http://t0.tianditu.gov.cn/vec_c/wmts?tk=9a02b3cdd29cd346de4df04229797710&amp;request=GetCapabilities&amp;service=wmts">http://t0.tianditu.gov.cn/vec_c/wmts?tk=9a02b3cdd29cd346de4df04229797710&amp;request=GetCapabilities&amp;service=wmts</a></p>
-]]></content>
-      <categories>
-        <category>cycle zone</category>
-      </categories>
-      <tags>
-        <tag>cycle 2021</tag>
-        <tag>Tianditu</tag>
       </tags>
   </entry>
   <entry>
@@ -2023,6 +1917,112 @@ To cycle.github.com:cyclezone&#x2F;cyclezone.github.io.git
       </tags>
   </entry>
   <entry>
+    <title>31.How to Install Zentao for linux</title>
+    <url>/2021/12/23/31-Install-Zentao-for-linux/</url>
+    <content><![CDATA[<h1 id="31-Install-Zentao-for-linux"><a href="#31-Install-Zentao-for-linux" class="headerlink" title="31.Install Zentao for linux"></a>31.Install Zentao for linux</h1><h2 id="Install-steps"><a href="#Install-steps" class="headerlink" title="Install steps"></a>Install steps</h2><ul>
+<li><ol>
+<li><p>visit <a href="https://www.zentao.net/dynamic/zentaopms.pro10.3.1-80434.html">https://www.zentao.net/dynamic/zentaopms.pro10.3.1-80434.html</a> ,</p>
+<p> get the linux install package,eg. ‘ZenTaoPMS.15.7.1.zbox_64.tar.gz ‘</p>
+</li>
+</ol>
+</li>
+<li><ol start="2">
+<li>copy the package file into linux file folder,such as ‘ /user/zen ‘</li>
+</ol>
+</li>
+<li><ol start="3">
+<li>open folder where package located, ‘cd /user/zen ‘</li>
+</ol>
+</li>
+<li><ol start="4">
+<li><p>unzip the file to target folder  ‘/opt/‘; </p>
+<pre><code>    sudo tar -zxvf  ZenTaoPMS.15.7.1.zbox_64.tar.gz -C /opt
+</code></pre>
+<p> then in folder ‘ /opt/zbox ‘,we find ./zbox entry;</p>
+</li>
+</ol>
+</li>
+<li><ol start="5">
+<li>set port number for mysql and apache;<pre><code>   cd /opt/zbox 
+   ./zbox  -mp 3307 
+   ./zbox  -ap 9091 
+</code></pre>
+mp for mysql port;  ap for apache port</li>
+</ol>
+</li>
+<li><ol start="6">
+<li><p>add user into DataBase</p>
+<pre><code>cd /opt/zbox/auth
+sh adduser.sh 
+
+This tool is used to add user to access adminer
+Account: root
+Password: Adding password for user root
+</code></pre>
+</li>
+</ol>
+</li>
+<li><ol start="7">
+<li>start mysql and apache<pre><code>cd /opt/zbox
+./zbox start
+</code></pre>
+</li>
+</ol>
+</li>
+<li><ol start="8">
+<li><p>visit ‘localhost:9091 ‘ in local machine or</p>
+<p>visit ‘192.168.10.50:9091 ‘ in remote machine;</p>
+<p>then login and use it;</p>
+<p>default user :   admin </p>
+<p>default key :    123456</p>
+</li>
+</ol>
+</li>
+<li><ol start="9">
+<li><p>when no longer use it,stop it;<br>when reboot,restart it;</p>
+<pre><code>cd /opt/zbox
+./zbox stop
+./zbox restart     
+</code></pre>
+</li>
+</ol>
+</li>
+<li><ol start="10">
+<li><p>if cannot visit，add port into firewall,if the firewall is active</p>
+<pre><code>  [root@localhost zbox]# systemctl status firewalld
+  ● firewalld.service - firewalld - dynamic firewall daemon
+     Loaded: loaded (/usr/lib/systemd/system/firewalld.service; enabled; vendor preset: enabled)
+     Active: active (running) since 日 2021-12-05 11:36:48 CST; 1h 47min ago
+       Docs: man:firewalld(1)
+   Main PID: 846 (firewalld)
+      Tasks: 2
+     CGroup: /system.slice/firewalld.service
+             └─846 /usr/bin/python2 -Es /usr/sbin/firewalld --nofork --nopid
+
+  12月 05 11:36:46 localhost.localdomain systemd[1]: Starting firewalld - dynam...
+  12月 05 11:36:48 localhost.localdomain systemd[1]: Started firewalld - dynami...
+  Hint: Some lines were ellipsized, use -l to show in full.
+  [root@localhost zbox]# firewall-cmd --list-ports
+  80/tcp 8081/tcp
+  [root@localhost zbox]# firewall-cmd --zone=public --add-port=9091/tcp --permanentsuccess
+  [root@localhost zbox]# firewall-cmd --list-ports
+  80/tcp 8081/tcp
+  [root@localhost zbox]# reboot  
+</code></pre>
+</li>
+</ol>
+</li>
+</ul>
+]]></content>
+      <categories>
+        <category>Zentao</category>
+      </categories>
+      <tags>
+        <tag>cycle 2021</tag>
+        <tag>Zentao</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>34.error: invalid token at start of a preprocessor expression</title>
     <url>/2022/01/03/34-error-invalid-token-at-start-of-a-preprocessor-expression/</url>
     <content><![CDATA[<h2 id="34-error-invalid-token-at-start-of-a-preprocessor-expression"><a href="#34-error-invalid-token-at-start-of-a-preprocessor-expression" class="headerlink" title="34. error: invalid token at start of a preprocessor expression"></a>34. error: invalid token at start of a preprocessor expression</h2><p>for more information,visit</p>
@@ -2050,6 +2050,53 @@ To cycle.github.com:cyclezone&#x2F;cyclezone.github.io.git
       <tags>
         <tag>cycle 2022</tag>
         <tag>preprocessor expression</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>35. Predefined MACROS from compiler、HardWare、OS</title>
+    <url>/2022/01/03/35-Predefined-MACROS-from-compiler%E3%80%81HardWare%E3%80%81OS/</url>
+    <content><![CDATA[<h1 id="35-Predefined-MACROS-from-compiler、HardWare、OS"><a href="#35-Predefined-MACROS-from-compiler、HardWare、OS" class="headerlink" title="35. Predefined MACROS from compiler、HardWare、OS"></a>35. Predefined MACROS from compiler、HardWare、OS</h1><h2 id="《Calling-conventions-for-different-C-compilers-and-operating-systems》"><a href="#《Calling-conventions-for-different-C-compilers-and-operating-systems》" class="headerlink" title="《Calling conventions for different C++ compilers and operating systems》"></a>《Calling conventions for different C++ compilers and operating systems》</h2><p>for more information ,</p>
+<p>please visit <a href="https://www.agner.org/optimize/calling_conventions.pdf">https://www.agner.org/optimize/calling_conventions.pdf</a>  [page 56]</p>
+<p>or</p>
+<p>search key words “《Calling conventions for different C++ compilers and operating systems》”</p>
+<p>Most C++ compilers have a predefined macro containing the version number of the<br>compiler. Programmers can use preprocessing directives to check for the existence of these<br>macros in order to detect which compiler the program is compiled on and thereby fix<br>problems with incompatible compilers.</p>
+<h2 id="Table-1-Compiler-version-predefined-macros"><a href="#Table-1-Compiler-version-predefined-macros" class="headerlink" title="Table 1. Compiler version predefined macros"></a>Table 1. Compiler version predefined macros</h2><pre class="line-numbers language-none"><code class="language-none">Compiler             |        Predefined macro
+Borland              |        __BORLANDC__
+Codeplay VectorC     |        __VECTORC__
+Digital Mars         |        __DMC__
+Gnu                  |        __GNUC__
+Intel                |        __INTEL_COMPILER
+Microsoft            |        _MSC_VER
+Pathscale            |        __PATHSCALE__
+Symantec             |        __SYMANTECC__
+Watcom               |        __WATCOMC__<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>Unfortunately, not all compilers have well - documented macros telling which hardware<br>platform and operating system they are compiling for.The following macros may or may not<br>be defined :</p>
+<h2 id="Table-2-Hardware-platform-predefined-macros"><a href="#Table-2-Hardware-platform-predefined-macros" class="headerlink" title="Table 2. Hardware platform predefined macros"></a>Table 2. Hardware platform predefined macros</h2><pre class="line-numbers language-none"><code class="language-none">platform              |       Predefined macro
+x86                   |      _M_IX86  __INTEL__  __i386__
+x86-64                |      _M_X64   __x86_64__  __amd64
+IA64                  |      __IA64__
+DEC Alpha             |      __ALPHA__
+Motorola Power PC     |      __POWERPC__
+Any little endian     |      __LITTLE_ENDIAN__
+Any big endian        |      __BIG_ENDIAN__<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h2 id="Table-3-Operating-system-predefined-macros"><a href="#Table-3-Operating-system-predefined-macros" class="headerlink" title="Table 3. Operating system predefined macros"></a>Table 3. Operating system predefined macros</h2><pre class="line-numbers language-none"><code class="language-none">Operating system       |    Predefined macro
+DOS 16 bit             |    __MSDOS__   _MSDOS
+Windows 16 bit         |    _WIN16
+Windows 32 bit         |    _WIN32      __WINDOWS__
+Windows 64 bit         |    _WIN64      _WIN32
+Linux 32 bit           |    __unix__    __linux__
+Linux 64 bit           |    __unix__    __linux__ __LP64__ __amd64
+BSD                    |    __unix__    __BSD__   __FREEBSD__
+Mac OS                 |    __APPLE__   __DARWIN__ __MACH__
+OS &#x2F; 2                 |    __OS2__<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>]]></content>
+      <categories>
+        <category>cycle zone</category>
+      </categories>
+      <tags>
+        <tag>cycle 2022</tag>
+        <tag>Predefined MACROS</tag>
       </tags>
   </entry>
   <entry>
@@ -2123,50 +2170,103 @@ To cycle.github.com:cyclezone&#x2F;cyclezone.github.io.git
       </tags>
   </entry>
   <entry>
-    <title>35. Predefined MACROS from compiler、HardWare、OS</title>
-    <url>/2022/01/03/35-Predefined-MACROS-from-compiler%E3%80%81HardWare%E3%80%81OS/</url>
-    <content><![CDATA[<h1 id="35-Predefined-MACROS-from-compiler、HardWare、OS"><a href="#35-Predefined-MACROS-from-compiler、HardWare、OS" class="headerlink" title="35. Predefined MACROS from compiler、HardWare、OS"></a>35. Predefined MACROS from compiler、HardWare、OS</h1><h2 id="《Calling-conventions-for-different-C-compilers-and-operating-systems》"><a href="#《Calling-conventions-for-different-C-compilers-and-operating-systems》" class="headerlink" title="《Calling conventions for different C++ compilers and operating systems》"></a>《Calling conventions for different C++ compilers and operating systems》</h2><p>for more information ,</p>
-<p>please visit <a href="https://www.agner.org/optimize/calling_conventions.pdf">https://www.agner.org/optimize/calling_conventions.pdf</a>  [page 56]</p>
-<p>or</p>
-<p>search key words “《Calling conventions for different C++ compilers and operating systems》”</p>
-<p>Most C++ compilers have a predefined macro containing the version number of the<br>compiler. Programmers can use preprocessing directives to check for the existence of these<br>macros in order to detect which compiler the program is compiled on and thereby fix<br>problems with incompatible compilers.</p>
-<h2 id="Table-1-Compiler-version-predefined-macros"><a href="#Table-1-Compiler-version-predefined-macros" class="headerlink" title="Table 1. Compiler version predefined macros"></a>Table 1. Compiler version predefined macros</h2><pre class="line-numbers language-none"><code class="language-none">Compiler             |        Predefined macro
-Borland              |        __BORLANDC__
-Codeplay VectorC     |        __VECTORC__
-Digital Mars         |        __DMC__
-Gnu                  |        __GNUC__
-Intel                |        __INTEL_COMPILER
-Microsoft            |        _MSC_VER
-Pathscale            |        __PATHSCALE__
-Symantec             |        __SYMANTECC__
-Watcom               |        __WATCOMC__<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+    <title>38.1.configue host build target</title>
+    <url>/2022/01/09/38-1-configue-host-build-target/</url>
+    <content><![CDATA[<h2 id="38-1-configue-host-build-target"><a href="#38-1-configue-host-build-target" class="headerlink" title="38.1.configue host build target"></a>38.1.configue host build target</h2> <pre class="line-numbers language-none"><code class="language-none">
+.&#x2F;configure --host&#x3D;arm-linux-androideabi --prefix&#x3D;&#x2F;install
 
-<p>Unfortunately, not all compilers have well - documented macros telling which hardware<br>platform and operating system they are compiling for.The following macros may or may not<br>be defined :</p>
-<h2 id="Table-2-Hardware-platform-predefined-macros"><a href="#Table-2-Hardware-platform-predefined-macros" class="headerlink" title="Table 2. Hardware platform predefined macros"></a>Table 2. Hardware platform predefined macros</h2><pre class="line-numbers language-none"><code class="language-none">platform              |       Predefined macro
-x86                   |      _M_IX86  __INTEL__  __i386__
-x86-64                |      _M_X64   __x86_64__  __amd64
-IA64                  |      __IA64__
-DEC Alpha             |      __ALPHA__
-Motorola Power PC     |      __POWERPC__
-Any little endian     |      __LITTLE_ENDIAN__
-Any big endian        |      __BIG_ENDIAN__<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+.&#x2F;configure --host&#x3D;aarch64-linux-android --prefix&#x3D;&#x2F;install
 
-<h2 id="Table-3-Operating-system-predefined-macros"><a href="#Table-3-Operating-system-predefined-macros" class="headerlink" title="Table 3. Operating system predefined macros"></a>Table 3. Operating system predefined macros</h2><pre class="line-numbers language-none"><code class="language-none">Operating system       |    Predefined macro
-DOS 16 bit             |    __MSDOS__   _MSDOS
-Windows 16 bit         |    _WIN16
-Windows 32 bit         |    _WIN32      __WINDOWS__
-Windows 64 bit         |    _WIN64      _WIN32
-Linux 32 bit           |    __unix__    __linux__
-Linux 64 bit           |    __unix__    __linux__ __LP64__ __amd64
-BSD                    |    __unix__    __BSD__   __FREEBSD__
-Mac OS                 |    __APPLE__   __DARWIN__ __MACH__
-OS &#x2F; 2                 |    __OS2__<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>]]></content>
+&#x2F;configure --prefix&#x3D;&#x2F;mingw --enable-win32thread \
+--host&#x3D;x86_64-w64-mingw32 --enable-static --enable-shared 
+
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+ <pre class="line-numbers language-none"><code class="language-none">--build&#x3D;BUILD
+
+指定软件包安装的系统平台。如果没有指定，默认值将是&#39;--host&#39;选项的值。
+
+
+--host&#x3D;HOST
+
+指定软件运行的系统平台。如果没有指定。将会运行&#96;config.guess&#39;来检测。
+
+
+--target&#x3D;GARGET
+
+指定软件面向(target to)的系统平台。这主要在程序语言工具如编译器和汇编器上下文中起作用。如果没有指定，默认将使用&#39;--host&#39;选项的值。
+
+
+--disable-FEATURE
+
+一些软件包可以选择这个选项来提供为大型选项的编译时配置，例如使用Kerberos认证系统或者一个实验性的编译器最优配置。如果默认是提供这些特性，可以使用&#39;--disable-FEATURE&#39;来禁用它，这里&#39;FEATURE&#39;是特性的名字，例如：
+
+$ .&#x2F;configure --disable-gui
+
+
+-enable-FEATURE[&#x3D;ARG]
+
+相反的，一些软件包可能提供了一些默认被禁止的特性,可以使用&#39;--enable-FEATURE&#39;来起用它。这里&#39;FEATURE&#39;是特性的名字。一个特性可能会接受一个可选的参数。例如：
+
+$ .&#x2F;configure --enable-buffers&#x3D;128
+
+&#96;--enable-FEATURE&#x3D;no&#39;与上面提到的&#39;--disable-FEATURE&#39;是同义的。
+
+
+--with-PACKAGE[&#x3D;ARG]
+
+在自由软件社区里，有使用已有软件包和库的优秀传统。当用&#39;configure&#39;来配置一个源码树时，可以提供其他已经安装的软件包的信息。例如，倚赖于Tcl和Tk的BLT器件工具包。要配置BLT，可能需要给&#39;configure&#39;提供一些关于我们把Tcl和Tk装的何处的信息：
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>]]></content>
       <categories>
         <category>cycle zone</category>
       </categories>
       <tags>
         <tag>cycle 2022</tag>
-        <tag>Predefined MACROS</tag>
+        <tag>linux</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>37. no member named &#39;int64_t&#39; in the global namespace using::int64_t</title>
+    <url>/2022/01/05/37-no-member-named-int64-t-in-the-global-namespace-using-int64-t/</url>
+    <content><![CDATA[<h1 id="37-no-member-named-‘int64-t’-in-the-global-namespace-using-int64-t"><a href="#37-no-member-named-‘int64-t’-in-the-global-namespace-using-int64-t" class="headerlink" title="37. no member named ‘int64_t’ in the global namespace using::int64_t"></a>37. no member named ‘int64_t’ in the global namespace using::int64_t</h1><p>when compile android,</p>
+<pre class="line-numbers language-none"><code class="language-none">7. #include &lt;string&gt;
+8. #include &lt;algorithm&gt;
+ <span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+
+<p>compile the lines above,get the error below:</p>
+<pre class="line-numbers language-none"><code class="language-none">
+Compile++ arm  : butterbase &lt;&#x3D; basetemplate.cpp
+In file included from jni&#x2F;..&#x2F;..&#x2F;..&#x2F;..&#x2F;base&#x2F;basebutter.cpp:7:
+D:&#x2F;android&#x2F;ndk_r16b&#x2F;build&#x2F;&#x2F;..&#x2F;sources&#x2F;cxx-stl&#x2F;llvm-libc++&#x2F;include\cstdint:156:8: error: no member named &#39;int64_t&#39; in the global namespace
+using::int64_t;
+  ~~^
+In file included from jni&#x2F;..&#x2F;..&#x2F;..&#x2F;..&#x2F;base&#x2F;basebutter.cpp:8:
+In file included from D:&#x2F;android&#x2F;ndk_r16b&#x2F;build&#x2F;&#x2F;..&#x2F;sources&#x2F;cxx-stl&#x2F;llvm-libc++&#x2F;include\string:470:
+In file included from D:&#x2F;android&#x2F;ndk_r16b&#x2F;build&#x2F;&#x2F;..&#x2F;sources&#x2F;cxx-stl&#x2F;llvm-libc++&#x2F;include\string_view:169:
+In file included from D:&#x2F;android&#x2F;ndk_r16b&#x2F;build&#x2F;&#x2F;..&#x2F;sources&#x2F;cxx-stl&#x2F;llvm-libc++&#x2F;include\__string:56:
+In file included from D:&#x2F;android&#x2F;ndk_r16b&#x2F;build&#x2F;&#x2F;..&#x2F;sources&#x2F;cxx-stl&#x2F;llvm-libc++&#x2F;include\algorithm:643:
+In file included from D:&#x2F;android&#x2F;ndk_r16b&#x2F;build&#x2F;&#x2F;..&#x2F;sources&#x2F;cxx-stl&#x2F;llvm-libc++&#x2F;include\memory:658:
+D:&#x2F;android&#x2F;ndk_r16b&#x2F;build&#x2F;&#x2F;..&#x2F;sources&#x2F;cxx-stl&#x2F;llvm-libc++&#x2F;include\atomic:1873:17: error: use of undeclared identifier &#39;int64_t&#39;
+typedef atomic&lt; int64_t&gt; atomic_int64_t;
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+
+
+<h2 id="Method"><a href="#Method" class="headerlink" title="Method:"></a>Method:</h2><p>From</p>
+<pre class="line-numbers language-none"><code class="language-none">#include &lt;string&gt;
+#include &lt;algorithm&gt;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<p>change to</p>
+<pre class="line-numbers language-none"><code class="language-none">typedef long long                int64_t;
+#include &lt;string&gt;
+#include &lt;algorithm&gt;
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+]]></content>
+      <categories>
+        <category>cycle zone</category>
+      </categories>
+      <tags>
+        <tag>cycle 2022</tag>
       </tags>
   </entry>
   <entry>
@@ -2279,103 +2379,24 @@ enum butter_log_level
       </tags>
   </entry>
   <entry>
-    <title>37. no member named &#39;int64_t&#39; in the global namespace using::int64_t</title>
-    <url>/2022/01/05/37-no-member-named-int64-t-in-the-global-namespace-using-int64-t/</url>
-    <content><![CDATA[<h1 id="37-no-member-named-‘int64-t’-in-the-global-namespace-using-int64-t"><a href="#37-no-member-named-‘int64-t’-in-the-global-namespace-using-int64-t" class="headerlink" title="37. no member named ‘int64_t’ in the global namespace using::int64_t"></a>37. no member named ‘int64_t’ in the global namespace using::int64_t</h1><p>when compile android,</p>
-<pre class="line-numbers language-none"><code class="language-none">7. #include &lt;string&gt;
-8. #include &lt;algorithm&gt;
- <span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+    <title>How to configure host type in linux</title>
+    <url>/2021/12/13/4-configure-host-type/</url>
+    <content><![CDATA[<h2 id="1-–host-i686-w64-mingw32"><a href="#1-–host-i686-w64-mingw32" class="headerlink" title="1. –host=i686-w64-mingw32"></a>1. –host=i686-w64-mingw32</h2><pre class="line-numbers language-none"><code class="language-none">.&#x2F;configure --host&#x3D;i686-w64-mingw32     --prefix&#x3D;&#x2F;f&#x2F;libiconv1.16&#x2F;libiconv             CC&#x3D;i686-w64-mingw32-gcc             CPPFLAGS&#x3D;&quot;-I&#x2F;usr&#x2F;local&#x2F;mingw32&#x2F;include -Wall&quot;             LDFLAGS&#x3D;&quot;-L&#x2F;usr&#x2F;local&#x2F;mingw32&#x2F;lib&quot;<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
 
-<p>compile the lines above,get the error below:</p>
-<pre class="line-numbers language-none"><code class="language-none">
-Compile++ arm  : butterbase &lt;&#x3D; basetemplate.cpp
-In file included from jni&#x2F;..&#x2F;..&#x2F;..&#x2F;..&#x2F;base&#x2F;basebutter.cpp:7:
-D:&#x2F;android&#x2F;ndk_r16b&#x2F;build&#x2F;&#x2F;..&#x2F;sources&#x2F;cxx-stl&#x2F;llvm-libc++&#x2F;include\cstdint:156:8: error: no member named &#39;int64_t&#39; in the global namespace
-using::int64_t;
-  ~~^
-In file included from jni&#x2F;..&#x2F;..&#x2F;..&#x2F;..&#x2F;base&#x2F;basebutter.cpp:8:
-In file included from D:&#x2F;android&#x2F;ndk_r16b&#x2F;build&#x2F;&#x2F;..&#x2F;sources&#x2F;cxx-stl&#x2F;llvm-libc++&#x2F;include\string:470:
-In file included from D:&#x2F;android&#x2F;ndk_r16b&#x2F;build&#x2F;&#x2F;..&#x2F;sources&#x2F;cxx-stl&#x2F;llvm-libc++&#x2F;include\string_view:169:
-In file included from D:&#x2F;android&#x2F;ndk_r16b&#x2F;build&#x2F;&#x2F;..&#x2F;sources&#x2F;cxx-stl&#x2F;llvm-libc++&#x2F;include\__string:56:
-In file included from D:&#x2F;android&#x2F;ndk_r16b&#x2F;build&#x2F;&#x2F;..&#x2F;sources&#x2F;cxx-stl&#x2F;llvm-libc++&#x2F;include\algorithm:643:
-In file included from D:&#x2F;android&#x2F;ndk_r16b&#x2F;build&#x2F;&#x2F;..&#x2F;sources&#x2F;cxx-stl&#x2F;llvm-libc++&#x2F;include\memory:658:
-D:&#x2F;android&#x2F;ndk_r16b&#x2F;build&#x2F;&#x2F;..&#x2F;sources&#x2F;cxx-stl&#x2F;llvm-libc++&#x2F;include\atomic:1873:17: error: use of undeclared identifier &#39;int64_t&#39;
-typedef atomic&lt; int64_t&gt; atomic_int64_t;
-<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<h2 id="2-–host-x86-64-w64-mingw32"><a href="#2-–host-x86-64-w64-mingw32" class="headerlink" title="2. –host=x86_64-w64-mingw32"></a>2. –host=x86_64-w64-mingw32</h2><pre><code>PATH=/usr/local/mingw64/bin:$PATH
+export PATH
 
-
-
-<h2 id="Method"><a href="#Method" class="headerlink" title="Method:"></a>Method:</h2><p>From</p>
-<pre class="line-numbers language-none"><code class="language-none">#include &lt;string&gt;
-#include &lt;algorithm&gt;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
-
-<p>change to</p>
-<pre class="line-numbers language-none"><code class="language-none">typedef long long                int64_t;
-#include &lt;string&gt;
-#include &lt;algorithm&gt;
-<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+./configure --host=x86_64-w64-mingw32 --prefix=/f//libiconv1.16/libiconv \
+    CC=x86_64-w64-mingw32-gcc \
+    CPPFLAGS=&quot;-I/usr/local/mingw64/include -Wall&quot; \
+    LDFLAGS=&quot;-L/usr/local/mingw64/lib&quot;
+</code></pre>
 ]]></content>
-      <categories>
-        <category>cycle zone</category>
-      </categories>
       <tags>
-        <tag>cycle 2022</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>38.1.configue host build target</title>
-    <url>/2022/01/09/38-1-configue-host-build-target/</url>
-    <content><![CDATA[<h2 id="38-1-configue-host-build-target"><a href="#38-1-configue-host-build-target" class="headerlink" title="38.1.configue host build target"></a>38.1.configue host build target</h2> <pre class="line-numbers language-none"><code class="language-none">
-.&#x2F;configure --host&#x3D;arm-linux-androideabi --prefix&#x3D;&#x2F;install
-
-.&#x2F;configure --host&#x3D;aarch64-linux-android --prefix&#x3D;&#x2F;install
-
-&#x2F;configure --prefix&#x3D;&#x2F;mingw --enable-win32thread \
---host&#x3D;x86_64-w64-mingw32 --enable-static --enable-shared 
-
-<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
-
- <pre class="line-numbers language-none"><code class="language-none">--build&#x3D;BUILD
-
-指定软件包安装的系统平台。如果没有指定，默认值将是&#39;--host&#39;选项的值。
-
-
---host&#x3D;HOST
-
-指定软件运行的系统平台。如果没有指定。将会运行&#96;config.guess&#39;来检测。
-
-
---target&#x3D;GARGET
-
-指定软件面向(target to)的系统平台。这主要在程序语言工具如编译器和汇编器上下文中起作用。如果没有指定，默认将使用&#39;--host&#39;选项的值。
-
-
---disable-FEATURE
-
-一些软件包可以选择这个选项来提供为大型选项的编译时配置，例如使用Kerberos认证系统或者一个实验性的编译器最优配置。如果默认是提供这些特性，可以使用&#39;--disable-FEATURE&#39;来禁用它，这里&#39;FEATURE&#39;是特性的名字，例如：
-
-$ .&#x2F;configure --disable-gui
-
-
--enable-FEATURE[&#x3D;ARG]
-
-相反的，一些软件包可能提供了一些默认被禁止的特性,可以使用&#39;--enable-FEATURE&#39;来起用它。这里&#39;FEATURE&#39;是特性的名字。一个特性可能会接受一个可选的参数。例如：
-
-$ .&#x2F;configure --enable-buffers&#x3D;128
-
-&#96;--enable-FEATURE&#x3D;no&#39;与上面提到的&#39;--disable-FEATURE&#39;是同义的。
-
-
---with-PACKAGE[&#x3D;ARG]
-
-在自由软件社区里，有使用已有软件包和库的优秀传统。当用&#39;configure&#39;来配置一个源码树时，可以提供其他已经安装的软件包的信息。例如，倚赖于Tcl和Tk的BLT器件工具包。要配置BLT，可能需要给&#39;configure&#39;提供一些关于我们把Tcl和Tk装的何处的信息：
-<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>]]></content>
-      <categories>
-        <category>cycle zone</category>
-      </categories>
-      <tags>
-        <tag>cycle 2022</tag>
+        <tag>cycle 2021</tag>
         <tag>linux</tag>
+        <tag>host type</tag>
+        <tag>configure</tag>
       </tags>
   </entry>
   <entry>
@@ -2405,24 +2426,14 @@ void RotateMarker(double x, double y, double dx, double dy, double angle, double
       </tags>
   </entry>
   <entry>
-    <title>How to configure host type in linux</title>
-    <url>/2021/12/13/4-configure-host-type/</url>
-    <content><![CDATA[<h2 id="1-–host-i686-w64-mingw32"><a href="#1-–host-i686-w64-mingw32" class="headerlink" title="1. –host=i686-w64-mingw32"></a>1. –host=i686-w64-mingw32</h2><pre class="line-numbers language-none"><code class="language-none">.&#x2F;configure --host&#x3D;i686-w64-mingw32     --prefix&#x3D;&#x2F;f&#x2F;libiconv1.16&#x2F;libiconv             CC&#x3D;i686-w64-mingw32-gcc             CPPFLAGS&#x3D;&quot;-I&#x2F;usr&#x2F;local&#x2F;mingw32&#x2F;include -Wall&quot;             LDFLAGS&#x3D;&quot;-L&#x2F;usr&#x2F;local&#x2F;mingw32&#x2F;lib&quot;<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
-
-<h2 id="2-–host-x86-64-w64-mingw32"><a href="#2-–host-x86-64-w64-mingw32" class="headerlink" title="2. –host=x86_64-w64-mingw32"></a>2. –host=x86_64-w64-mingw32</h2><pre><code>PATH=/usr/local/mingw64/bin:$PATH
-export PATH
-
-./configure --host=x86_64-w64-mingw32 --prefix=/f//libiconv1.16/libiconv \
-    CC=x86_64-w64-mingw32-gcc \
-    CPPFLAGS=&quot;-I/usr/local/mingw64/include -Wall&quot; \
-    LDFLAGS=&quot;-L/usr/local/mingw64/lib&quot;
-</code></pre>
-]]></content>
+    <title>hello 2022</title>
+    <url>/2022/01/01/7-hello-2022/</url>
+    <content><![CDATA[<h2 id="Hello-2022"><a href="#Hello-2022" class="headerlink" title="Hello 2022"></a>Hello 2022</h2><h2 id="To-do-list"><a href="#To-do-list" class="headerlink" title="To do list"></a>To do list</h2><h2 id="Bye-2011"><a href="#Bye-2011" class="headerlink" title="Bye 2011"></a>Bye 2011</h2>]]></content>
+      <categories>
+        <category>cycle zone</category>
+      </categories>
       <tags>
-        <tag>cycle 2021</tag>
-        <tag>linux</tag>
-        <tag>host type</tag>
-        <tag>configure</tag>
+        <tag>cycle 2022</tag>
       </tags>
   </entry>
   <entry>
@@ -2649,6 +2660,67 @@ long Request(string strUri, byte** ppbuf, long&amp; len)
       </tags>
   </entry>
   <entry>
+    <title>41 mapbox satelite url token</title>
+    <url>/2022/02/27/41-mapbox-satelite-url-token/</url>
+    <content><![CDATA[<h1 id="41-Mapbox-satelite-url-token"><a href="#41-Mapbox-satelite-url-token" class="headerlink" title="41. Mapbox satelite url token"></a>41. Mapbox satelite url token</h1><h2 id="1-url-and-token"><a href="#1-url-and-token" class="headerlink" title="1. url and token"></a>1. url and token</h2><ol>
+<li>visit url <a href="http://www.mapbox.cn/mapbox-gl-js/example/satellite-map/">http://www.mapbox.cn/mapbox-gl-js/example/satellite-map/</a> ，</li>
+<li>from the example,use F12 –&gt; NetWork –&gt; get the request url :<br><a href="https://api.mapbox.com/v4/mapbox.satellite/14/13402/6763.webp?sku=1015TlSrLHf3s&amp;access_token=pk.eyJ1IjoiZXhhbXBsZXMiLCJhIjoiY2p1dHRybDR5MGJuZjQzcGhrZ2doeGgwNyJ9.a-vxW4UaxOoUMWUTGnEArw">https://api.mapbox.com/v4/mapbox.satellite/14/13402/6763.webp?sku=1015TlSrLHf3s&amp;access_token=pk.eyJ1IjoiZXhhbXBsZXMiLCJhIjoiY2p1dHRybDR5MGJuZjQzcGhrZ2doeGgwNyJ9.a-vxW4UaxOoUMWUTGnEArw</a></li>
+<li>from the url above,get the token “pk.eyJ1IjoiZXhhbXBsZXMiLCJhIjoiY2p1dHRybDR5MGJuZjQzcGhrZ2doeGgwNyJ9.a-vxW4UaxOoUMWUTGnEArw”;</li>
+</ol>
+<h2 id="2-vector-tile"><a href="#2-vector-tile" class="headerlink" title="2. vector tile"></a>2. vector tile</h2><p><a href="https://docs.mapbox.com/api/maps/vector-tiles/">https://docs.mapbox.com/api/maps/vector-tiles/</a></p>
+<p><a href="https://api.mapbox.com/v4/%7Btileset_id%7D/%7Bzoom%7D/%7Bx%7D/%7By%7D.%7Bformat%7D">https://api.mapbox.com/v4/{tileset_id}/{zoom}/{x}/{y}.{format}</a></p>
+<p><a href="https://api.mapbox.com/v4/mapbox.mapbox-streets-v8/12/1171/1566.mvt?style=mapbox://styles/mapbox/streets-v11@00&amp;access_token=YOUR_MAPBOX_ACCESS_TOKEN">https://api.mapbox.com/v4/mapbox.mapbox-streets-v8/12/1171/1566.mvt?style=mapbox://styles/mapbox/streets-v11@00&amp;access_token=YOUR_MAPBOX_ACCESS_TOKEN</a></p>
+<h2 id="3-raster-tile"><a href="#3-raster-tile" class="headerlink" title="3. raster tile"></a>3. raster tile</h2><p><a href="https://api.mapbox.com/v4/%7Btileset_id%7D/%7Bzoom%7D/%7Bx%7D/%7By%7D%7B@2x%7D.%7Bformat%7D">https://api.mapbox.com/v4/{tileset_id}/{zoom}/{x}/{y}{@2x}.{format}</a></p>
+<p><a href="https://api.mapbox.com/v4/mapbox.satellite/1/0/0@2x.jpg90?access_token=YOUR_MAPBOX_ACCESS_TOKEN">https://api.mapbox.com/v4/mapbox.satellite/1/0/0@2x.jpg90?access_token=YOUR_MAPBOX_ACCESS_TOKEN</a></p>
+<h2 id="4-template"><a href="#4-template" class="headerlink" title="4. template"></a>4. template</h2><p><a href="https://docs.mapbox.com/api/maps/static-tiles/">https://docs.mapbox.com/api/maps/static-tiles/</a></p>
+<p><a href="https://api.mapbox.com/styles/v1/%7Busername%7D/%7Bstyle_id%7D/tiles/%7Btilesize%7D/%7Bz%7D/%7Bx%7D/%7By%7D%7B@2x%7D">https://api.mapbox.com/styles/v1/{username}/{style_id}/tiles/{tilesize}/{z}/{x}/{y}{@2x}</a></p>
+<p>Retrieve raster tiles from a Mapbox Studio style.</p>
+<p>The returned raster tile will be 512 pixels by 512 pixels by default.<br>If the queried tileset contains raster layers, the returned tile will be a JPEG.<br>If the queried tileset contains only vector layers, the returned tile will be a PNG.</p>
+<ul>
+<li>demo</li>
+</ul>
+<p><a href="https://api.mapbox.com/styles/v1/mapbox/satellite-v9/tiles/512/2/3/1@2x?access_token=pk.eyJ1IjoiZXhhbXBsZXMiLCJhIjoiY2p1dHRybDR5MGJuZjQzcGhrZ2doeGgwNyJ9.a-vxW4UaxOoUMWUTGnEArw">https://api.mapbox.com/styles/v1/mapbox/satellite-v9/tiles/512/2/3/1@2x?access_token=pk.eyJ1IjoiZXhhbXBsZXMiLCJhIjoiY2p1dHRybDR5MGJuZjQzcGhrZ2doeGgwNyJ9.a-vxW4UaxOoUMWUTGnEArw</a></p>
+<h2 id="5-mapbox-demo"><a href="#5-mapbox-demo" class="headerlink" title="5. mapbox demo"></a>5. mapbox demo</h2><pre class="line-numbers language-none"><code class="language-none">&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;
+	&lt;meta charset&#x3D;&#39;utf-8&#39; &#x2F;&gt;
+	&lt;title&gt;显示卫星地图&lt;&#x2F;title&gt;
+	&lt;meta name&#x3D;&#39;viewport&#39; content&#x3D;&#39;initial-scale&#x3D;1,maximum-scale&#x3D;1,user-scalable&#x3D;no&#39; &#x2F;&gt;
+	&lt;script src&#x3D;&#39;https:&#x2F;&#x2F;api.tiles.mapbox.com&#x2F;mapbox-gl-js&#x2F;v1.1.1&#x2F;mapbox-gl.js&#39;&gt;&lt;&#x2F;script&gt;
+	&lt;link href&#x3D;&#39;https:&#x2F;&#x2F;api.tiles.mapbox.com&#x2F;mapbox-gl-js&#x2F;v1.1.1&#x2F;mapbox-gl.css&#39; rel&#x3D;&#39;stylesheet&#39; &#x2F;&gt;
+	&lt;style&gt;
+		body &#123; margin:0; padding:0; &#125;
+		#map &#123; position:absolute; top:0; bottom:0; width:100%; &#125;
+	&lt;&#x2F;style&gt;
+&lt;&#x2F;head&gt;
+&lt;body&gt;
+
+&lt;div id&#x3D;&#39;map&#39;&gt;&lt;&#x2F;div&gt;
+&lt;script&gt;
+mapboxgl.accessToken &#x3D; &#39;pk.eyJ1IjoiZXhhbXBsZXMiLCJhIjoiY2p1dHRybDR5MGJuZjQzcGhrZ2doeGgwNyJ9.a-vxW4UaxOoUMWUTGnEArw&#39;;
+var map &#x3D; new mapboxgl.Map(&#123;
+	container: &#39;map&#39;,
+	zoom: 9,
+	center: [137.9150899566626, 36.25956997955441],
+	style: &#39;mapbox:&#x2F;&#x2F;styles&#x2F;mapbox&#x2F;satellite-v9&#39;
+&#125;);
+&lt;&#x2F;script&gt;
+
+&lt;&#x2F;body&gt;
+&lt;&#x2F;html&gt;
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+]]></content>
+      <categories>
+        <category>cycle zone</category>
+      </categories>
+      <tags>
+        <tag>cycle 2022</tag>
+        <tag>mapbox</tag>
+        <tag>token</tag>
+        <tag>demo</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>Hexo增加搜索功能</title>
     <url>/2022/01/04/5-Hexo%E5%A2%9E%E5%8A%A0%E6%90%9C%E7%B4%A2%E5%8A%9F%E8%83%BD/</url>
     <content><![CDATA[<h2 id="Hexo增加搜索功能具体操作"><a href="#Hexo增加搜索功能具体操作" class="headerlink" title="Hexo增加搜索功能具体操作"></a>Hexo增加搜索功能具体操作</h2><h3 id="1-安装搜索"><a href="#1-安装搜索" class="headerlink" title="1.安装搜索"></a>1.安装搜索</h3><p>  在Hexo的根目录下，打开命令可执行窗口，执行如下命令：</p>
@@ -2680,6 +2752,72 @@ local_search:
         <tag>Hexo</tag>
         <tag>cycle 2022</tag>
         <tag>search</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>A dynamic link library (DLL) initialization routine failed</title>
+    <url>/2021/12/19/8-A-dynamic-link-library-DLL-initialization-routine-failed/</url>
+    <content><![CDATA[<h1 id="8-A-dynamic-link-library-DLL-initialization-routine-failed"><a href="#8-A-dynamic-link-library-DLL-initialization-routine-failed" class="headerlink" title="8. A dynamic link library (DLL) initialization routine failed"></a>8. A dynamic link library (DLL) initialization routine failed</h1><p><img src="./img/8_initialization_routine_failed.png" alt="initialization routine failed"></p>
+<p>use IntelliJ IDEA to debug some program, when load some dynamic link library (*.dll),<br>throw out some error infomation: “A dynamic link library (DLL) initialization routine failed” ;</p>
+<p>when check the dll file ,the file exist and the located path has been set in the Computer PATH ENV,<br>besides this,use the dependency tool(dependency walker), we get the full complete dependent file list in the table view;</p>
+<p>the method to solve this situation:</p>
+<ol>
+<li>cmd —&gt;regedit </li>
+<li>locate the target program node;<br>eg: HKEY_CURRENT_USER\Software\MapCycle\AppProduct\Developer</li>
+<li>delete the java node which set the java infomation,<br>and node name make consist of the HEX code;</li>
+</ol>
+<p> regedit path<br><img src="./img/8_initialization_routine_failed_regedit.png" alt="HKEY_CURRENT_USER_Software_MapCycle"></p>
+]]></content>
+      <categories>
+        <category>cycle zone</category>
+      </categories>
+      <tags>
+        <tag>cycle 2021</tag>
+        <tag>library</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>9. Debug cpp module in Android studio</title>
+    <url>/2021/12/19/9-Debug-cpp-module-in-Android-studio/</url>
+    <content><![CDATA[<h1 id="9-Debug-cpp-module-in-Android-studio"><a href="#9-Debug-cpp-module-in-Android-studio" class="headerlink" title="9. Debug cpp module in Android studio"></a>9. Debug cpp module in Android studio</h1><p><img src="./img/9_debug_cpp_in_androidstudio.png" alt="Debug cpp module in Android studio"></p>
+<p>STEPS:</p>
+<ol>
+<li>open project in android studio;</li>
+<li>select Android Node,not Project Node,</li>
+<li>select app tree root node,and click the mouse right button,<br>get the menu lists;</li>
+<li>click ‘Link c++ project with Gradle’ from the menu<br>the show the configure window</li>
+<li>if the *.mk file is Ok,choose ndk-build for Build system;<br>then choose the file ‘Android.mk’ in the project path;</li>
+<li>press ok,add the mk config into the build.gradle;<pre class="line-numbers language-none"><code class="language-none">android &#123;
+
+  compileSdkVersion 26
+  defaultConfig &#123;
+    applicationId &quot;com.map.cycle&quot;
+    minSdkVersion 21
+    targetSdkVersion 26
+    versionCode 1
+    versionName &quot;1.0&quot;
+    testInstrumentationRunner &quot;android.support.test.runner.AndroidJUnitRunner&quot;
+    multiDexEnabled true
+    ndk &#123;
+      abiFilters &quot;armeabi-v7a&quot;
+    &#125;
+  &#125;
+  externalNativeBuild &#123;
+    ndkBuild &#123;
+      path file(&#39;..&#x2F;..&#x2F;code&#x2F;build&#x2F;map&#x2F;jni&#x2F;Android.mk&#39;)
+    &#125;
+  &#125;
+&#125;
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></li>
+</ol>
+]]></content>
+      <categories>
+        <category>cycle zone</category>
+      </categories>
+      <tags>
+        <tag>cycle 2021</tag>
+        <tag>Android</tag>
+        <tag>debug</tag>
       </tags>
   </entry>
   <entry>
@@ -2999,83 +3137,6 @@ local_search:
       </categories>
       <tags>
         <tag>cycle 2021</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>A dynamic link library (DLL) initialization routine failed</title>
-    <url>/2021/12/19/8-A-dynamic-link-library-DLL-initialization-routine-failed/</url>
-    <content><![CDATA[<h1 id="8-A-dynamic-link-library-DLL-initialization-routine-failed"><a href="#8-A-dynamic-link-library-DLL-initialization-routine-failed" class="headerlink" title="8. A dynamic link library (DLL) initialization routine failed"></a>8. A dynamic link library (DLL) initialization routine failed</h1><p><img src="./img/8_initialization_routine_failed.png" alt="initialization routine failed"></p>
-<p>use IntelliJ IDEA to debug some program, when load some dynamic link library (*.dll),<br>throw out some error infomation: “A dynamic link library (DLL) initialization routine failed” ;</p>
-<p>when check the dll file ,the file exist and the located path has been set in the Computer PATH ENV,<br>besides this,use the dependency tool(dependency walker), we get the full complete dependent file list in the table view;</p>
-<p>the method to solve this situation:</p>
-<ol>
-<li>cmd —&gt;regedit </li>
-<li>locate the target program node;<br>eg: HKEY_CURRENT_USER\Software\MapCycle\AppProduct\Developer</li>
-<li>delete the java node which set the java infomation,<br>and node name make consist of the HEX code;</li>
-</ol>
-<p> regedit path<br><img src="./img/8_initialization_routine_failed_regedit.png" alt="HKEY_CURRENT_USER_Software_MapCycle"></p>
-]]></content>
-      <categories>
-        <category>cycle zone</category>
-      </categories>
-      <tags>
-        <tag>cycle 2021</tag>
-        <tag>library</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>hello 2022</title>
-    <url>/2022/01/01/7-hello-2022/</url>
-    <content><![CDATA[<h2 id="Hello-2022"><a href="#Hello-2022" class="headerlink" title="Hello 2022"></a>Hello 2022</h2><h2 id="To-do-list"><a href="#To-do-list" class="headerlink" title="To do list"></a>To do list</h2><h2 id="Bye-2011"><a href="#Bye-2011" class="headerlink" title="Bye 2011"></a>Bye 2011</h2>]]></content>
-      <categories>
-        <category>cycle zone</category>
-      </categories>
-      <tags>
-        <tag>cycle 2022</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>9. Debug cpp module in Android studio</title>
-    <url>/2021/12/19/9-Debug-cpp-module-in-Android-studio/</url>
-    <content><![CDATA[<h1 id="9-Debug-cpp-module-in-Android-studio"><a href="#9-Debug-cpp-module-in-Android-studio" class="headerlink" title="9. Debug cpp module in Android studio"></a>9. Debug cpp module in Android studio</h1><p><img src="./img/9_debug_cpp_in_androidstudio.png" alt="Debug cpp module in Android studio"></p>
-<p>STEPS:</p>
-<ol>
-<li>open project in android studio;</li>
-<li>select Android Node,not Project Node,</li>
-<li>select app tree root node,and click the mouse right button,<br>get the menu lists;</li>
-<li>click ‘Link c++ project with Gradle’ from the menu<br>the show the configure window</li>
-<li>if the *.mk file is Ok,choose ndk-build for Build system;<br>then choose the file ‘Android.mk’ in the project path;</li>
-<li>press ok,add the mk config into the build.gradle;<pre class="line-numbers language-none"><code class="language-none">android &#123;
-
-  compileSdkVersion 26
-  defaultConfig &#123;
-    applicationId &quot;com.map.cycle&quot;
-    minSdkVersion 21
-    targetSdkVersion 26
-    versionCode 1
-    versionName &quot;1.0&quot;
-    testInstrumentationRunner &quot;android.support.test.runner.AndroidJUnitRunner&quot;
-    multiDexEnabled true
-    ndk &#123;
-      abiFilters &quot;armeabi-v7a&quot;
-    &#125;
-  &#125;
-  externalNativeBuild &#123;
-    ndkBuild &#123;
-      path file(&#39;..&#x2F;..&#x2F;code&#x2F;build&#x2F;map&#x2F;jni&#x2F;Android.mk&#39;)
-    &#125;
-  &#125;
-&#125;
-<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></li>
-</ol>
-]]></content>
-      <categories>
-        <category>cycle zone</category>
-      </categories>
-      <tags>
-        <tag>cycle 2021</tag>
-        <tag>Android</tag>
-        <tag>debug</tag>
       </tags>
   </entry>
 </search>

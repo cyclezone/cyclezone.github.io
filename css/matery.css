@@ -1325,7 +1325,7 @@ thead {
 
 .chip-container .chip:hover {
     color: #fff;
-    background: linear-gradient(to right, #4cbf30 0%, #0f9d58 100%) !important;
+    background: linear-gradient(to right, #5690fa 0%, #1362f5 100%) !important;
 }
 
 .chip .tag-length {
@@ -1401,7 +1401,7 @@ thead {
     left: 18px;
     height: 100%;
     width: 4px;
-    background: #0f9d58;
+    background: #5690fa;
 }
 
 @media only screen and (min-width: 900px) {
@@ -1616,7 +1616,7 @@ thead {
 }
 
 .post-statis .statis .count a {
-    color: #42b983;
+    color: #5690fa;
 }
 
 .post-statis .statis .name {
@@ -1637,8 +1637,8 @@ thead {
     margin: 0 0.5rem;
     padding: 0;
     color: #fff;
-    border: 1px solid #0f9d58;
-    background: radial-gradient(#4cbf30, #0f9d58);
+    border: 1px solid #5690fa;
+    background: radial-gradient(#5690fa, #0348c9);
     font-size: 0.9rem;
     border-radius: 50%;
     box-shadow: 0 4px 6px rgba(50, 50, 93, .21), 0 2px 3px rgba(0, 0, 0, .1);
@@ -1814,8 +1814,8 @@ thead {
 
 .other-skills .chip:hover {
     color: #fff;
-    background: linear-gradient(to right, #4cbf30 0%, #0f9d58 100%);
-    border: 1px solid #4cbf30;
+    background: linear-gradient(to right, #5690fa 0%, #03399c 100%);
+    border: 1px solid #5690fa;
     box-shadow: 0 5px 5px rgba(0, 0, 0, .25)
 }
 
@@ -1881,7 +1881,7 @@ footer .copy-right {
 
 .search-result-list .search-result-title {
     font-size: 1.4rem;
-    color: #42b983;
+    color: #5690fa;
 }
 
 .search-result-list li {

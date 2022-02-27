@@ -2,6 +2,15 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>https://cyclezone.github.io/2022/02/27/41-mapbox-satelite-url-token/</loc>
+    
+    <lastmod>2022-02-27</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
     <loc>https://cyclezone.github.io/2022/01/09/40-CInternetSession-12057-%E4%B8%8D%E8%83%BD%E8%BF%9E%E6%8E%A5%E5%88%B0%E5%90%8A%E9%94%80%E6%9C%8D%E5%8A%A1%E5%99%A8%EF%BC%8C%E6%88%96%E8%80%85%E6%9C%AA%E8%83%BD%E8%8E%B7%E5%BE%97%E6%9C%80%E7%BB%88%E5%93%8D%E5%BA%94/</loc>
     
     <lastmod>2022-01-09</lastmod>
@@ -418,7 +427,7 @@
 
   <url>
     <loc>https://cyclezone.github.io/</loc>
-    <lastmod>2022-01-09</lastmod>
+    <lastmod>2022-02-27</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
@@ -426,266 +435,287 @@
   
   <url>
     <loc>https://cyclezone.github.io/tags/cycle-2021/</loc>
-    <lastmod>2022-01-09</lastmod>
+    <lastmod>2022-02-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://cyclezone.github.io/tags/Blog/</loc>
-    <lastmod>2022-01-09</lastmod>
+    <lastmod>2022-02-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://cyclezone.github.io/tags/Hexo/</loc>
-    <lastmod>2022-01-09</lastmod>
+    <lastmod>2022-02-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://cyclezone.github.io/tags/alignment/</loc>
-    <lastmod>2022-01-09</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://cyclezone.github.io/tags/WMTS/</loc>
-    <lastmod>2022-01-09</lastmod>
+    <lastmod>2022-02-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://cyclezone.github.io/tags/makefile/</loc>
-    <lastmod>2022-01-09</lastmod>
+    <lastmod>2022-02-27</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://cyclezone.github.io/tags/WMTS/</loc>
+    <lastmod>2022-02-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://cyclezone.github.io/tags/Qt/</loc>
-    <lastmod>2022-01-09</lastmod>
+    <lastmod>2022-02-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://cyclezone.github.io/tags/compile/</loc>
-    <lastmod>2022-01-09</lastmod>
+    <lastmod>2022-02-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://cyclezone.github.io/tags/library/</loc>
-    <lastmod>2022-01-09</lastmod>
+    <lastmod>2022-02-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://cyclezone.github.io/tags/dependency/</loc>
-    <lastmod>2022-01-09</lastmod>
+    <lastmod>2022-02-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://cyclezone.github.io/tags/link/</loc>
-    <lastmod>2022-01-09</lastmod>
+    <lastmod>2022-02-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://cyclezone.github.io/tags/string/</loc>
-    <lastmod>2022-01-09</lastmod>
+    <lastmod>2022-02-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://cyclezone.github.io/tags/hexo/</loc>
-    <lastmod>2022-01-09</lastmod>
+    <lastmod>2022-02-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://cyclezone.github.io/tags/github/</loc>
-    <lastmod>2022-01-09</lastmod>
+    <lastmod>2022-02-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://cyclezone.github.io/tags/add-dsym/</loc>
-    <lastmod>2022-01-09</lastmod>
+    <lastmod>2022-02-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://cyclezone.github.io/tags/Android/</loc>
-    <lastmod>2022-01-09</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://cyclezone.github.io/tags/unaligned-memory/</loc>
-    <lastmod>2022-01-09</lastmod>
+    <lastmod>2022-02-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://cyclezone.github.io/tags/template/</loc>
-    <lastmod>2022-01-09</lastmod>
+    <lastmod>2022-02-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://cyclezone.github.io/tags/Tianditu/</loc>
-    <lastmod>2022-01-09</lastmod>
+    <lastmod>2022-02-27</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://cyclezone.github.io/tags/unaligned-memory/</loc>
+    <lastmod>2022-02-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://cyclezone.github.io/tags/cario/</loc>
-    <lastmod>2022-01-09</lastmod>
+    <lastmod>2022-02-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://cyclezone.github.io/tags/cmake/</loc>
-    <lastmod>2022-01-09</lastmod>
+    <lastmod>2022-02-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://cyclezone.github.io/tags/arcgis-url/</loc>
-    <lastmod>2022-01-09</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://cyclezone.github.io/tags/Zentao/</loc>
-    <lastmod>2022-01-09</lastmod>
+    <lastmod>2022-02-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://cyclezone.github.io/tags/gitlab/</loc>
-    <lastmod>2022-01-09</lastmod>
+    <lastmod>2022-02-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://cyclezone.github.io/tags/Permission-denied/</loc>
-    <lastmod>2022-01-09</lastmod>
+    <lastmod>2022-02-27</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://cyclezone.github.io/tags/Zentao/</loc>
+    <lastmod>2022-02-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://cyclezone.github.io/tags/cycle-2022/</loc>
-    <lastmod>2022-01-09</lastmod>
+    <lastmod>2022-02-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://cyclezone.github.io/tags/preprocessor-expression/</loc>
-    <lastmod>2022-01-09</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://cyclezone.github.io/tags/tcsinc/</loc>
-    <lastmod>2022-01-09</lastmod>
+    <lastmod>2022-02-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://cyclezone.github.io/tags/Predefined-MACROS/</loc>
-    <lastmod>2022-01-09</lastmod>
+    <lastmod>2022-02-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
-    <loc>https://cyclezone.github.io/tags/BUTTER-DEPRECATED/</loc>
-    <lastmod>2022-01-09</lastmod>
+    <loc>https://cyclezone.github.io/tags/tcsinc/</loc>
+    <lastmod>2022-02-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://cyclezone.github.io/tags/linux/</loc>
-    <lastmod>2022-01-09</lastmod>
+    <lastmod>2022-02-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
-    <loc>https://cyclezone.github.io/tags/Rotate/</loc>
-    <lastmod>2022-01-09</lastmod>
+    <loc>https://cyclezone.github.io/tags/BUTTER-DEPRECATED/</loc>
+    <lastmod>2022-02-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://cyclezone.github.io/tags/host-type/</loc>
-    <lastmod>2022-01-09</lastmod>
+    <lastmod>2022-02-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://cyclezone.github.io/tags/configure/</loc>
-    <lastmod>2022-01-09</lastmod>
+    <lastmod>2022-02-27</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://cyclezone.github.io/tags/Rotate/</loc>
+    <lastmod>2022-02-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://cyclezone.github.io/tags/CInternetSession/</loc>
-    <lastmod>2022-01-09</lastmod>
+    <lastmod>2022-02-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://cyclezone.github.io/tags/internet/</loc>
-    <lastmod>2022-01-09</lastmod>
+    <lastmod>2022-02-27</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://cyclezone.github.io/tags/mapbox/</loc>
+    <lastmod>2022-02-27</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://cyclezone.github.io/tags/token/</loc>
+    <lastmod>2022-02-27</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://cyclezone.github.io/tags/demo/</loc>
+    <lastmod>2022-02-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://cyclezone.github.io/tags/search/</loc>
-    <lastmod>2022-01-09</lastmod>
+    <lastmod>2022-02-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://cyclezone.github.io/tags/debug/</loc>
-    <lastmod>2022-01-09</lastmod>
+    <lastmod>2022-02-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
@@ -694,42 +724,42 @@
   
   <url>
     <loc>https://cyclezone.github.io/categories/Hexo-blog/</loc>
-    <lastmod>2022-01-09</lastmod>
+    <lastmod>2022-02-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://cyclezone.github.io/categories/cycle-zone/</loc>
-    <lastmod>2022-01-09</lastmod>
+    <lastmod>2022-02-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://cyclezone.github.io/categories/compile-Qt/</loc>
-    <lastmod>2022-01-09</lastmod>
+    <lastmod>2022-02-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://cyclezone.github.io/categories/GitHub-pages-blog/</loc>
-    <lastmod>2022-01-09</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://cyclezone.github.io/categories/Zentao/</loc>
-    <lastmod>2022-01-09</lastmod>
+    <lastmod>2022-02-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://cyclezone.github.io/categories/Gitlab/</loc>
-    <lastmod>2022-01-09</lastmod>
+    <lastmod>2022-02-27</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://cyclezone.github.io/categories/Zentao/</loc>
+    <lastmod>2022-02-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>

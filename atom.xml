@@ -6,7 +6,7 @@
   <link href="https://cyclezone.github.io/atom.xml" rel="self"/>
   
   <link href="https://cyclezone.github.io/"/>
-  <updated>2022-01-09T09:11:15.324Z</updated>
+  <updated>2022-02-27T03:22:44.499Z</updated>
   <id>https://cyclezone.github.io/</id>
   
   <author>
@@ -15,6 +15,36 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>41 mapbox satelite url token</title>
+    <link href="https://cyclezone.github.io/2022/02/27/41-mapbox-satelite-url-token/"/>
+    <id>https://cyclezone.github.io/2022/02/27/41-mapbox-satelite-url-token/</id>
+    <published>2022-02-27T03:19:19.000Z</published>
+    <updated>2022-02-27T03:22:44.499Z</updated>
+    
+    <content type="html"><![CDATA[<h1 id="41-Mapbox-satelite-url-token"><a href="#41-Mapbox-satelite-url-token" class="headerlink" title="41. Mapbox satelite url token"></a>41. Mapbox satelite url token</h1><h2 id="1-url-and-token"><a href="#1-url-and-token" class="headerlink" title="1. url and token"></a>1. url and token</h2><ol><li>visit url <a href="http://www.mapbox.cn/mapbox-gl-js/example/satellite-map/">http://www.mapbox.cn/mapbox-gl-js/example/satellite-map/</a> ，</li><li>from the example,use F12 –&gt; NetWork –&gt; get the request url :<br><a href="https://api.mapbox.com/v4/mapbox.satellite/14/13402/6763.webp?sku=1015TlSrLHf3s&amp;access_token=pk.eyJ1IjoiZXhhbXBsZXMiLCJhIjoiY2p1dHRybDR5MGJuZjQzcGhrZ2doeGgwNyJ9.a-vxW4UaxOoUMWUTGnEArw">https://api.mapbox.com/v4/mapbox.satellite/14/13402/6763.webp?sku=1015TlSrLHf3s&amp;access_token=pk.eyJ1IjoiZXhhbXBsZXMiLCJhIjoiY2p1dHRybDR5MGJuZjQzcGhrZ2doeGgwNyJ9.a-vxW4UaxOoUMWUTGnEArw</a></li><li>from the url above,get the token “pk.eyJ1IjoiZXhhbXBsZXMiLCJhIjoiY2p1dHRybDR5MGJuZjQzcGhrZ2doeGgwNyJ9.a-vxW4UaxOoUMWUTGnEArw”;</li></ol><h2 id="2-vector-tile"><a href="#2-vector-tile" class="headerlink" title="2. vector tile"></a>2. vector tile</h2><p><a href="https://docs.mapbox.com/api/maps/vector-tiles/">https://docs.mapbox.com/api/maps/vector-tiles/</a></p><p><a href="https://api.mapbox.com/v4/%7Btileset_id%7D/%7Bzoom%7D/%7Bx%7D/%7By%7D.%7Bformat%7D">https://api.mapbox.com/v4/{tileset_id}/{zoom}/{x}/{y}.{format}</a></p><p><a href="https://api.mapbox.com/v4/mapbox.mapbox-streets-v8/12/1171/1566.mvt?style=mapbox://styles/mapbox/streets-v11@00&amp;access_token=YOUR_MAPBOX_ACCESS_TOKEN">https://api.mapbox.com/v4/mapbox.mapbox-streets-v8/12/1171/1566.mvt?style=mapbox://styles/mapbox/streets-v11@00&amp;access_token=YOUR_MAPBOX_ACCESS_TOKEN</a></p><h2 id="3-raster-tile"><a href="#3-raster-tile" class="headerlink" title="3. raster tile"></a>3. raster tile</h2><p><a href="https://api.mapbox.com/v4/%7Btileset_id%7D/%7Bzoom%7D/%7Bx%7D/%7By%7D%7B@2x%7D.%7Bformat%7D">https://api.mapbox.com/v4/{tileset_id}/{zoom}/{x}/{y}{@2x}.{format}</a></p><p><a href="https://api.mapbox.com/v4/mapbox.satellite/1/0/0@2x.jpg90?access_token=YOUR_MAPBOX_ACCESS_TOKEN">https://api.mapbox.com/v4/mapbox.satellite/1/0/0@2x.jpg90?access_token=YOUR_MAPBOX_ACCESS_TOKEN</a></p><h2 id="4-template"><a href="#4-template" class="headerlink" title="4. template"></a>4. template</h2><p><a href="https://docs.mapbox.com/api/maps/static-tiles/">https://docs.mapbox.com/api/maps/static-tiles/</a></p><p><a href="https://api.mapbox.com/styles/v1/%7Busername%7D/%7Bstyle_id%7D/tiles/%7Btilesize%7D/%7Bz%7D/%7Bx%7D/%7By%7D%7B@2x%7D">https://api.mapbox.com/styles/v1/{username}/{style_id}/tiles/{tilesize}/{z}/{x}/{y}{@2x}</a></p><p>Retrieve raster tiles from a Mapbox Studio style.</p><p>The returned raster tile will be 512 pixels by 512 pixels by default.<br>If the queried tileset contains raster layers, the returned tile will be a JPEG.<br>If the queried tileset contains only vector layers, the returned tile will be a PNG.</p><ul><li>demo</li></ul><p><a href="https://api.mapbox.com/styles/v1/mapbox/satellite-v9/tiles/512/2/3/1@2x?access_token=pk.eyJ1IjoiZXhhbXBsZXMiLCJhIjoiY2p1dHRybDR5MGJuZjQzcGhrZ2doeGgwNyJ9.a-vxW4UaxOoUMWUTGnEArw">https://api.mapbox.com/styles/v1/mapbox/satellite-v9/tiles/512/2/3/1@2x?access_token=pk.eyJ1IjoiZXhhbXBsZXMiLCJhIjoiY2p1dHRybDR5MGJuZjQzcGhrZ2doeGgwNyJ9.a-vxW4UaxOoUMWUTGnEArw</a></p><h2 id="5-mapbox-demo"><a href="#5-mapbox-demo" class="headerlink" title="5. mapbox demo"></a>5. mapbox demo</h2><pre class="line-numbers language-none"><code class="language-none">&lt;!DOCTYPE html&gt;&lt;html&gt;&lt;head&gt;&lt;meta charset&#x3D;&#39;utf-8&#39; &#x2F;&gt;&lt;title&gt;显示卫星地图&lt;&#x2F;title&gt;&lt;meta name&#x3D;&#39;viewport&#39; content&#x3D;&#39;initial-scale&#x3D;1,maximum-scale&#x3D;1,user-scalable&#x3D;no&#39; &#x2F;&gt;&lt;script src&#x3D;&#39;https:&#x2F;&#x2F;api.tiles.mapbox.com&#x2F;mapbox-gl-js&#x2F;v1.1.1&#x2F;mapbox-gl.js&#39;&gt;&lt;&#x2F;script&gt;&lt;link href&#x3D;&#39;https:&#x2F;&#x2F;api.tiles.mapbox.com&#x2F;mapbox-gl-js&#x2F;v1.1.1&#x2F;mapbox-gl.css&#39; rel&#x3D;&#39;stylesheet&#39; &#x2F;&gt;&lt;style&gt;body &#123; margin:0; padding:0; &#125;#map &#123; position:absolute; top:0; bottom:0; width:100%; &#125;&lt;&#x2F;style&gt;&lt;&#x2F;head&gt;&lt;body&gt;&lt;div id&#x3D;&#39;map&#39;&gt;&lt;&#x2F;div&gt;&lt;script&gt;mapboxgl.accessToken &#x3D; &#39;pk.eyJ1IjoiZXhhbXBsZXMiLCJhIjoiY2p1dHRybDR5MGJuZjQzcGhrZ2doeGgwNyJ9.a-vxW4UaxOoUMWUTGnEArw&#39;;var map &#x3D; new mapboxgl.Map(&#123;container: &#39;map&#39;,zoom: 9,center: [137.9150899566626, 36.25956997955441],style: &#39;mapbox:&#x2F;&#x2F;styles&#x2F;mapbox&#x2F;satellite-v9&#39;&#125;);&lt;&#x2F;script&gt;&lt;&#x2F;body&gt;&lt;&#x2F;html&gt;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>]]></content>
+    
+    
+      
+      
+    <summary type="html">&lt;h1 id=&quot;41-Mapbox-satelite-url-token&quot;&gt;&lt;a href=&quot;#41-Mapbox-satelite-url-token&quot; class=&quot;headerlink&quot; title=&quot;41. Mapbox satelite url token&quot;&gt;&lt;/a&gt;4</summary>
+      
+    
+    
+    
+    <category term="cycle zone" scheme="https://cyclezone.github.io/categories/cycle-zone/"/>
+    
+    
+    <category term="cycle 2022" scheme="https://cyclezone.github.io/tags/cycle-2022/"/>
+    
+    <category term="mapbox" scheme="https://cyclezone.github.io/tags/mapbox/"/>
+    
+    <category term="token" scheme="https://cyclezone.github.io/tags/token/"/>
+    
+    <category term="demo" scheme="https://cyclezone.github.io/tags/demo/"/>
+    
+  </entry>
   
   <entry>
     <title>40. 不能连接到吊销服务器，或者未能获得最终响应</title>
@@ -500,30 +530,6 @@
       
       
     <summary type="html">&lt;h1 id=&quot;25-Compute-time-cost&quot;&gt;&lt;a href=&quot;#25-Compute-time-cost&quot; class=&quot;headerlink&quot; title=&quot;25. Compute time cost&quot;&gt;&lt;/a&gt;25. Compute time cost&lt;/h1</summary>
-      
-    
-    
-    
-    <category term="cycle zone" scheme="https://cyclezone.github.io/categories/cycle-zone/"/>
-    
-    
-    <category term="cycle 2021" scheme="https://cyclezone.github.io/tags/cycle-2021/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>24. Unable to open DISPLAY</title>
-    <link href="https://cyclezone.github.io/2021/12/20/24-Unable-to-open-DISPLAY/"/>
-    <id>https://cyclezone.github.io/2021/12/20/24-Unable-to-open-DISPLAY/</id>
-    <published>2021-12-20T15:14:11.000Z</published>
-    <updated>2022-01-09T08:50:02.003Z</updated>
-    
-    <content type="html"><![CDATA[<h1 id="24-Unable-to-open-DISPLAY"><a href="#24-Unable-to-open-DISPLAY" class="headerlink" title="24. Unable to open DISPLAY"></a>24. Unable to open DISPLAY</h1><pre class="line-numbers language-none"><code class="language-none">java.lang.reflect.InvocationTargetExceptionCasued by:java.lang.unsupportedOperationException:Unable to open DISPLAY<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre><h2 id="solution"><a href="#solution" class="headerlink" title="solution"></a>solution</h2><ul><li>echo $DISPLAY</li><li>export DISPLAY=:1</li><li>xhost +</li><li>run sh run.sh</li></ul>]]></content>
-    
-    
-      
-      
-    <summary type="html">&lt;h1 id=&quot;24-Unable-to-open-DISPLAY&quot;&gt;&lt;a href=&quot;#24-Unable-to-open-DISPLAY&quot; class=&quot;headerlink&quot; title=&quot;24. Unable to open DISPLAY&quot;&gt;&lt;/a&gt;24. Unable</summary>
       
     
     
